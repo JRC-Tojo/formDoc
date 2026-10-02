@@ -145,11 +145,18 @@ export function analyze(blocks: Block[], comps: Comps): VarUsage {
   const refs = new Set<string>();
   const external: string[] = [];
   for (const b of blocks) {
-    const fields = comps[b.kind]?.fields ?? [];
     const defsHere: string[] = [];
     const refsHere: string[] = [];
-    for (const f of fields) visitValue(b.kind, f, b.props[f.key], { def: (n) => defsHere.push(n), ref: (n) => refsHere.push(n) });
-    defsHere.push(...implicitDefs(b));
+    if (b.kind === 'group') {
+      // まとまりの中の変数は外から見えない。中で足りない変数が外から受け取る変数、公開する変数が外への定義
+      const inner = analyze(b.children ?? [], comps);
+      refsHere.push(...inner.external);
+      defsHere.push(...((b.props.exports ?? []) as string[]));
+    } else {
+      const fields = comps[b.kind]?.fields ?? [];
+      for (const f of fields) visitValue(b.kind, f, b.props[f.key], { def: (n) => defsHere.push(n), ref: (n) => refsHere.push(n) });
+      defsHere.push(...implicitDefs(b));
+    }
     for (const n of refsHere) {
       refs.add(n);
       if (!(n in definedBy) && !defsHere.includes(n) && !external.includes(n)) external.push(n);
@@ -167,6 +174,16 @@ export function analyze(blocks: Block[], comps: Comps): VarUsage {
 /** ブロック列の変数名を付け替えた複製を返す */
 export function renameBlocks(blocks: Block[], comps: Comps, map: RenameMap): Block[] {
   return blocks.map((b) => {
+    if (b.kind === 'group') {
+      // 中の変数と同じ名前の外の変数は付け替えない（中の定義が優先）
+      const inner = new Set(analyze(b.children ?? [], comps).defined);
+      const sub: RenameMap = Object.fromEntries(Object.entries(map).filter(([k]) => !inner.has(k) || ((b.props.exports ?? []) as string[]).includes(k)));
+      return {
+        ...b,
+        props: { ...b.props, exports: ((b.props.exports ?? []) as string[]).map((n) => sub[n] ?? n) },
+        children: renameBlocks(b.children ?? [], comps, sub),
+      };
+    }
     const props = { ...b.props };
     for (const f of comps[b.kind]?.fields ?? []) if (f.key in props) props[f.key] = renameValue(b.kind, f, props[f.key], map);
     // 暗黙の内訳名（合計名_番号）は、合計名を変えると変わってしまうため明示する

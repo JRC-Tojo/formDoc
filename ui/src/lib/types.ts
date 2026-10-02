@@ -6,6 +6,8 @@ export interface Block {
   id: string;
   kind: string;
   props: Props;
+  /** 子要素（"group" ＝ 挿入したテンプレートのまとまり） */
+  children?: Block[];
 }
 
 /** 文書情報。キーはスタイルの info.fields の key */
@@ -40,6 +42,10 @@ export interface VarInfo {
   unit: string;
   digits: number | null;
   desc: string;
+  /** 使える範囲の持ち主（見出し・テンプレートのまとまりのID）。null は文書全体 */
+  scope: string | null;
+  /** グローバル変数として定義 */
+  global: boolean;
 }
 
 export interface BlockResult {

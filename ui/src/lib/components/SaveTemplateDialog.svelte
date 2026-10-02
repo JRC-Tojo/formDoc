@@ -10,7 +10,10 @@
   let { blockId }: { blockId: string } = $props();
 
   const comps = $derived(app.catalog?.components ?? {});
-  const fragment = $derived<Block[]>(JSON.parse(JSON.stringify(app.fragmentOf(blockId))));
+  const picked = $derived<Block[]>(JSON.parse(JSON.stringify(app.fragmentOf(blockId))));
+  /** まとまり（挿入したテンプレート）を選んだときは、その中身を保存する */
+  const group = $derived(picked.length === 1 && picked[0].kind === 'group' ? picked[0] : null);
+  const fragment = $derived<Block[]>(group ? (group.children ?? []) : picked);
   const usage = $derived(analyze(fragment, comps));
   const head = $derived(fragment[0]);
 
@@ -32,11 +35,12 @@
 
   // 初期値：見出し文を名前に、変数定義は「入力」、計算結果は「公開」
   $effect.pre(() => {
-    if (!name) name = String(head?.props.text ?? head?.props.caption ?? comps[head?.kind ?? '']?.label ?? '');
+    if (!name) name = String(group?.props.title ?? head?.props.text ?? head?.props.caption ?? comps[head?.kind ?? '']?.label ?? '');
+    const exported = (group?.props.exports ?? []) as string[];
     for (const n of usage.defined) {
       if (roles[n]) continue;
       const b = defBlock(n);
-      roles[n] = b?.kind === 'vdef' ? 'input' : 'export';
+      roles[n] = group ? (exported.includes(n) ? 'export' : b?.kind === 'vdef' ? 'input' : 'internal') : b?.kind === 'vdef' ? 'input' : 'export';
       labels[n] = String(b?.props.desc ?? '');
     }
     for (const n of usage.external) if (labels[n] === undefined) labels[n] = app.result?.vars.find((v) => v.name === n)?.desc ?? '';
@@ -97,7 +101,7 @@
       <label>分類<input type="text" bind:value={category} placeholder="例: 断面、荷重、照査" /></label>
     </div>
     <label>説明<textarea rows="2" bind:value={description}></textarea></label>
-    <div class="small muted">保存する部品：{fragment.length} 個（{head?.kind === 'heading' ? '見出しと配下の節' : comps[head?.kind ?? '']?.label}）</div>
+    <div class="small muted">保存する部品：{fragment.length} 個（{group ? `テンプレート「${group.props.title}」の中身` : head?.kind === 'heading' ? '見出しと配下の節' : comps[head?.kind ?? '']?.label}）</div>
 
     <h4>変数</h4>
     <p class="small muted">

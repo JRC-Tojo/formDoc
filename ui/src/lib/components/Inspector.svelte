@@ -28,6 +28,13 @@
       {/if}
       {#if def.help}<p class="small muted">{def.help}</p>{/if}
       {#each general as i}<div class="msg small {i.severity}">{i.message}</div>{/each}
+      {#if block.kind === 'group'}
+        <p class="small">中の部品 {block.children?.length ?? 0} 個。中の変数はこのまとまりの中だけで使え、「公開する変数」だけが後ろの部品から使えます。</p>
+        <div class="gops">
+          <button class="small" onclick={() => (app.collapsed[block.id] = !app.collapsed[block.id])}>{app.collapsed[block.id] ? '一覧で開く' : '一覧で折りたたむ'}</button>
+          <button class="small" onclick={() => app.ungroup(block.id)}>まとまりを解除</button>
+        </div>
+      {/if}
       {#if block.kind === 'fig-shapes'}
         <button class="primary draw" onclick={() => (app.dialog = { kind: 'shapes', blockId: block.id })}>✎ 図を描く…</button>
       {/if}
@@ -83,6 +90,7 @@
   .summary.error { background: var(--error-weak); color: var(--error); }
   p { margin: 6px 0 0; }
   .draw { margin-top: 8px; }
+  .gops { display: flex; gap: 6px; margin-top: 6px; }
   .start { padding: 8px 10px; background: var(--accent-weak); border-radius: 4px; }
   .styles { margin-bottom: 14px; display: flex; flex-direction: column; gap: 4px; }
   .lbl { font-weight: 600; font-size: 12px; }

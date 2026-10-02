@@ -48,8 +48,9 @@ function lex(s: string): Tok[] | null {
 
 /** 式を評価する。読めない・未定義の変数があるときは null */
 export function evalExpr(src: string, scope: (name: string) => number | undefined): number | null {
-  const toks = lex(src);
-  if (!toks || !toks.length) return null;
+  const lexed = lex(src);
+  if (!lexed || !lexed.length) return null;
+  const toks: Tok[] = lexed;
   let p = 0;
   const peek = () => toks[p];
   const fail = () => {
