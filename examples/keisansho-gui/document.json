@@ -1,0 +1,497 @@
+{
+ "schema_version": 1,
+ "library": "0.1.0",
+ "template": "keisansho",
+ "meta": {
+  "title": "主桁の設計計算書",
+  "project": "〇〇駅ホーム改良設計",
+  "author": "設計8U",
+  "date": "2026-10-02",
+  "chapter_start": 4,
+  "cover": true
+ },
+ "blocks": [
+  {
+   "id": "b1",
+   "kind": "heading",
+   "props": {
+    "level": 1,
+    "text": "主桁の設計"
+   }
+  },
+  {
+   "id": "b2",
+   "kind": "heading",
+   "props": {
+    "level": 2,
+    "text": "作用"
+   }
+  },
+  {
+   "id": "b3",
+   "kind": "heading",
+   "props": {
+    "level": 3,
+    "text": "死荷重",
+    "symbol": "D",
+    "kijun": {
+     "abbr": "鋼標準",
+     "loc": "第Ⅰ編 4.4.2"
+    }
+   }
+  },
+  {
+   "id": "b4",
+   "kind": "sum",
+   "props": {
+    "name": "W_d",
+    "unit": "kN/m",
+    "desc": "死荷重の合計",
+    "items": [
+     {
+      "label": "軌道",
+      "name": "w_rail",
+      "expr": "4.50 / 2"
+     },
+     {
+      "label": "脱線防止ガード",
+      "name": "w_guard",
+      "expr": "0.50 / 2"
+     },
+     {
+      "label": "鋼重",
+      "name": "w_steel",
+      "expr": "1.81 * 1.58"
+     },
+     {
+      "label": "防塵板",
+      "name": "w_dust",
+      "expr": "0.006 * 77.0 * 1.2 * 1.5 / 2"
+     },
+     {
+      "label": "歩行板",
+      "name": "w_walk",
+      "expr": "0.2 / 2"
+     }
+    ]
+   }
+  },
+  {
+   "id": "b5",
+   "kind": "heading",
+   "props": {
+    "level": 3,
+    "text": "衝撃荷重",
+    "symbol": "I",
+    "kijun": {
+     "abbr": "鋼標準",
+     "loc": "第Ⅰ編 4.4.4"
+    }
+   }
+  },
+  {
+   "id": "b6",
+   "kind": "vdef",
+   "props": {
+    "name": "V",
+    "value": 110,
+    "unit": "km/h",
+    "desc": "当該区間を走行する列車の最高速度",
+    "show": false
+   }
+  },
+  {
+   "id": "b7",
+   "kind": "vdef",
+   "props": {
+    "name": "L_b",
+    "value": 8.0,
+    "unit": "m",
+    "desc": "部材に最大活荷重断面力を生じさせる同符号の影響線の基線の長さ",
+    "show": false
+   }
+  },
+  {
+   "id": "b8",
+   "kind": "vdef",
+   "props": {
+    "name": "K_a",
+    "value": 2.0,
+    "digits": 1,
+    "desc": "係数で，在来鉄道では 2.0",
+    "show": false
+   }
+  },
+  {
+   "id": "b9",
+   "kind": "paragraph",
+   "props": {
+    "text": "設計最高速度は{{V}}であり，曲げモーメントに対して以下により算出する．"
+   }
+  },
+  {
+   "id": "b10",
+   "kind": "calc",
+   "props": {
+    "name": "n_e",
+    "expr": "70 * L_b^(-0.8)",
+    "unit": "Hz",
+    "desc": "載荷時の部材の基本固有振動数"
+   }
+  },
+  {
+   "id": "b11",
+   "kind": "calc",
+   "props": {
+    "name": "i",
+    "expr": "K_a * V / (7.2 * n_e * L_b) + 10 / (65 + L_b)",
+    "digits": 3,
+    "desc": "設計衝撃係数"
+   }
+  },
+  {
+   "id": "b12",
+   "kind": "check",
+   "props": {
+    "expr": "i <= 0.7"
+   }
+  },
+  {
+   "id": "b13",
+   "kind": "where",
+   "props": {
+    "vars": [
+     "i",
+     "K_a",
+     "V",
+     "L_b",
+     "n_e"
+    ]
+   }
+  },
+  {
+   "id": "b14",
+   "kind": "heading",
+   "props": {
+    "level": 2,
+    "text": "耐荷性の照査"
+   }
+  },
+  {
+   "id": "b15",
+   "kind": "heading",
+   "props": {
+    "level": 3,
+    "text": "断面諸量"
+   }
+  },
+  {
+   "id": "b16",
+   "kind": "vdef",
+   "props": {
+    "name": "H",
+    "value": 700,
+    "unit": "mm",
+    "desc": "桁高",
+    "show": false
+   }
+  },
+  {
+   "id": "b17",
+   "kind": "vdef",
+   "props": {
+    "name": "B",
+    "value": 350,
+    "unit": "mm",
+    "desc": "フランジ幅",
+    "show": false
+   }
+  },
+  {
+   "id": "b18",
+   "kind": "vdef",
+   "props": {
+    "name": "t_w",
+    "value": 12,
+    "unit": "mm",
+    "desc": "腹板厚",
+    "show": false
+   }
+  },
+  {
+   "id": "b19",
+   "kind": "vdef",
+   "props": {
+    "name": "t_f",
+    "value": 22,
+    "unit": "mm",
+    "desc": "フランジ厚",
+    "show": false
+   }
+  },
+  {
+   "id": "b20",
+   "kind": "fig-isection",
+   "props": {
+    "H": "H",
+    "B": "B",
+    "tw": "t_w",
+    "tf": "t_f",
+    "note": "H−{{H}}×{{B}}×{{t_w}}×{{t_f}}（SM400）"
+   }
+  },
+  {
+   "id": "b21",
+   "kind": "heading",
+   "props": {
+    "level": 3,
+    "text": "板要素の耐荷性の照査"
+   }
+  },
+  {
+   "id": "b22",
+   "kind": "kijun",
+   "props": {
+    "prefix": "軸圧縮力を受ける板要素の照査（片縁支持板）",
+    "kijun": {
+     "abbr": "鋼標準",
+     "loc": "第Ⅱ編 2.2.3.2"
+    }
+   }
+  },
+  {
+   "id": "b23",
+   "kind": "vdef",
+   "props": {
+    "name": "R_cr",
+    "value": 0.7,
+    "digits": 1,
+    "desc": "限界座屈パラメーター",
+    "show": false
+   }
+  },
+  {
+   "id": "b24",
+   "kind": "vdef",
+   "props": {
+    "name": "k_0",
+    "value": 0.425,
+    "digits": 3,
+    "desc": "座屈係数",
+    "show": false
+   }
+  },
+  {
+   "id": "b25",
+   "kind": "vdef",
+   "props": {
+    "name": "E",
+    "value": 200000,
+    "unit": "N/mm2",
+    "digits": 0,
+    "desc": "鋼材のヤング係数",
+    "show": false
+   }
+  },
+  {
+   "id": "b26",
+   "kind": "vdef",
+   "props": {
+    "name": "nu",
+    "value": 0.3,
+    "digits": 1,
+    "desc": "鋼材のポアソン比",
+    "show": false
+   }
+  },
+  {
+   "id": "b27",
+   "kind": "vdef",
+   "props": {
+    "name": "f_syk",
+    "value": 235,
+    "unit": "N/mm2",
+    "digits": 0,
+    "desc": "鋼材の降伏強度の特性値",
+    "show": false
+   }
+  },
+  {
+   "id": "b28",
+   "kind": "calc",
+   "props": {
+    "name": "bt_0",
+    "expr": "R_cr * sqrt(pi^2 * k_0 / (12 * (1 - nu^2)) * E / f_syk)",
+    "digits": 1,
+    "display": "(b/t)_0"
+   }
+  },
+  {
+   "id": "b29",
+   "kind": "vdef",
+   "props": {
+    "name": "b_f",
+    "value": 169,
+    "unit": "mm",
+    "desc": "突出幅",
+    "show": false
+   }
+  },
+  {
+   "id": "b30",
+   "kind": "check",
+   "props": {
+    "expr": "b_f / t_f <= bt_0",
+    "digits": 1,
+    "lhs": "(b/t)"
+   }
+  },
+  {
+   "id": "b31",
+   "kind": "where",
+   "props": {
+    "vars": [
+     "R_cr",
+     "k_0",
+     "E",
+     "nu",
+     "f_syk"
+    ]
+   }
+  },
+  {
+   "id": "b32",
+   "kind": "heading",
+   "props": {
+    "level": 3,
+    "text": "影響線"
+   }
+  },
+  {
+   "id": "b33",
+   "kind": "fig-beam",
+   "props": {
+    "span": "L_b",
+    "loads": "3.0, 5.8",
+    "eta": "0.625, 0.275",
+    "caption": "c点の影響線"
+   }
+  },
+  {
+   "id": "b34",
+   "kind": "table",
+   "props": {
+    "caption": "反力のまとめ",
+    "data": {
+     "header_rows": 1,
+     "rows": [
+      [
+       {
+        "text": "設計作用"
+       },
+       {
+        "text": "記号"
+       },
+       {
+        "text": "鉛直反力 (kN)"
+       },
+       {
+        "text": "水平反力 (kN)"
+       }
+      ],
+      [
+       {
+        "text": "死荷重"
+       },
+       {
+        "text": "D"
+       },
+       {
+        "text": "23.52"
+       },
+       {
+        "text": "—"
+       }
+      ],
+      [
+       {
+        "text": "死荷重（集計）"
+       },
+       {
+        "text": "W_d"
+       },
+       {
+        "text": "{{W_d}}"
+       },
+       {
+        "text": "—"
+       }
+      ],
+      [
+       {
+        "text": "風荷重",
+        "rowspan": 2,
+        "vertical": true
+       },
+       {
+        "text": "W1"
+       },
+       {
+        "text": "43.40"
+       },
+       {
+        "text": "13.98"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "W2"
+       },
+       {
+        "text": "4.48"
+       },
+       {
+        "text": "6.36"
+       }
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "id": "b35",
+   "kind": "fig-shapes",
+   "props": {
+    "caption": "汎用図形の例",
+    "scale": 1.0,
+    "shapes": [
+     {
+      "kind": "rect",
+      "x1": "0",
+      "y1": "0",
+      "x2": "L_b / 2",
+      "y2": "1"
+     },
+     {
+      "kind": "dim",
+      "x1": "0",
+      "y1": "1.4",
+      "x2": "L_b / 2",
+      "y2": "1.4",
+      "label": "{{L_b}}/2"
+     },
+     {
+      "kind": "circle",
+      "x1": "5",
+      "y1": "0.5",
+      "x2": "0.4"
+     }
+    ]
+   }
+  }
+ ],
+ "assets": []
+}
