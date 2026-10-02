@@ -3,51 +3,64 @@
 別セッションで実装を再開するための作業一覧。各項目に「目的・設計・触るファイル・手順・完了条件」を書いてある。
 全体像は [README.md](README.md)、当初の計画は `C:\Users\tojo\.claude\plans\code-artifact-rust-svelte-wraped-by-buzzing-dongarra.md` を参照。
 
+> **このファイルの決まり**
+> - ここに載せるのは**未完了の作業だけ**。実装と確認が終わった項目（または項目内の一部）は**削除する**（「【済】」の印は付けない。経緯は Git の履歴とコミットメッセージで追う）。
+> - 項目の番号は固定。削除した番号は再利用しない（他の項目から「TODO 3」のように参照しているため）。
+> - 実装したが実機で確認していないものは、TODO 1（実機確認）の手順に残す。
+
 ---
 
 ## 0. 再開時に最初に読むこと
 
 ### 前提と決定事項（変更しない）
-- 目的は「誰が作っても同じフォーマット・同じ内容になる」文書作成。体裁はテンプレートで固定し、執筆者には触らせない。
-- 執筆者／コンポーネント作成者は**役割上の区別にすぎない**。同一人物が兼ねる前提なので、ユーザー管理・権限管理は作らない。
+- 目的は「誰が作っても同じフォーマット・同じ内容になる」文書作成。体裁はスタイルで固定し、執筆者には触らせない。
+- 執筆者／部品・スタイルの作成者は**役割上の区別にすぎない**。同一人物が兼ねる前提なので、ユーザー管理・権限管理・モード切替は作らない。
 - 構成は Rust + Svelte 5（Tauri 2）。**同じソースから Web版とデスクトップ版を出力**する。片方でしか使えない機能は能力フラグ（`ui/src/lib/platform/capabilities.ts`）で宣言し、UIでは `<Gate cap="…">` で包んで無効表示にする。
-- コードモードは**生のTypst**で書く。エディタは自作しない。デスクトップ版は「VSCodeで開く」と保存の監視で対応する。Web版は既製の CodeMirror を最小構成で使う。
-- 試作で完全対応する文書は**計算書**（`samples/計算書サンプル.pdf`）。要領書・作業計画書は後から型（テンプレート）と部品を足して対応する。
+- **文書は1つ**。「部品で作成」と「コードで作成（Typst）」は同じ文書の見え方の違い。コードは部品ごとの目印（`// @block ID`、まとまりは `// @group ID 名前`〜`// @end ID`）つきで表示し、書き換えた部品は Typstコード部品になる。エディタは自作しない（CodeMirror と「VSCodeで開く」）。
+- **スタイル**＝1つの Typst ファイル（`info` 辞書＋`style` 関数）。同梱は `library/styles/`、利用者のものはシステムフォルダ（`%APPDATA%\formDoc\styles`）。保存ファイル（.fdoc）にソースを同梱する。
+- **テンプレート**＝部品の並びの保存（`.fdtpl`）。挿入すると1つのまとまり（`group`）になる。変数の「入力／公開／内部」は保存時に決める。
+- **変数の有効範囲**：定義した見出しの節・テンプレートのまとまりの中だけ（「グローバル変数として定義」なら文書全体）。この位置から使える変数と同じ名前は定義できない。
+- 試作で完全対応する文書は**計算書**（`samples/計算書サンプル.pdf`）。要領書・作業計画書は後からスタイルと部品を足して対応する。
+- 開発中のため**後方互換は考えない**（古い部品・古い保存形式の読み込みは残さない）。
 - `samples/` のPDFはすべて画像PDF（テキスト層なし）。中身を見るときは PyMuPDF でPNGにして読む（`pymupdf` はインストール済み）。
 
 ### アーキテクチャの要点
 | 層 | 場所 | 役割 |
 |---|---|---|
 | 式エンジン | `crates/formdoc-expr` | 構文解析・評価・四捨五入（half-up）・Typst数式生成。**計算と数式表記はここだけで行う** |
-| Typstプラグイン | `crates/formdoc-typst-plugin` → `library/typst/formdoc/0.1.0/formdoc_expr.wasm` | 同じ式エンジンをコードモードから使う。式エンジンを変更したら `bash scripts/build-plugin.sh` |
-| 社内標準パッケージ | `library/typst/formdoc/0.1.0/` | `@local/formdoc`。スタイル（`keisansho`）と部品の描画関数。GUIの生成コードもコードモードもこれを呼ぶ |
+| Typstプラグイン | `crates/formdoc-typst-plugin` → `library/typst/formdoc/0.1.0/formdoc_expr.wasm` | 同じ式エンジンを Typst から使う。式エンジンを変更したら `bash scripts/build-plugin.sh` |
+| 社内標準パッケージ | `library/typst/formdoc/0.1.0/` | `@local/formdoc`。部品の描画関数（計算行・照査・表・図形）。体裁はスタイルが持つ |
+| スタイル | `library/styles/*.typ` | `info`（入力欄・使える部品・骨組み・単位別の桁・Lint）と `style` 関数。`template.rs` が Typst で評価して `info` を読む |
+| 同梱テンプレート | `library/snippets/*.fdtpl` | I形断面、単純梁と集中荷重（影響線つき） |
 | 埋め込み | `crates/formdoc-library` | `library/` 一式を `include_dir` でバイナリに埋め込む（`build.rs` で変更を検知） |
-| コア | `crates/formdoc-core` | `world.rs`（Typst World）、`evaluate.rs`（上から順に評価）、`codegen.rs`（GUI文書→Typst）、`lint.rs`、`api.rs`（`Session`。Web/デスクトップ共通の窓口） |
+| コア | `crates/formdoc-core` | `world.rs`（Typst World）、`evaluate.rs`（上から順に評価・変数の有効範囲）、`codegen.rs`（文書→Typst）、`code.rs`（コードの編集を文書に戻す）、`lint.rs`、`api.rs`（`Session`。Web/デスクトップ共通の窓口） |
 | Web版 | `crates/formdoc-wasm` + `ui/src/lib/engine/worker.ts` | Web Worker 内で wasm を実行 |
-| デスクトップ版 | `ui/src-tauri` | `formdoc-core::api` を呼ぶ Tauri コマンドと、デスクトップ専用機能（ファイル・監視・VSCode） |
-| UI | `ui/src` | `state.svelte.ts`（状態）、`lib/components/*`、`lib/fields/*`（部品定義から自動生成するフォーム） |
+| デスクトップ版 | `ui/src-tauri` | `formdoc-core::api` を呼ぶ Tauri コマンドと、デスクトップ専用機能（ファイル・監視・VSCode・システムフォルダ） |
+| UI | `ui/src` | `state.svelte.ts`（状態）、`tree.ts`（部品の木・変数が使える範囲）、`vars.ts`（変数の解析・名前の付け替え）、`expr.ts`（図形エディタ用の表示だけの式評価）、`lib/components/*`、`lib/fields/*` |
 
-- 変数は「使う前に定義する」規則にしている。依存関係は文書の並び順そのもので、循環参照は起こらない。入力のたびに文書全体を再評価する。
-- GUIの生成コードでは、変数は Typst 上で `v-名前` の識別子になる。
+- 変数は「使う前に定義する」規則。依存関係は文書の並び順そのもので、循環参照は起こらない。入力のたびに文書全体を再評価する。
+- 生成コードでは、変数は Typst 上で `v-名前` の識別子になる。Typstコード部品の中の `vdef("名前", 値, …)` / `vcalc("名前", "式", …)` も変数として読む（コードで書き換えても後ろの計算が続くように）。
+- 汎用図形の座標・繰り返し・文字は `evaluate.rs` で評価し（`BlockResult.shapes`）、コード生成はその値を使う。
 - プレビューはページ単位のSVG。ページのハッシュを送り合い、変更のないページは再送しない。
 
-### よく使うコマンド
+### よく使うコマンド（ビルドはメモリに注意。下の「この環境での注意」）
 ```bash
-cargo test -p formdoc-expr -p formdoc-core          # 単体・結合テスト（現在 19件）
-bash scripts/build-plugin.sh                         # 式エンジン変更時
-cargo run -p formdoc-cli -- gui examples/keisansho-gui/document.json out.pdf --typst out.typ
-cargo run -p formdoc-cli -- compile examples/keisansho-code out.pdf
-cd ui && npm run build:wasm && npm run dev           # Web版（http://localhost:5173）
+CARGO_BUILD_JOBS=1 cargo test -j 1 -p formdoc-core   # 結合テスト（現在 14件）＋単体
+bash scripts/build-plugin.sh                          # 式エンジン変更時
+cargo run -j 1 -p formdoc-cli -- gui examples/keisansho-gui/document.json out.pdf --typst out.typ
+cargo run -j 1 -p formdoc-cli -- compile examples/keisansho-code out.pdf
+cd ui && npm run build:wasm && npm run dev            # Web版（http://localhost:5173）
 cd ui && npx svelte-check --tsconfig ./tsconfig.json
-cd ui && npm run tauri dev                           # デスクトップ版
+cd ui && npm run tauri dev                            # デスクトップ版
 ```
 
 ### この環境での注意
-- **セッションが途中で切れることがある。** 長いビルド（wasm の release ビルドは約10分、wasm-dev は約5分）は、PowerShell の `Start-Process cmd /C "...  > target\xxx.log"` で独立プロセスとして起動し、ログで結果を確認する。`run_in_background` で起動したプロセスはセッション終了時に止まる。
-- ブラウザの自動テスト：Playwright の `launch` だと Chrome/Edge がすぐ落ちる。`chrome.exe --headless=new --remote-debugging-port=9222 --user-data-dir=<tmp>` で起動し、`chromium.connectOverCDP` で接続すれば動く。前回使ったスクリプトは作業用ディレクトリにあり、消えている可能性がある（→ TODO 13 で常設化する）。
-- デスクトップ版（WebView2）は `WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS=--remote-debugging-port=…` を付けてもデバッグポートが開かなかった（社内ポリシーと思われる）。操作確認は人手か画面キャプチャで行う。
+- **ビルドでメモリを使いすぎるとPCが落ちる。** cargo は `-j 1`（軽いときでも `-j 2`）、ビルド・テストは**同時に1本だけ**。release / LTO ビルドは必要なときだけ。
+- **セッションが途中で切れることがある。** 長いビルドは PowerShell の `Start-Process cmd /C "...  > target\xxx.log"` で独立プロセスとして起動し、ログで結果を確認する。こまめにコミットする。
+- `npm run build:wasm`（`scripts/build-plugin.sh` を呼ぶ）を cmd から起動すると `bash` が WSL を指して失敗する。Git Bash（`C:\Program Files\Git\usr\bin\bash.exe -lc "..."`）から起動する。
+- ブラウザの自動テスト：Playwright の `launch` だと Chrome/Edge がすぐ落ちる。`chrome.exe --headless=new --remote-debugging-port=9222 --user-data-dir=<tmp>` で起動し、`chromium.connectOverCDP` で接続、`browser.newContext()` でまっさらな保存領域にする。スクリプトは `ui/tests/e2e/`。
+- デスクトップ版（WebView2）は CDP のデバッグポートが開かない（社内ポリシーと思われる）。操作確認は人手か画面キャプチャで行う。
 - 開発ビルドでは `globalThis.__formdoc` に状態（`app`）が公開されている（`state.svelte.ts` の末尾）。自動テスト専用。
-- リポジトリはまだ Git 管理になっていない（→ TODO 14）。
 
 ---
 
@@ -55,103 +68,37 @@ cd ui && npm run tauri dev                           # デスクトップ版
 
 | 優先 | 項目 |
 |---|---|
-| 高 | 1 デスクトップ版の実地確認 / 2 wasm の軽量化 / 3 章構成の必須チェック / 14 Git化 |
-| 中 | 4 テンプレート開発モード / 5 部品の計算ロジック（Rhai） / 6 単位の次元チェック / 7 要領書の型 / 8 作業計画書の型 / 9 定型文ライブラリ |
+| 高 | 1 デスクトップ版の実機確認 / 2 wasm の軽量化 / 3 章構成の必須チェック |
+| 中 | 5 部品の計算ロジック（Rhai） / 6 単位の次元チェック / 7 要領書のスタイル / 8 作業計画書のスタイル / 9 定型文ライブラリ |
 | 中 | 10 表・荷重組合せの計算部品 / 11 ライブラリ版管理と共有フォルダ参照 / 12 UIの改善 / 13 自動テストの常設化 |
 | 低 | 15 細かな既知の不具合・整理 |
-| **最優先** | **16 試用レビュー（2026-10-02）の指摘対応**（下記。進捗は各項目の【済】で管理） |
 
 ---
 
-## 16. 試用レビュー（2026-10-02）の指摘対応【最優先】
+## 1. デスクトップ版の実機確認【高】
 
-ユーザーが試用して出した指摘への対応。**ビルドはメモリ不足でPCが落ちるため `CARGO_BUILD_JOBS=2`（重ければ1）で、同時に1本だけ実行する。**
-
-### 共通の土台：システムフォルダ
-- デスクトップ：`%APPDATA%\formDoc\`（`settings.json`、`styles/*.typ`、`templates/*.fdtpl`、`projects/`（VSCode用の作業フォルダ））。起動時に無ければ作り、同梱スタイルを**無いものだけ**コピーする（利用者の編集を上書きしない）。同梱テンプレートはコピーせず、一覧に「同梱」として並べる。
-- Web：設定は localStorage、スタイル・テンプレートは IndexedDB。フォルダ読込は `<input webkitdirectory>`（その場限り）。
-- `Platform.system`（`ui/src/lib/platform/types.ts`）に集約する。
-
-### 16.1 スタイル設定（1スタイル＝1 Typst ファイル）【実装済・実地確認待ち】
-- 旧 `library/templates/<id>/template.toml` ＋ パッケージ内 `keisansho.typ` を、**`library/styles/<id>.typ` 1ファイル**に統合する。ファイル内に
-  - `#let info = (id, name, description, max-heading-level, rounding, blocks, fields, skeleton, digits, lint)` … 型の規則と**表紙・文書情報の入力欄（fields）**
-  - `#let style(<fields のキー>: …, doc) = …` … 体裁
-- Rust は `#import "/style.typ": info` → `#metadata(info) <fd-style-info>` を組版し、イントロスペクタから取り出して `Template` に変換する（ハッシュでキャッシュ）。Typst の値が唯一の定義元。
-- 生成コード：`#import "style.typ": style` ＋ `#show: style.with(title: …, …)`。date 型の欄は `datetime(...)` で渡し、PDFの作成日時にも使う。
-- 文書（`Document.meta`）は**キー自由の辞書**にする（旧 `chapter_start` は `chapter-start` に読み替え）。
-- 保存ファイル（.fdoc）にスタイルの**ソースを同梱**する（同じ文書なら同じPDF）。開いたときシステムフォルダの同名スタイルと違えば知らせ、同梱版で組版する。
-- 新規作成：文書情報画面でスタイルを選ぶ → 欄が出る・骨組み（skeleton）が入る → 執筆開始。後から変えると欄の値は同じキーだけ引き継ぐ。
-- コードモード：プロジェクトに `style.typ` を置き、`main.typ` から import する。
-
-### 16.2 部品の追加ダイアログ＋テンプレート【実装済・実地確認待ち】
-- 「＋部品を追加」をダイアログに（左：分類（部品／テンプレート・フォルダ別）、中央：一覧＋検索、右：説明）。
-- テンプレート＝ブロック列の断片＋**変数インターフェース**。ファイルは `.fdtpl`（JSON：`format:"formdoc-template"`, name, description, category, blocks, interface{inputs, exports}, assets）。
-  - 入力（inputs）：断片内で参照しているが定義していない変数（必須）と、断片内の変数定義のうち「入力」に指定したもの（既定値つき）。
-  - 公開（exports）：断片内で定義し、外から使える変数。挿入時に名前を変えられる。
-  - 内部変数：挿入先と名前が衝突したら自動で `_2` などに付け替える（利用者は意識しない）。
-  - 挿入時は入力ごとに「既存の変数を使う／値を入れる」を選ぶだけ。名前の付け替えは式・`{{}}`・記号説明・図形座標・表・Typstコード（`v-名前`）すべてに一括適用（`ui/src/lib/vars.ts`）。
-- 保存：部品を右クリック →「テンプレートとして保存」（見出しなら配下の節ごと）。保存先は「このPC（システムフォルダ）」または「公開フォルダ（指定）」。読込フォルダは設定に登録し、ダイアログから追加できる。
-- **TODO 4（テンプレート開発モード）はこれで置き換え**、モード切替は作らない。
-
-### 16.3 右クリックメニュー【実装済・実地確認待ち】
-- 指摘の「その他のツール ＞ 共有」は **WebView2（Edge）標準の右クリックメニュー**で、アプリの機能ではない。入力欄以外では標準メニューを止め、独自メニュー（この下に追加／複製／上へ／下へ／テンプレートとして保存／削除）を出す。
-
-### 16.4 未保存時の終了防止・.fdoc の関連付け【実装済・実地確認待ち】
-- デスクトップ：`onCloseRequested` で確認。Web：`beforeunload`。
-- `tauri.conf.json` の `bundle.fileAssociations` に `.fdoc`。起動引数のパスを `startup_file` コマンドで返し、起動時に開く。
-
-### 16.5 印刷は文書だけ【実装済・実地確認待ち】
-- 印刷ボタン＋Ctrl+P。`@media print` でプレビューのページ（SVG）だけを A4 で出す。エラーがあるときは PDF と同じく不可。
-
-### 16.6 図形を描きながら作る【実装済・実地確認待ち】
-- 汎用図形に描画エディタ（ダイアログ）。道具：選択／線／矢印／矩形／円／多角形／寸法線／文字。グリッドに吸着、ドラッグで移動・端点編集、数値は表でも編集可。
-- 座標が変数式の点はロック表示（評価値で描く。評価値は `BlockResult.shapes` で返す）。
-- 図形の種類に `arrow` / `polygon`、属性に `fill` を追加。
-
-### 16.7 「単純梁と荷重」「I型断面」はテンプレートへ【実装済・実地確認待ち】
-- 汎用図形＋変数インターフェースで同梱テンプレート化（`library/snippets/*.fdtpl`）。旧部品は `deprecated` として追加一覧から隠す（既存文書はそのまま動く）。
-- 荷重の**個数が変わる**図（繰り返し）は図形だけでは表せない → 要相談（案：図形に「繰り返し」行を設ける）。
-
-### 16.8 VSCode で開く【実装済・実地確認待ち】
-- フォルダ未選択なら、システムフォルダの `projects/<表題>/` に main.typ・style.typ を作って開く（フォルダ選択ダイアログは出さない）。
-
-### 実地確認の手順（16 全体）
-1. デスクトップ版を起動 → 文書情報にスタイル「計算書」が出る → 選ぶと骨組み3章と表紙の欄が出る。
-2. 「＋部品を追加…」→ ダイアログ。「テンプレート：同梱」の「I形断面」を挿入 → 寸法を入れる画面 → 挿入で図と A が出る。もう一度挿入すると内部の変数が `_2` 付きになり、エラーにならない。
-3. 見出しを右クリック →「テンプレートとして保存…」→ このPC に保存 → ダイアログの「テンプレート：このPC」に出る。
-4. 汎用図形を追加 → 図形エディタで線・矩形・多角形を描く → OK → プレビューに出る。I形断面の図を開くと、式の点はロック表示。
-5. 変更後にウィンドウを閉じる → 確認が出る。Ctrl+P → 文書のページだけ印刷プレビューに出る。
-6. 「VSCodeで開く」（フォルダ未選択）→ `%APPDATA%\formDoc\projects\<表題>_<日付>` が作られて VSCode が開く。
-7. 設定 → ダーク・文字の大きさ・最近使ったファイルの件数が効き、再起動後も残る。
-8. インストーラー（`npm run tauri build`）でインストールし、.fdoc をダブルクリック → その文書で起動する。
-
-### 16.9 最近使ったファイル／16.10 システム設定【実装済・実地確認待ち】
-- 設定：テーマ（OS に合わせる／ライト／ダーク）、文字の大きさ、最近使ったファイルの件数、テンプレートの読込フォルダ・公開先。
-- 「開く▾」に最近使ったファイル（デスクトップのみ。Web はパスで開き直せないため無効表示）。
-
----
-
-## 1. デスクトップ版の実地確認【高】
-
-**目的**: デスクトップ専用機能を、画面から実際に操作して確認する（前回は自動操作できず、起動と再組版しか確認していない）。
+**目的**: デスクトップ専用機能と、Web版でしか確認していない機能を、デスクトップ版の画面で実際に操作して確認する。
 
 **確認手順**（`cd ui && npm run tauri dev`）
-1. 「開く…」で `examples/keisansho-gui/document.json` を開く → 3ページ、エラー0件になること。
-2. 「名前を付けて保存…」で `.fdoc` を保存し、閉じて「開く…」で開き直す → 内容と添付画像が戻ること。
-3. 「保存」（Ctrl+S）で、2回目以降はダイアログなしで同じパスに上書きされること。
-4. 「PDF出力」→ 保存ダイアログ → PDFが開けること。CLI `formdoc gui` の出力と SHA-256 が一致すること。
-5. 画像部品で PNG / SVG / PDF を選ぶ → プレビューに出ること。PDF の「PDFのページ」欄が効くこと。
-6. 「コードで作成」→「フォルダを開く…」で空のフォルダを選ぶ → `main.typ` が作られ、監視中と表示されること。
-7. 「VSCodeで開く」→ VSCode が開くこと。`main.typ` を編集・保存 → 1秒以内にプレビューが更新されること。
-8. `code` コマンドが PATH にない環境では、エクスプローラーが開いてエラーメッセージが出ること。
-9. 構文エラーを入れて保存 → 下部に `/main.typ:行番号` 付きの診断が出ること。
+1. 文書情報にスタイル「計算書」が出る → 選ぶと骨組み3章と表紙の欄が出る。
+2. 「開く…」で `examples/keisansho-gui/document.json` を開く → 3ページ、エラー0件。
+3. 「名前を付けて保存…」で `.fdoc` を保存し、開き直す → 内容・添付画像・スタイルが戻る。2回目以降の Ctrl+S はダイアログなしで上書き。
+4. 「PDF出力」→ CLI `formdoc gui` の出力と SHA-256 が一致する。
+5. 一覧でドラッグして並べ替えられる（見出しは節ごと動く。テンプレートのまとまりの中・外へも動かせる）。見出し・まとまりを折りたためる。
+6. 「＋部品を追加…」→「I形断面」を挿入 → 一覧に1つのまとまりとして出る。2回挿入してもエラーにならない。
+7. 部品を右クリック →「テンプレートとして保存…」→ このPC に保存 → 追加ダイアログの「テンプレート：このPC」に出る。
+8. 汎用図形の図形エディタ：描く・点を動かす・繰り返し（横の回数・間隔）が画面に出る。
+9. 変更後にウィンドウを閉じる → 確認が出る。Ctrl+P → 文書のページだけが、1ページ1枚で印刷プレビューに出る（ページ番号が次の用紙にはみ出さない）。
+10. 「コードで作成」→ 同じ文書が出る。値を書き換えると「部品で作成」に戻っても反映されている。
+11. 「VSCodeで開く」→ `%APPDATA%\formDoc\projects\<表題>_<日付>` が作られて VSCode が開く。VSCode で保存 → 文書に反映。VSCode が無い環境ではエクスプローラーが開いてメッセージが出る。
+12. 設定 → ダーク・文字の大きさ・最近使ったファイルの件数が効き、再起動後も残る。「開く▾」から最近使ったファイルを開ける。
+13. インストーラー（`npm run tauri build`、release ビルドで重い）でインストールし、.fdoc をダブルクリック → その文書で起動する。
 
 **直す可能性が高い箇所**
-- `ui/src-tauri/src/lib.rs` の `watch_project`：保存1回で複数イベントが来る。JS側で 150ms 間引いているが、VSCode の一時ファイル（`.main.typ.swp` など）で無駄な再組版が起きないか確認する。必要ならイベントのパスで `.typ`・画像に絞り込む。
-- `open_in_vscode`：`cmd /C code <folder> <main.typ>` は、パスに空白や日本語を含むと失敗するおそれがある。失敗したら `Command::new("cmd").raw_arg(...)` で引用符を付ける。
-- `update_document` / `update_project` は `Mutex<Session>` を握ったまま組版する。連打して固まらないか確認する。
+- `watch_project`：保存1回で複数イベントが来る。VSCode の一時ファイルで無駄な再組版が起きないか。必要ならイベントのパスを `main.typ` に絞る。
+- `update_document` は `Mutex<Session>` を握ったまま組版する。連続入力で詰まらないか。
 
-**完了条件**: 上の 1〜9 がすべて期待どおりに動くこと。結果は README の「能力フラグ」表の下に追記する。
+**完了条件**: 上の手順がすべて期待どおりに動くこと。動いたものはこの一覧から削除する。
 
 ---
 
@@ -184,7 +131,7 @@ cd ui && npm run tauri dev                           # デスクトップ版
 **背景**: ユーザーの「要件整理メモ.md」に、構造形式ごとに章の有無・順序・書き方がばらつき、一目で違いが分からないという指摘がある（設計概要／設計条件／検討箇所／作用の種類／荷重の組合せ／材料特性値／共通仕様／グルーピング／モデル化／施工計画）。現状の `[[skeleton]]` は新規作成時の骨組みにすぎず、後から消したり順番を入れ替えたりできてしまう。
 
 **設計**
-- `template.toml` に章定義を追加する。
+- スタイルの `info` に章定義（`chapters`）を追加する（下は TOML 風に書いた中身。実際は Typst の辞書）。
   ```toml
   [[chapters]]
   id = "gaiyou"            # 章の識別子（見出しブロックの props.chapter に保存）
@@ -195,7 +142,7 @@ cd ui && npm run tauri dev                           # デスクトップ版
   guide = "業務の目的、対象構造物、設計範囲を記載する"   # 執筆ガイド（GUIに表示）
   allowed-blocks = ["paragraph", "table", "image"]     # 省略時はテンプレート全体の blocks
   ```
-- 文書メタに `variant`（構造形式）を追加し、新規作成時に選ばせる。`skeleton` は `chapters` から生成する（`skeleton` は廃止）。
+- 文書メタに `variant`（構造形式）を追加し、新規作成時に選ばせる。`info.skeleton` は `chapters` から生成する（`skeleton` は廃止）。
 - `evaluate.rs` に章チェックを追加する。
   - 必須章がない → エラー（`code = "chapter-missing"`）
   - 章の順序がテンプレートと違う → エラー（`chapter-order`）
@@ -206,42 +153,15 @@ cd ui && npm run tauri dev                           # デスクトップ版
   - 章見出しを選ぶと、Inspector に `guide`（執筆ガイド）を表示する。
 - コードモード：`#chapter("gaiyou")` 関数を `@local/formdoc` に追加し、Typst 側でも順序をチェックする（`state` で直前の章を記録し、`assert` で順序違反を検出）。
 
-**触るファイル**: `library/templates/keisansho/template.toml`、`crates/formdoc-core/src/{template.rs,evaluate.rs,api.rs,model.rs}`、`ui/src/lib/components/{Outline.svelte,Inspector.svelte}`、`ui/src/lib/state.svelte.ts`、`library/typst/formdoc/0.1.0/src/keisansho.typ`
+**触るファイル**: `library/styles/keisansho.typ`、`crates/formdoc-core/src/{template.rs,evaluate.rs,api.rs,model.rs}`、`ui/src/lib/components/{Outline.svelte,Inspector.svelte}`、`ui/src/lib/state.svelte.ts`、`library/styles/keisansho.typ`
 
 **完了条件**: 必須章を消す・入れ替える・見出し文を変えるとそれぞれ検出されること（`tests/e2e.rs` に追加）。構造形式を切り替えると章構成が変わること。
 
 ---
 
-## 4. テンプレート開発モード（M7）【廃止 → 16.2 の「テンプレートとして保存」で置き換え】
-
-**目的**: 同じ人が「執筆」と「型・部品の作成」を切り替えられるようにする（ユーザー管理はしない。モード切替だけ）。
-
-**設計**
-- ツールバーに「テンプレート開発」トグルを追加する。オンにすると左ペインが「型・部品・Typstパッケージ」のファイルツリーになる。
-- 編集対象（すべて `library/` 配下のテキスト）
-  - `templates/<id>/template.toml`
-  - `components/components.toml`（部品定義）
-  - `typst/formdoc/<ver>/**/*.typ`（スタイル・描画関数）
-  - `typst/formdoc/<ver>/data/references.toml`（基準書レジストリ）
-- **ライブラリの上書きレイヤー**
-  - `FormdocWorld` と `template.rs` が `formdoc_library::get()` を直接呼んでいる箇所を、`LibrarySource` トレイト（`get(path) -> Option<Bytes>`、`files()`）経由に変える。
-  - `Session` に `set_library_overlay(files: Vec<(path, bytes)>)` を追加し、埋め込み版より上書きを優先して読む。
-  - 上書きがある間は、検証パネルと PDF に「開発中のライブラリ」と警告を出し、**PDF出力を禁止**する（正式版以外での出力を防ぐ）。
-- **テスト入力**：部品ごとにテスト用 props（`components/<id>.test.json`）を用意し、開発モードではその部品だけを描いた1ページを即時プレビューする。
-- **保存先**
-  - デスクトップ：ローカルの `library/` を直接編集し、変更を監視する（`watch_project` と同じ仕組み）。
-  - Web：IndexedDB に上書きを保存し、「ライブラリをZIPで書き出し」で配布物を作る。
-- **版の確定**：`typst.toml` の version と `template.toml` を上げ、`library/CHANGELOG.md` に変更内容を書く手順をUIで案内する（自動化は TODO 11）。
-
-**触るファイル**: `crates/formdoc-library/src/lib.rs`、`crates/formdoc-core/src/{world.rs,template.rs,api.rs}`、`crates/formdoc-wasm/src/lib.rs`、`ui/src-tauri/src/lib.rs`、`ui/src/lib/state.svelte.ts`、新規 `ui/src/lib/components/LibraryDev.svelte`
-
-**完了条件**: 開発モードで `keisansho.typ` の見出しの書式を変えるとプレビューに即時反映されること。モードを解除すると元に戻ること。上書き中はPDF出力ができないこと。
-
----
-
 ## 5. 部品の計算ロジック（Rhai）【中】
 
-**目的**: 当初要件 4.2 の「部品定義＝入力スキーマ＋計算ロジック＋Typstスニペット」のうち、計算ロジックをテンプレート側で追加できるようにする。例：荷重組合せの max/min、影響線縦距の自動計算、断面諸量（A, I, y_u, y_l）の算出。
+**目的**: 当初要件 4.2 の「部品定義＝入力スキーマ＋計算ロジック＋Typstスニペット」のうち、計算ロジックを部品定義の側で追加できるようにする。例：荷重組合せの max/min、影響線縦距の自動計算、断面諸量（A, I, y_u, y_l）の算出。
 
 **設計**
 - 部品定義に `logic = "components/<id>.rhai"` と `render = "<Typst関数名>"` を追加する。
@@ -281,7 +201,7 @@ cd ui && npm run tauri dev                           # デスクトップ版
 
 ---
 
-## 7. 要領書の型（youryousho）【中】
+## 7. 要領書のスタイル（youryousho）【中】
 
 **参照**: `samples/要領書サンプル.pdf`（30ページ）。以下の特徴を再現する。
 - 見出し：`3.3 構造細目` / `(1) 新設ホーム床版` / `1) 穴あきPC板・PPC板の細目`（§ は付かない。章は「3」）
@@ -295,22 +215,21 @@ cd ui && npm run tauri dev                           # デスクトップ版
 - ページ番号：下部中央（計算書は上部中央）
 
 **作業**
-1. `library/typst/formdoc/0.1.0/src/youryousho.typ` を作り、`lib.typ` から公開する（書体・見出し・図表番号・数式番号・脚注・ページ番号）。
-2. `library/templates/youryousho/template.toml` を作る（`show = "youryousho"`、章構成は TODO 3 の形式で）。
+1. `library/styles/youryousho.typ`（1ファイル）を作る。`info`（入力欄・部品・Lint・章構成は TODO 3 の形式）と `style`（書体・見出し・図表番号・数式番号・脚注・ページ番号）を書く。`keisansho.typ` を複製して始める。
 3. 部品を追加する（`components.toml`、`codegen.rs`、`evaluate.rs` の3か所）。
    - `list`（箇条書き。番号付き／なしを選べる）
    - `footnote` は独立した部品ではなく、本文の記法 `[[脚注:…]]` で書けるようにする（`text_content()` で `footnote[...]` に変換）
    - `equation`（数式＋番号。式は Typst 数式を直接書く。変数参照も可）
    - `table` に「罫線スタイル」を追加（テンプレートの既定に従う。部品側では選ばせない）
    - `table` のセルに画像を置けるようにする（`Cell` に `image: Option<String>`）
-4. Lint：要領書の句読点は「、。」（サンプル準拠）。`template.toml` の `[lint]` で切り替えられることを確認する。
+4. Lint：要領書の句読点は「、。」（サンプル準拠）。`info.lint` で切り替えられることを確認する。
 5. `examples/youryousho-gui/document.json` を作り、サンプルの p.52〜55、p.60〜63、p.72〜75 相当を再現する。
 
 **完了条件**: 再現したページをサンプルと並べて目視比較し、図表番号・罫線・見出し・脚注の体裁が一致すること。
 
 ---
 
-## 8. 作業計画書の型（sagyoukeikaku）【中】
+## 8. 作業計画書のスタイル（sagyoukeikaku）【中】
 
 **参照**: `samples/作業計画書サンプル.pdf`（4ページ、p.22〜25）。
 - 見出し：`5 業務組織計画` / `5.1 業務担当者` / `(1) 照査時期`（ゴシック）
@@ -320,7 +239,7 @@ cd ui && npm run tauri dev                           # デスクトップ版
 - 定型文：照査計画の (1) 照査時期 / (2) 照査項目 / (3) 照査方法 は、ほぼ毎回同じ文章
 
 **作業**
-1. `sagyoukeikaku.typ` と `templates/sagyoukeikaku/template.toml` を作る。
+1. `library/styles/sagyoukeikaku.typ`（1ファイル）を作る。
 2. 部品 `org-chart`（組織図）
    - 入力：ノードの表（id, 親id, 役割, 所属, 役職, 氏名の複数行）
    - 描画：CeTZ の `tree` で自動配置する。手で座標を指定させない（ぶれ防止）。
@@ -379,7 +298,7 @@ cd ui && npm run tauri dev                           # デスクトップ版
 **設計**
 - ライブラリの版を `library/library.toml`（`version`, `released`, `changelog`）で管理する。`formdoc-library` の build.rs で `library/` 全体の SHA-256 を計算し、`LIBRARY_HASH` として埋め込む。
 - 文書の保存時に `library: { version, hash }` を記録する。開いたときに hash が違えば、**旧版と新版の両方で評価し、変わった値と体裁の差分を一覧で示す**（値は `Report.vars` を比較、体裁はページのハッシュを比較）。
-- 旧版での再出力が必要な場合に備え、過去の版のライブラリを `library-archive/<ver>.zip` として残し、TODO 4 の上書きレイヤーで読み込めるようにする。
+- 旧版での再出力が必要な場合に備え、過去の版のライブラリを `library-archive/<ver>.zip` として残し、上書きレイヤー（`FormdocWorld` が埋め込み版より優先して読むファイル群）で読み込めるようにする。
 - **共有フォルダ参照**（能力フラグ `sharedLibraryFolder`、デスクトップのみ）：設定画面で `\\server\formdoc\library` を指定すると、起動時に版を比較し、新しければ上書きレイヤーとして読み込む（読み取り専用）。Web版は配信サーバ上の `library.zip` を取得する方式にする（その場合は Web版でもフラグを有効にする）。
 
 **触るファイル**: `crates/formdoc-library/{build.rs,src/lib.rs}`、`library/library.toml`、`crates/formdoc-core/src/{api.rs,evaluate.rs}`、`ui/src/lib/platform/capabilities.ts`、新規 `ui/src/lib/components/Settings.svelte`
@@ -389,35 +308,22 @@ cd ui && npm run tauri dev                           # デスクトップ版
 ## 12. UIの改善【中】
 
 - **プレビューから該当ブロックへ移動**：コード生成時に各ブロックの先頭へ `#metadata("blk:<id>") <fd-blk>` を入れ、`typst::introspection` でページ上の位置を取得する。`UpdateResult` に `anchors: [{block_id, page, y}]` を追加し、プレビューのクリック位置から最も近いブロックを選ぶ。逆に、ブロックを選んだらプレビューをその位置までスクロールする。
-- **変数名の一括変更**：変数名を変えると、式・`{{}}` 参照・記号説明の変数リストを文書全体で置き換える（確認ダイアログを出す）。`formdoc-expr` に「式中の変数名置換」（AST を保ったまま文字列を置換）を追加する。
-- **式入力の補完**：expr 欄で、変数名の候補（定義済み・この位置より前のもの）と関数名を表示する。未定義の名前は入力中に赤下線を引く。
+- **変数名の一括変更**：変数名を変えると、式・`{{}}` 参照・記号説明の変数リストを、その変数が使える範囲で置き換える（確認ダイアログを出す）。`ui/src/lib/vars.ts` の `renameBlocks` と `tree.ts` の範囲判定を使う。
+- **式入力の補完**：expr 欄で、変数名の候補（この位置で使える変数）と関数名を表示する。未定義の名前は入力中に赤下線を引く。
 - **数式のライブプレビュー**：計算部品の Inspector に、生成した Typst 数式を SVG で小さく表示する（`api` に `render_snippet(typst) -> svg` を追加）。
-- **アウトライン**：章ごとの折りたたみ、複数選択での移動・削除、キーボード操作（↑↓で選択、Alt+↑↓で移動）。
-- 「部品を追加」メニューを、章の `allowed-blocks`（TODO 3）で絞り込む。
-- 保存していない変更がある状態で閉じようとしたときの確認（デスクトップ版は Tauri の `onCloseRequested` を使う。現状の `beforeunload` は WebView2 では効かない場合がある）。
+- **一覧**：複数選択での移動・削除、キーボード操作（↑↓で選択、Alt+↑↓で移動）。
+- **コードから部品に戻す**：コードモードで書き換えて Typstコード部品になった部品を、元の種類（変数定義・計算など）として読み直せるなら戻す（`code.rs`。`vdef`/`vcalc` だけの部品から始める）。
+- 「部品を追加」ダイアログを、章の `allowed-blocks`（TODO 3）で絞り込む。
 
 ---
 
 ## 13. 自動テストの常設化【中】
 
-- `ui/tests/e2e/` に Playwright（`playwright-core`）のスクリプトを置く。前回行った確認を常設のテストにする。
-  1. サンプルを開く → 3ページ・エラー0件
-  2. 計算式を壊す → エラー表示、PDF出力ボタンが無効
-  3. 元に戻す → 復帰
-  4. 句読点の一括修正
-  5. PDF出力（ダウンロード）
-  6. コードモードへの切替、Web版で「フォルダを開く」「VSCodeで開く」が無効表示であること
-- 起動は `chrome --headless=new --remote-debugging-port=9222` ＋ `connectOverCDP`（この環境の制約。上の「注意」参照）。`npm run test:e2e` で Chrome 起動 → `vite preview` → テスト → 片付けまで行う `ui/scripts/e2e.mjs` を作る。
+- `ui/tests/e2e/review-2026-10.mjs`（スタイル選択・テンプレート挿入・右クリック・図形エディタ・テーマ・印刷）を、`npm run test:e2e` で Chrome 起動 → `vite preview` → テスト → 片付けまで行う `ui/scripts/e2e.mjs` に組み込む。`playwright-core` を devDependencies に入れる。
+- 追加するテスト：サンプルを開く → 3ページ・エラー0件／計算式を壊す → PDF出力ボタンが無効／元に戻す → 復帰／句読点の一括修正／コードモードで書き換え → 部品で作成に反映／一覧のドラッグ並べ替え／変数の有効範囲（別の節の変数が使えない・グローバルなら使える）。
+- 起動は `chrome --headless=new --remote-debugging-port=9222` ＋ `connectOverCDP`（この環境の制約。上の「注意」参照）。
 - **Web版とネイティブのPDF一致テスト**を `scripts/check-determinism.mjs` として常設する（Node 用の wasm バインディングを生成 → 両方で出力 → SHA-256 比較）。
 - **サンプル再現の回帰テスト**：`examples/*` のPDFを PNG 化し、前回の画像とピクセル差分で比較する（PyMuPDF を使用。差分しきい値を設定）。
-
----
-
-## 14. Git化【高】
-
-- リポジトリ化して最初のコミットを作る。`.gitignore` には `target/`、`ui/node_modules/`、`ui/dist-*`、`ui/src/lib/engine/pkg/`、`ui/src-tauri/gen/` を入れる。
-- 【済】`library/fonts/` と `library/vendor/` は Git に含めず、`vendor.json`（版と sha256 を固定）に従い `node scripts/setup.mjs` で取得する。`samples/*.pdf` は社内資料のため Git に含めない。
-- 【済】`library/typst/formdoc/0.1.0/formdoc_expr.wasm` は生成物として Git に含めない（配布はインストーラーとWeb版のみのため）。`scripts/setup.mjs` が未生成ならビルドする。
 
 ---
 
@@ -425,17 +331,14 @@ cd ui && npm run tauri dev                           # デスクトップ版
 
 | 場所 | 内容 | 対応 |
 |---|---|---|
-| `crates/formdoc-core/src/codegen.rs` | `let _ = refs_in_text;`、`let _ = report;` という不要な行が残っている | 削除し、未使用の引数・import を整理 |
 | `crates/formdoc-core/src/api.rs` `Session::run` | エラー時の `else if` 分岐が空 | 削除するか、直前の成功結果を表示中であることを `UpdateResult` に `stale: true` として返し、プレビューに「前回の結果を表示中」と出す |
-| コードモードの `vdef` / `vcalc` | `digits` 省略時にテンプレートの単位別既定桁が効かない（GUIだけ効く）ため、同じ値でも表示桁が変わりうる | `keisansho.with(...)` で単位→桁の表を `state` に置き、`vdef` / `vcalc` で `digits: auto` のとき参照する。表は `template.toml` から生成して Typst パッケージに同梱する |
-| `api::code_template` / `state.codeTemplateId` | コードモードの型が `keisansho` に固定 | 新規作成時に型を選ばせる。`formdoc.toml`（プロジェクト設定）に型を記録する |
-| `fig-beam` の影響線 | 左支点で1、右支点で0の三角形を前提にしている | 縦距の点列を受け取り、折れ線として描く汎用版にする |
+| Typst の `vdef` / `vcalc` | `digits` 省略時にスタイルの単位別既定桁が効かない（GUIの部品だけ効く）ため、Typstコード部品で書いた変数の表示桁が変わりうる | スタイルの `info.digits` を `state` に置き、`vdef` / `vcalc` で `digits: auto` のとき参照する |
 | `sum` 部品 | 合計行の書式（Σ記号の位置・下線の長さ）がサンプルと少し違う | サンプル p.21 に合わせて調整する |
 | `check-line` | 右辺が式のとき、代入式が長いと1行に収まらない | 長い場合は記号式・代入式・判定の3行に分ける |
-| 保存形式 `.fdoc` | JSON に base64 で画像を埋め込んでいるため、大きいCAD画像で重くなる | ZIP（`document.json` ＋ `assets/`）に変える。読込は旧形式（JSON）にも対応する |
+| 保存形式 `.fdoc` | JSON に base64 で画像を埋め込んでいるため、大きいCAD画像で重くなる | ZIP（`document.json` ＋ `assets/`）に変える |
 | Tauri の `read_project` | バイナリを JSON の数値配列で返していて遅い | `tauri::ipc::Response` か、ファイルごとの `read_file` に分ける |
-| `update_document` のロック | `Mutex<Session>` を握ったまま組版するため、連続入力で詰まる可能性 | JS 側の間引き（現状 250ms）で足りているか TODO 1 で確認。足りなければ世代番号で古い要求を捨てる |
 | `world.rs` `font_store()` | `OnceLock` のため、フォントを差し替えられない | TODO 2 で作り直す |
-| `keisansho.typ` | `show "、": "，"` で本文の句読点を強制置換しているため、コード内の文字列（基準書名など）も置換される | Lint で統一し、組版時の置換はやめるか、`para` 内だけに限定する |
-| 見出し 1 の改ページ | `pagebreak(weak: true)` で必ず改ページする | テンプレート設定で切り替えられるようにする（サンプルは章ごとに改ページ） |
-| 表紙 | ページ番号の扱い（表紙を数えない）が固定 | テンプレート設定に `page-number-start` を追加 |
+| `styles/keisansho.typ` | `show "、": "，"` で本文の句読点を強制置換しているため、コード内の文字列（基準書名など）も置換される | Lint で統一し、組版時の置換はやめるか、`para` 内だけに限定する |
+| 見出し 1 の改ページ | `pagebreak(weak: true)` で必ず改ページする | スタイルの `info` で切り替えられるようにする（サンプルは章ごとに改ページ） |
+| 表紙 | ページ番号の扱い（表紙を数えない）が固定 | スタイルの `info` に `page-number-start` を追加 |
+| 汎用図形の繰り返し | 1つの図形あたり縦横それぞれ200回まで（`MAX_REPEAT`） | 足りなければ上限を見直す |

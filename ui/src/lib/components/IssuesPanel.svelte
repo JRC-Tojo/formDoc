@@ -1,6 +1,7 @@
 <script lang="ts">
   // 検証パネル：計算エラー・照査NG・表記Lint・組版エラーをまとめて表示する。
   import { app } from '../state.svelte';
+  import { findBlock } from '../tree';
   import type { Issue } from '../types';
 
   let show = $state<Record<string, boolean>>({ error: true, warning: true, info: false });
@@ -27,7 +28,7 @@
 
   function blockLabel(i: Issue): string {
     if (!i.block_id) return '文書情報';
-    const b = app.doc?.blocks.find((x) => x.id === i.block_id);
+    const b = findBlock(app.doc?.blocks ?? [], i.block_id);
     return b ? (app.catalog?.components[b.kind]?.label ?? b.kind) : '';
   }
 </script>

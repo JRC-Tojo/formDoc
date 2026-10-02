@@ -5,6 +5,7 @@
   import { app } from '../state.svelte';
   import Modal from './Modal.svelte';
   import { evalExpr, formatLabel } from '../expr';
+  import { findBlock } from '../tree';
 
   let { blockId }: { blockId: string } = $props();
 
@@ -16,8 +17,9 @@
   type Tool = 'select' | 'line' | 'arrow' | 'rect' | 'circle' | 'polygon' | 'dim' | 'text';
   type Pt = { x: number; y: number };
 
-  const block = $derived(app.doc?.blocks.find((b) => b.id === blockId));
-  const original: Shape[] = JSON.parse(JSON.stringify(app.doc?.blocks.find((b) => b.id === blockId)?.props.shapes ?? []));
+  // テンプレートのまとまりの中の図形もあるため、木全体から探す
+  const block = $derived(findBlock(app.doc?.blocks ?? [], blockId));
+  const original: Shape[] = JSON.parse(JSON.stringify(findBlock(app.doc?.blocks ?? [], blockId)?.props.shapes ?? []));
 
   let shapes = $state<Shape[]>(JSON.parse(JSON.stringify(original)));
   let undoStack: string[] = [];
