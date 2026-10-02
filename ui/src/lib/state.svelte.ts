@@ -1,6 +1,7 @@
 // アプリ全体の状態。文書が変わるたびにエンジンで再評価・再組版する（間引きあり）。
 import { getPlatform, has } from './platform';
 import type { Platform } from './platform/types';
+import { cloneWithIds, findBlock, flatten, locate, sectionEnd } from './tree';
 import type {
   Block,
   Catalog,
@@ -126,8 +127,11 @@ class AppState {
   }
 
   get selected(): Block | null {
-    return this.doc?.blocks.find((b) => b.id === this.selectedId) ?? null;
+    return findBlock(this.doc?.blocks ?? [], this.selectedId);
   }
+
+  /** 折りたたんだ見出し・テンプレートのID（表示だけの状態。保存しない） */
+  collapsed = $state<Record<string, boolean>>({});
 
   issuesFor(id: string): Issue[] {
     return this.result?.issues.filter((i) => i.block_id === id) ?? [];
@@ -326,36 +330,48 @@ class AppState {
     }
   }
 
-  /** 見出しなら配下の節ごと、それ以外はその部品だけ */
+  /** 見出しなら配下の節ごと、それ以外（テンプレートのまとまりを含む）はその部品だけ */
   fragmentOf(blockId: string): Block[] {
-    const blocks = this.doc?.blocks ?? [];
-    const i = blocks.findIndex((b) => b.id === blockId);
-    if (i < 0) return [];
-    const b = blocks[i];
-    if (b.kind !== 'heading') return [b];
-    const lv = Number(b.props.level ?? 2);
-    let j = i + 1;
-    while (j < blocks.length && !(blocks[j].kind === 'heading' && Number(blocks[j].props.level ?? 2) <= lv)) j++;
-    return blocks.slice(i, j);
+    const loc = locate(this.doc?.blocks ?? [], blockId);
+    if (!loc) return [];
+    return loc.list.slice(loc.index, sectionEnd(loc.list, loc.index));
   }
 
-  /** ブロック列（テンプレートの中身）を選択中の部品の下に入れる。添付ファイルも取り込む */
-  async insertBlocks(blocks: Block[], assets: Record<string, string> = {}) {
+  /** 新しい部品を入れる位置：選択中の部品の直後（同じ並び）。未選択なら文書の末尾 */
+  private insertPoint(d: Doc, afterId: string | null): { list: Block[]; index: number } {
+    const loc = afterId ? locate(d.blocks, afterId) : null;
+    return loc ? { list: loc.list, index: loc.index + 1 } : { list: d.blocks, index: d.blocks.length };
+  }
+
+  /**
+   * テンプレートを選択中の部品の下に入れる。中身は1つのまとまり（group）にし、
+   * 中の変数はその中だけで使えるようにする（exports の変数だけ外から使える）。
+   */
+  async insertTemplate(title: string, blocks: Block[], exports: string[], assets: Record<string, string> = {}) {
     for (const [path, b64] of Object.entries(assets)) {
       if (this.assets[path]) continue;
       const bytes = b64decode(b64);
       this.assets[path] = bytes;
       await this.platform!.engine.setAsset(path, bytes);
     }
-    const added = blocks.map((b) => ({ ...clone(b), id: uid() }));
+    const group: Block = { id: uid(), kind: 'group', props: { title, exports }, children: blocks.map((b) => cloneWithIds(b, uid)) };
     const afterId = this.selectedId;
     this.edit((d) => {
-      const i = afterId ? d.blocks.findIndex((b) => b.id === afterId) : -1;
-      d.blocks.splice(i >= 0 ? i + 1 : d.blocks.length, 0, ...added);
+      const at = this.insertPoint(d, afterId);
+      at.list.splice(at.index, 0, group);
       for (const p of Object.keys(assets)) if (!d.assets.includes(p)) d.assets.push(p);
     });
-    // 続けて挿入したときに後ろへ並ぶよう、最後に入れた部品を選ぶ
-    this.selectedId = added[added.length - 1]?.id ?? this.selectedId;
+    this.selectedId = group.id;
+  }
+
+  /** まとまりを解除して、中身を元の位置に並べる */
+  ungroup(id: string) {
+    this.edit((d) => {
+      const loc = locate(d.blocks, id);
+      if (!loc) return;
+      const g = loc.list[loc.index];
+      loc.list.splice(loc.index, 1, ...(g.children ?? []));
+    });
   }
 
   // ---------- 再評価・再組版 ----------
@@ -447,7 +463,7 @@ class AppState {
 
   setProp(id: string, key: string, value: any) {
     this.edit((d) => {
-      const b = d.blocks.find((x) => x.id === id);
+      const b = findBlock(d.blocks, id);
       if (b) b.props[key] = value;
     }, `${id}:${key}`);
   }
@@ -473,8 +489,8 @@ class AppState {
   addBlock(kind: string, afterId: string | null = this.selectedId) {
     const block: Block = { id: uid(), kind, props: this.defaultProps(kind) };
     this.edit((d) => {
-      const i = afterId ? d.blocks.findIndex((b) => b.id === afterId) : -1;
-      d.blocks.splice(i >= 0 ? i + 1 : d.blocks.length, 0, block);
+      const at = this.insertPoint(d, afterId);
+      at.list.splice(at.index, 0, block);
     });
     this.selectedId = block.id;
     // 汎用図形は追加してすぐ描けるようにする
@@ -483,41 +499,65 @@ class AppState {
 
   removeBlock(id: string) {
     this.edit((d) => {
-      const i = d.blocks.findIndex((b) => b.id === id);
-      if (i >= 0) d.blocks.splice(i, 1);
-      this.selectedId = d.blocks[Math.min(i, d.blocks.length - 1)]?.id ?? null;
+      const loc = locate(d.blocks, id);
+      if (!loc) return;
+      loc.list.splice(loc.index, 1);
+      const next = loc.list[Math.min(loc.index, loc.list.length - 1)] ?? loc.parent;
+      this.selectedId = next?.id ?? null;
     });
   }
 
   duplicateBlock(id: string) {
-    const src = this.doc?.blocks.find((b) => b.id === id);
+    const src = findBlock(this.doc?.blocks ?? [], id);
     if (!src) return;
-    const copy: Block = { id: uid(), kind: src.kind, props: clone($state.snapshot(src.props)) };
-    // 変数名は重複できないため、複製時は名前に _2 を付ける
+    const copy = cloneWithIds($state.snapshot(src) as Block, uid);
+    // 同じ範囲に同じ名前の変数は定義できないため、複製時は名前に _2 を付ける
     if (typeof copy.props.name === 'string' && copy.props.name) copy.props.name += '_2';
     this.edit((d) => {
-      const i = d.blocks.findIndex((b) => b.id === id);
-      d.blocks.splice(i + 1, 0, copy);
+      const loc = locate(d.blocks, id);
+      if (loc) loc.list.splice(loc.index + 1, 0, copy);
     });
     this.selectedId = copy.id;
   }
 
-  moveBlock(id: string, toIndex: number) {
+  /**
+   * 部品を移動する。見出しは配下の節ごと動かす。
+   * parentId: 移動先の並び（null は文書の直下、group のID ならその中）、index: 移動先の並びでの位置（移動前の数え方）
+   */
+  moveBlock(id: string, parentId: string | null, index: number) {
     this.edit((d) => {
-      const from = d.blocks.findIndex((b) => b.id === id);
-      if (from < 0) return;
-      const [b] = d.blocks.splice(from, 1);
-      d.blocks.splice(toIndex > from ? toIndex - 1 : toIndex, 0, b);
+      const from = locate(d.blocks, id);
+      if (!from) return;
+      const count = sectionEnd(from.list, from.index) - from.index;
+      const moving = from.list.slice(from.index, from.index + count);
+      // 自分の中（テンプレートの中など）へは動かせない
+      if (parentId && moving.some((m) => m.id === parentId || flatten(m.children ?? []).some((c) => c.id === parentId))) return;
+      const target = parentId ? findBlock(d.blocks, parentId) : null;
+      const list = target ? (target.children ??= []) : d.blocks;
+      let at = index;
+      if (list === from.list) {
+        if (at > from.index && at <= from.index + count) return; // 同じ場所
+        if (at > from.index) at -= count;
+      }
+      from.list.splice(from.index, count);
+      list.splice(Math.max(0, Math.min(at, list.length)), 0, ...moving);
     });
   }
 
-  /** 1つ上（-1）・下（+1）へ移動 */
+  /** 同じ並びの中で1つ上（-1）・下（+1）へ移動（見出しは節ごと） */
   shiftBlock(id: string, delta: number) {
-    const i = this.doc?.blocks.findIndex((b) => b.id === id) ?? -1;
-    if (i < 0) return;
-    const to = delta < 0 ? i - 1 : i + 2;
-    if (to < 0 || to > (this.doc?.blocks.length ?? 0)) return;
-    this.moveBlock(id, to);
+    const loc = locate(this.doc?.blocks ?? [], id);
+    if (!loc) return;
+    const parentId = loc.parent?.id ?? null;
+    if (delta < 0) {
+      if (loc.index === 0) return;
+      // 前の要素の前へ（前が見出しの節の中身なら、その節の先頭の前へは行かない：1つ前の部品の前）
+      this.moveBlock(id, parentId, loc.index - 1);
+    } else {
+      const end = sectionEnd(loc.list, loc.index);
+      if (end >= loc.list.length) return;
+      this.moveBlock(id, parentId, sectionEnd(loc.list, end) );
+    }
   }
 
   /** Lint の修正を適用する */
@@ -526,7 +566,7 @@ class AppState {
     const { from, to } = issue.fix;
     const field = issue.field;
     this.edit((d) => {
-      const b = d.blocks.find((x) => x.id === issue.block_id);
+      const b = findBlock(d.blocks, issue.block_id);
       if (!b) return;
       if (field.startsWith('data.')) {
         const [, r, c] = field.split('.');

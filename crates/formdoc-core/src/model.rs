@@ -84,6 +84,25 @@ pub struct Block {
     pub kind: String,
     #[serde(default)]
     pub props: Map<String, Value>,
+    /// 子要素（"group" ＝ 挿入したテンプレートのまとまり）。見出しの配下は並び順から決まるため子要素にはしない
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub children: Vec<Block>,
+}
+
+/// 子要素も含め、文書の並び順（深さ優先）にすべての部品を並べる。
+pub fn walk_blocks<'a>(blocks: &'a [Block], out: &mut Vec<&'a Block>) {
+    for b in blocks {
+        out.push(b);
+        walk_blocks(&b.children, out);
+    }
+}
+
+impl Document {
+    pub fn all_blocks(&self) -> Vec<&Block> {
+        let mut out = Vec::new();
+        walk_blocks(&self.blocks, &mut out);
+        out
+    }
 }
 
 impl Block {

@@ -73,7 +73,8 @@
       "name": "w_walk",
       "expr": "0.2 / 2"
      }
-    ]
+    ],
+    "global": true
    }
   },
   {
@@ -108,7 +109,8 @@
     "value": 8.0,
     "unit": "m",
     "desc": "部材に最大活荷重断面力を生じさせる同符号の影響線の基線の長さ",
-    "show": false
+    "show": false,
+    "global": true
    }
   },
   {
@@ -193,7 +195,8 @@
     "value": 700,
     "unit": "mm",
     "desc": "桁高",
-    "show": false
+    "show": false,
+    "global": true
    }
   },
   {
@@ -204,7 +207,8 @@
     "value": 350,
     "unit": "mm",
     "desc": "フランジ幅",
-    "show": false
+    "show": false,
+    "global": true
    }
   },
   {
@@ -215,7 +219,8 @@
     "value": 12,
     "unit": "mm",
     "desc": "腹板厚",
-    "show": false
+    "show": false,
+    "global": true
    }
   },
   {
@@ -226,7 +231,8 @@
     "value": 22,
     "unit": "mm",
     "desc": "フランジ厚",
-    "show": false
+    "show": false,
+    "global": true
    }
   },
   {
@@ -424,6 +430,176 @@
     "level": 3,
     "text": "影響線"
    }
+  },
+  {
+   "id": "g1",
+   "kind": "group",
+   "props": {
+    "title": "単純梁と集中荷重（影響線つき）",
+    "exports": [
+     "eta_sum"
+    ]
+   },
+   "children": [
+    {
+     "id": "gb1",
+     "kind": "vdef",
+     "props": {
+      "name": "a",
+      "value": 3.0,
+      "unit": "m",
+      "desc": "左支点から最初の荷重までの距離",
+      "show": false
+     }
+    },
+    {
+     "id": "gb2",
+     "kind": "vdef",
+     "props": {
+      "name": "s",
+      "value": 2.8,
+      "unit": "m",
+      "desc": "荷重の間隔",
+      "show": false
+     }
+    },
+    {
+     "id": "gb3",
+     "kind": "vdef",
+     "props": {
+      "name": "n",
+      "value": 2,
+      "unit": "",
+      "desc": "荷重の数",
+      "show": false,
+      "digits": 0
+     }
+    },
+    {
+     "id": "gb4",
+     "kind": "fig-shapes",
+     "props": {
+      "caption": "載荷状態と左支点反力の影響線",
+      "scale": 1.0,
+      "shapes": [
+       {
+        "kind": "line",
+        "x1": "0",
+        "y1": "0",
+        "x2": "L_b",
+        "y2": "0"
+       },
+       {
+        "kind": "polygon",
+        "pts": "0, 0; -0.15, -0.3; 0.15, -0.3"
+       },
+       {
+        "kind": "polygon",
+        "pts": "L_b, 0; L_b - 0.15, -0.3; L_b + 0.15, -0.3"
+       },
+       {
+        "kind": "arrow",
+        "x1": "a",
+        "y1": "1",
+        "x2": "a",
+        "y2": "0.05",
+        "nx": "n",
+        "dx": "s"
+       },
+       {
+        "kind": "text",
+        "x1": "a",
+        "y1": "1.2",
+        "label": "P{{ix + 1:0}}",
+        "nx": "n",
+        "dx": "s"
+       },
+       {
+        "kind": "dim",
+        "x1": "0",
+        "y1": "1.9",
+        "x2": "L_b",
+        "y2": "1.9",
+        "label": "{{L_b}}"
+       },
+       {
+        "kind": "dim",
+        "x1": "0",
+        "y1": "1.55",
+        "x2": "a",
+        "y2": "1.55",
+        "label": "{{a}}"
+       },
+       {
+        "kind": "dim",
+        "x1": "a",
+        "y1": "1.55",
+        "x2": "a + s",
+        "y2": "1.55",
+        "label": "{{s}}",
+        "nx": "n - 1",
+        "dx": "s"
+       },
+       {
+        "kind": "line",
+        "x1": "0",
+        "y1": "-1.0",
+        "x2": "L_b",
+        "y2": "-1.0"
+       },
+       {
+        "kind": "line",
+        "x1": "0",
+        "y1": "-1.0",
+        "x2": "0",
+        "y2": "-2.0"
+       },
+       {
+        "kind": "line",
+        "x1": "0",
+        "y1": "-2.0",
+        "x2": "L_b",
+        "y2": "-1.0"
+       },
+       {
+        "kind": "line",
+        "x1": "a",
+        "y1": "-1.0",
+        "x2": "a",
+        "y2": "-1.0 - (1 - (a + ix * s) / L_b)",
+        "nx": "n",
+        "dx": "s"
+       },
+       {
+        "kind": "text",
+        "x1": "a + 0.3",
+        "y1": "-1.0 - (1 - (a + ix * s) / L_b) / 2",
+        "label": "{{1 - (a + ix * s) / L_b:3}}",
+        "nx": "n",
+        "dx": "s"
+       },
+       {
+        "kind": "text",
+        "x1": "-0.6",
+        "y1": "-1.5",
+        "label": "1.0"
+       }
+      ]
+     }
+    },
+    {
+     "id": "gb5",
+     "kind": "calc",
+     "props": {
+      "name": "eta_sum",
+      "expr": "n * (1 - a / L_b) - s * n * (n - 1) / (2 * L_b)",
+      "digits": 3,
+      "desc": "影響線縦距の和",
+      "display": "Σ eta",
+      "show_symbolic": true
+     }
+    }
+   ]
   },
   {
    "id": "b34",

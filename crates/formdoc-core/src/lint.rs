@@ -134,7 +134,7 @@ pub fn lint_text(b: &Block, field: &str, text: &str, rules: &LintRules, out: &mu
 
 pub fn lint(doc: &Document, t: &Template) -> Vec<Issue> {
     let mut out = Vec::new();
-    for b in &doc.blocks {
+    for b in doc.all_blocks() {
         for (field, text) in text_fields(b) {
             lint_text(b, &field, &text, &t.lint, &mut out);
         }
@@ -166,7 +166,7 @@ pub fn lint(doc: &Document, t: &Template) -> Vec<Issue> {
 
 /// コードモード（生Typst）のソースに対する表記Lint。文字列・コメント・コードは区別せず行単位で検査する。
 pub fn lint_source(source: &str, t: &Template) -> Vec<Issue> {
-    let dummy = Block { id: String::new(), kind: "typst".into(), props: Default::default() };
+    let dummy = Block { id: String::new(), kind: "typst".into(), props: Default::default(), children: vec![] };
     let mut out = Vec::new();
     for (i, line) in source.lines().enumerate() {
         let trimmed = line.trim_start();
@@ -196,7 +196,7 @@ mod tests {
             library: String::new(),
             template: "keisansho".into(),
             meta: Default::default(),
-            blocks: vec![Block { id: "b1".into(), kind: "paragraph".into(), props }],
+            blocks: vec![Block { id: "b1".into(), kind: "paragraph".into(), props, children: vec![] }],
             assets: vec![],
         }
     }

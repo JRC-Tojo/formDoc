@@ -196,3 +196,70 @@ fn shape_repeat_and_influence_line() {
     assert_eq!(labels, ["0.625", "0.375", "0.125"]);
     assert!(r.exportable, "{:?}", r.issues);
 }
+
+fn blk(id: &str, kind: &str, props: serde_json::Value) -> formdoc_core::model::Block {
+    formdoc_core::model::Block { id: id.into(), kind: kind.into(), props: props.as_object().unwrap().clone(), children: vec![] }
+}
+
+fn errors(r: &formdoc_core::api::UpdateResult) -> Vec<String> {
+    r.issues.iter().filter(|i| format!("{:?}", i.severity) == "Error").map(|i| format!("{}:{}", i.block_id.clone().unwrap_or_default(), i.code)).collect()
+}
+
+#[test]
+fn local_and_global_variables() {
+    use serde_json::json;
+    let mut s = session();
+    let mut doc = s.new_document().unwrap();
+    doc.blocks = vec![
+        blk("h1", "heading", json!({"level": 1, "text": "A"})),
+        blk("v1", "vdef", json!({"name": "x", "value": 1.0})),
+        blk("v2", "vdef", json!({"name": "g", "value": 2.0, "global": true})),
+        blk("h2", "heading", json!({"level": 2, "text": "A.1"})),
+        blk("c1", "calc", json!({"name": "y", "expr": "x + g"})),       // 親の節の変数は使える
+        blk("h3", "heading", json!({"level": 1, "text": "B"})),
+        blk("v3", "vdef", json!({"name": "x", "value": 5.0})),           // 別の節なら同じ名前でよい
+        blk("c2", "calc", json!({"name": "z", "expr": "x + g"})),       // x は B の x
+        blk("c3", "calc", json!({"name": "w", "expr": "y"})),           // y は A.1 のローカル → 使えない
+    ];
+    let r = s.update_document(doc.clone(), &[]);
+    assert_eq!(errors(&r), ["c3:calc"]);
+    let msg = &r.issues.iter().find(|i| i.block_id.as_deref() == Some("c3")).unwrap().message;
+    assert!(msg.contains("グローバル変数として定義"), "{msg}");
+    assert_eq!(r.vars.iter().find(|v| v.name == "z").unwrap().value, 7.0);
+    assert_eq!(r.vars.iter().find(|v| v.name == "g").unwrap().scope, None);
+    assert_eq!(r.vars.iter().find(|v| v.name == "y").unwrap().scope.as_deref(), Some("h2"));
+
+    // 見えている変数と同じ名前は定義できない
+    doc.blocks.truncate(8);
+    doc.blocks.push(blk("v4", "vdef", json!({"name": "g", "value": 1.0})));
+    let r = s.update_document(doc, &[]);
+    assert_eq!(errors(&r), ["v4:var-dup"]);
+}
+
+#[test]
+fn group_hides_internal_variables_and_exports() {
+    use serde_json::json;
+    let mut s = session();
+    let mut doc = s.new_document().unwrap();
+    let mut g = blk("g1", "group", json!({"title": "I形断面", "exports": ["A"]}));
+    g.children = vec![
+        blk("t1", "vdef", json!({"name": "H", "value": 700.0})),
+        blk("t2", "calc", json!({"name": "A", "expr": "2 * H"})),
+    ];
+    let mut g2 = g.clone();
+    g2.id = "g2".into();
+    g2.children[0].id = "u1".into();
+    g2.children[1].id = "u2".into();
+    g2.props.insert("exports".into(), json!(["A_2"]));
+    g2.children[1].props.insert("name".into(), json!("A_2"));
+    doc.blocks = vec![
+        g,
+        blk("c1", "calc", json!({"name": "a1", "expr": "A"})),   // 公開した変数は使える
+        g2,                                                       // 中の H は前のテンプレートと重ならない
+        blk("c2", "calc", json!({"name": "a2", "expr": "H"})),   // 内部の変数は使えない
+    ];
+    let r = s.update_document(doc, &[]);
+    assert_eq!(errors(&r), ["c2:calc"]);
+    assert_eq!(r.vars.iter().find(|v| v.name == "a1").unwrap().value, 1400.0);
+    assert!(s.export_typst().unwrap().contains("// @group g1"));
+}

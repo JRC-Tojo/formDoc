@@ -48,6 +48,10 @@ pub struct VarInfo {
     pub unit: String,
     pub digits: Option<u8>,
     pub desc: String,
+    /// 使える範囲の持ち主（見出し・テンプレートのブロックID）。None は文書全体
+    pub scope: Option<String>,
+    /// 「グローバル変数として定義」
+    pub global: bool,
 }
 
 #[derive(Debug, Clone, Serialize, PartialEq, Default)]
@@ -158,10 +162,24 @@ pub fn refs_in_text(text: &str) -> Vec<String> {
     out
 }
 
+/// 変数の有効範囲。文書全体（根）・見出しの節・テンプレート（group）ごとに1つ。
+/// 変数は、定義した範囲の中で、定義より後ろからだけ使える（「グローバル変数として定義」なら文書全体）。
+struct Frame {
+    /// 範囲の持ち主のブロックID（根は None）
+    owner: Option<String>,
+    /// 見出しの階層（group と根は None）
+    level: Option<i64>,
+    /// この範囲で定義した変数
+    vars: Vec<String>,
+}
+
 struct Ctx<'a> {
     t: &'a Template,
+    /// いま見えている変数
     scope: Scope,
-    defined_by: HashMap<String, String>,
+    /// いま見えている変数 → 定義したブロック
+    visible_by: HashMap<String, String>,
+    frames: Vec<Frame>,
     last_vars: Vec<String>,
     r: Report,
 }
@@ -177,15 +195,20 @@ impl Ctx<'_> {
                 format!("変数名「{name}」は使えません（半角英字で始め、英数字と _ のみ。関数名は不可）"));
             return false;
         }
-        if let Some(prev) = self.defined_by.get(name) {
+        if let Some(prev) = self.visible_by.get(name) {
             if prev != &b.id {
                 self.r.issue(b, field, Severity::Error, "var-dup",
-                    format!("変数「{name}」は既に定義されています。別の名前にしてください"));
+                    format!("変数「{name}」は、この位置から使える変数として既に定義されています。別の名前にしてください"));
                 return false;
             }
         }
-        self.defined_by.insert(name.to_string(), b.id.clone());
+        let global = b.bool("global", false);
+        let target = if global { 0 } else { self.frames.len() - 1 };
+        self.frames[target].vars.push(name.to_string());
+        self.visible_by.insert(name.to_string(), b.id.clone());
         self.r.vars.push(VarInfo {
+            scope: self.frames[target].owner.clone(),
+            global,
             name: name.to_string(),
             block_id: b.id.clone(),
             value: v.value,
@@ -202,7 +225,7 @@ impl Ctx<'_> {
         for name in refs_in_text(text) {
             if !self.scope.contains_key(&name) {
                 self.r.issue(b, field, Severity::Error, "var-undef",
-                    format!("{{{{{name}}}}} の変数「{name}」は、この位置より前で定義されていません"));
+                    format!("{{{{{name}}}}} の変数「{name}」は、この位置より前で定義されていないか、使える範囲（同じ見出し・テンプレートの中）の外です{}", self.scope_hint(&name)));
             }
         }
     }
@@ -216,8 +239,86 @@ impl Ctx<'_> {
         match formdoc_expr::calc(&req) {
             Ok(o) => Some(o.value),
             Err(e) => {
-                self.r.issue(b, field, Severity::Error, "calc", e.to_string());
+                let hint = self.scope_hint(src);
+                self.r.issue(b, field, Severity::Error, "calc", format!("{e}{hint}"));
                 None
+            }
+        }
+    }
+
+    /// 式の中に「定義はあるが、この位置からは使えない」変数があれば、その案内を返す。
+    fn scope_hint(&self, expr: &str) -> String {
+        let names = formdoc_expr::parse(expr).map(|e| e.vars()).unwrap_or_default();
+        let out: Vec<String> = names
+            .iter()
+            .filter(|n| !self.scope.contains_key(*n) && self.r.vars.iter().any(|v| &v.name == *n))
+            .map(|n| format!("「{n}」は別の節・テンプレートのローカル変数です（使うには、定義側で「グローバル変数として定義」にチェック）"))
+            .collect();
+        if out.is_empty() { String::new() } else { format!("。{}", out.join("。")) }
+    }
+
+    /// 範囲を閉じ、その中で定義した変数を見えなくする。
+    fn pop_frame(&mut self) {
+        if self.frames.len() <= 1 {
+            return;
+        }
+        let f = self.frames.pop().unwrap();
+        for n in f.vars {
+            self.scope.remove(&n);
+            self.visible_by.remove(&n);
+        }
+    }
+
+    /// 部品の並び（文書、またはテンプレートの中身）を上から評価する。
+    fn walk(&mut self, blocks: &[Block]) {
+        let base = self.frames.len();
+        for b in blocks {
+            if b.kind == "heading" {
+                // 同じか上の階層の見出しが来たら、前の節を閉じる
+                let level = b.int("level").unwrap_or(2);
+                while self.frames.len() > base && self.frames.last().and_then(|f| f.level).is_some_and(|l| l >= level) {
+                    self.pop_frame();
+                }
+                self.block(b);
+                self.frames.push(Frame { owner: Some(b.id.clone()), level: Some(level), vars: vec![] });
+            } else if b.kind == "group" {
+                self.group(b);
+            } else {
+                self.block(b);
+            }
+        }
+        while self.frames.len() > base {
+            self.pop_frame();
+        }
+    }
+
+    /// テンプレートのまとまり。中の変数は外から見えない。props.exports の変数だけを外（親の範囲）に公開する。
+    fn group(&mut self, b: &Block) {
+        self.r.blocks.insert(b.id.clone(), BlockResult { status: "ok", ..Default::default() });
+        self.frames.push(Frame { owner: Some(b.id.clone()), level: None, vars: vec![] });
+        let base = self.frames.len();
+        self.walk(&b.children);
+        debug_assert_eq!(self.frames.len(), base);
+        let exports: Vec<String> = b.arr("exports").iter().filter_map(|v| v.as_str().map(str::to_string)).collect();
+        let found: Vec<(String, Option<VarValue>)> = exports.iter().map(|n| (n.clone(), self.scope.get(n).cloned())).collect();
+        self.pop_frame();
+        for (name, v) in found {
+            let Some(v) = v else {
+                self.r.issue(b, "exports", Severity::Error, "export-undef", format!("公開する変数「{name}」がテンプレートの中で定義されていません"));
+                continue;
+            };
+            if self.visible_by.contains_key(&name) {
+                self.r.issue(b, "exports", Severity::Error, "var-dup",
+                    format!("公開する変数「{name}」は、この位置から使える変数として既に定義されています。名前を変えてください"));
+                continue;
+            }
+            let top = self.frames.len() - 1;
+            self.frames[top].vars.push(name.clone());
+            self.visible_by.insert(name.clone(), b.id.clone());
+            self.scope.insert(name.clone(), v);
+            let owner = self.frames[top].owner.clone();
+            if let Some(info) = self.r.vars.iter_mut().rev().find(|x| x.name == name && !x.global) {
+                info.scope = owner;
             }
         }
     }
@@ -278,7 +379,8 @@ impl Ctx<'_> {
         match formdoc_expr::calc(&req) {
             Ok(o) => Some(o),
             Err(e) => {
-                self.r.issue(b, field, Severity::Error, "calc", e.to_string());
+                let hint = self.scope_hint(expr);
+                self.r.issue(b, field, Severity::Error, "calc", format!("{e}{hint}"));
                 None
             }
         }
@@ -287,7 +389,7 @@ impl Ctx<'_> {
     fn block(&mut self, b: &Block) {
         let mut res = BlockResult { status: "ok", ..Default::default() };
         let errors_before = self.r.issues.iter().filter(|i| i.severity == Severity::Error).count();
-        if !self.t.blocks.iter().any(|k| k == &b.kind) {
+        if b.kind != "group" && !self.t.blocks.iter().any(|k| k == &b.kind) {
             self.r.issue(b, "", Severity::Error, "block-kind",
                 format!("この文書の型（{}）では部品「{}」は使えません", self.t.name, b.kind));
         }
@@ -383,7 +485,10 @@ impl Ctx<'_> {
                                 format!("照査を満たしていません: {} {} {}", o.lhs.text, o.shown_symbol, o.rhs.text));
                         }
                     }
-                    Err(e) => self.r.issue(b, "expr", Severity::Error, "calc", e.to_string()),
+                    Err(e) => {
+                        let hint = self.scope_hint(b.str("expr"));
+                        self.r.issue(b, "expr", Severity::Error, "calc", format!("{e}{hint}"))
+                    }
                 }
             }
             "where" => {
@@ -393,7 +498,10 @@ impl Ctx<'_> {
                 }
                 for v in &vars {
                     match self.scope.get(v) {
-                        None => self.r.issue(b, "vars", Severity::Error, "var-undef", format!("変数「{v}」はこの位置より前で定義されていません")),
+                        None => {
+                            let hint = self.scope_hint(v);
+                            self.r.issue(b, "vars", Severity::Error, "var-undef", format!("変数「{v}」はこの位置より前で定義されていないか、使える範囲の外です{hint}"))
+                        }
                         Some(val) if val.desc.trim().is_empty() => self.r.issue(b, "vars", Severity::Warning, "where-desc",
                             format!("変数「{v}」に説明がありません（「ここに，」が空欄になります）")),
                         _ => {}
@@ -502,14 +610,21 @@ impl Ctx<'_> {
 }
 
 pub fn evaluate(doc: &Document, t: &Template) -> Report {
-    let mut cx = Ctx { t, scope: Scope::new(), defined_by: HashMap::new(), last_vars: Vec::new(), r: Report::default() };
+    let mut cx = Ctx {
+        t,
+        scope: Scope::new(),
+        visible_by: HashMap::new(),
+        frames: vec![Frame { owner: None, level: None, vars: vec![] }],
+        last_vars: Vec::new(),
+        r: Report::default(),
+    };
     let mut ids = std::collections::HashSet::new();
-    for b in &doc.blocks {
+    for b in doc.all_blocks() {
         if !ids.insert(b.id.clone()) {
             cx.r.issue(b, "", Severity::Error, "block-id", "ブロックIDが重複しています（内部エラー）");
         }
-        cx.block(b);
     }
+    cx.walk(&doc.blocks);
     if doc.library != formdoc_library::version() && !doc.library.is_empty() {
         cx.r.issues.push(Issue {
             block_id: None,

@@ -301,7 +301,7 @@ pub fn new_document(t: &Template) -> Document {
         .map(|(i, s)| {
             let mut props = s.clone();
             let kind = props.remove("kind").and_then(|k| k.as_str().map(str::to_string)).unwrap_or_else(|| "paragraph".into());
-            Block { id: format!("b{}", i + 1), kind, props }
+            Block { id: format!("b{}", i + 1), kind, props, children: vec![] }
         })
         .collect();
     let mut meta = Meta::default();

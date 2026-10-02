@@ -1,8 +1,10 @@
 <script lang="ts">
   // 「部品を追加」ダイアログ。部品とテンプレートを同じ一覧から選んで、選択中の部品の下に入れる。
-  // テンプレートは挿入時に「入力」の変数をつなぐだけでよい（内部の変数名は衝突しないよう自動で付け替える）。
+  // テンプレートは1つのまとまり（group）として入る。中の変数はその中だけで使えるため、挿入する側は
+  // 「入力」の変数をつなぎ、「公開」の変数の名前を決めるだけでよい。
   import { app } from '../state.svelte';
   import { analyze, renameBlocks, uniqueName, type RenameMap } from '../vars';
+  import { visibleVars } from '../tree';
   import type { Block, TemplateEntry } from '../types';
   import Modal from './Modal.svelte';
 
@@ -39,14 +41,12 @@
     items.filter((i) => (group === 'すべて' || i.group === group) && (!query || (i.label + i.help).toLowerCase().includes(query.toLowerCase()))),
   );
 
-  /** 挿入位置より前で定義されている変数 */
-  const before = $derived.by(() => {
-    const blocks = app.doc?.blocks ?? [];
-    const i = app.selectedId ? blocks.findIndex((b) => b.id === app.selectedId) : blocks.length - 1;
-    return analyze(blocks.slice(0, i + 1), comps).defined;
-  });
-  /** 文書全体で使われている変数名（衝突チェック用） */
-  const taken = $derived(new Set(analyze(app.doc?.blocks ?? [], comps).defined));
+  /** 挿入位置で使える変数（同じ節・テンプレートの中のローカル変数と、グローバル変数） */
+  const before = $derived(
+    [...new Set(visibleVars(app.doc?.blocks ?? [], app.result?.vars ?? [], app.selectedId, 'after').map((v) => v.name))],
+  );
+  /** 公開する変数と重なってはいけない名前（挿入位置で使える変数） */
+  const taken = $derived(new Set(before));
 
   function close() {
     app.dialog = null;
@@ -94,45 +94,29 @@
     return errs;
   });
 
-  /** 変数のつなぎ替えを適用して挿入する */
+  /** 変数のつなぎ替えを適用して、まとまり（group）として挿入する */
   async function insert(bnd: NonNullable<typeof binding>) {
     const f = bnd.entry.file;
     let blocks: Block[] = JSON.parse(JSON.stringify(f.blocks));
     const usage = analyze(blocks, comps);
     const map: RenameMap = {};
-    const used = new Set(taken);
-    for (const e of bnd.exports) {
-      map[e.name] = e.to;
-      used.add(e.to);
-    }
+    for (const e of bnd.exports) map[e.name] = e.to;
     const prepend: Block[] = [];
     for (const b of bnd.inputs) {
       const defBlock = usage.definedBy[b.name];
       if (b.mode === 'var') {
-        map[b.name] = b.varName;
+        if (b.varName !== b.name) map[b.name] = b.varName;
         // テンプレート内の既定値の定義は、つないだ変数で置き換えるので除く
         if (defBlock) blocks = blocks.filter((x) => x.id !== defBlock || x.kind !== 'vdef');
+      } else if (defBlock) {
+        const vb = blocks.find((x) => x.id === defBlock);
+        if (vb) vb.props.value = Number(b.value);
       } else {
-        const to = uniqueName(b.name, used);
-        used.add(to);
-        map[b.name] = to;
-        if (defBlock) {
-          const vb = blocks.find((x) => x.id === defBlock);
-          if (vb) vb.props.value = Number(b.value);
-        } else {
-          prepend.push({ id: 'in-' + b.name, kind: 'vdef', props: { name: b.name, value: Number(b.value), unit: b.unit ?? '', desc: b.label, show: false } });
-        }
+        prepend.push({ id: 'in-' + b.name, kind: 'vdef', props: { name: b.name, value: Number(b.value), unit: b.unit ?? '', desc: b.label, show: false } });
       }
     }
-    // 残りは内部の変数。衝突するものだけ付け替える
-    for (const n of usage.defined) {
-      if (map[n] !== undefined) continue;
-      const to = uniqueName(n, used);
-      used.add(to);
-      if (to !== n) map[n] = to;
-    }
     blocks = renameBlocks([...prepend, ...blocks], comps, map);
-    await app.insertBlocks(blocks, f.assets ?? {});
+    await app.insertTemplate(f.name, blocks, bnd.exports.map((e) => e.to), f.assets ?? {});
     app.flash(`テンプレート「${f.name}」を挿入しました`);
     close();
   }
@@ -228,7 +212,7 @@
           </tbody>
         </table>
       {/if}
-      <p class="small muted">テンプレート内部の変数は、文書と重ならないよう自動で名前を付け替えます。</p>
+      <p class="small muted">テンプレートは1つのまとまりとして入ります。内部の変数はその中だけで使えるため、文書の変数と名前が重なっても問題ありません。</p>
       {#each bindErrors as e}<div class="err small">{e}</div>{/each}
     </div>
   {/if}
