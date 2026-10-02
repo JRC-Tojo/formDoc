@@ -15,6 +15,8 @@
   import ShapeEditor from './lib/components/ShapeEditor.svelte';
 
   let recentMenu = $state(false);
+  /** 印刷の用紙の大きさ（文書の1ページ目に合わせる） */
+  const printSize = $derived(app.result?.pages[0] ? { w: app.result.pages[0].width_pt, h: app.result.pages[0].height_pt } : null);
 
   const docTitle = $derived(`${app.dirty ? '● ' : ''}${app.doc?.meta.title || '無題'} - formDoc`);
   $effect(() => {
@@ -172,10 +174,15 @@
   <ShapeEditor blockId={app.dialog.blockId} />
 {/if}
 
-<!-- 印刷用：文書のページだけ（@media print で画面の代わりに出す） -->
+<!-- 印刷用：文書のページだけ（@media print で画面の代わりに出す）。
+     用紙は文書のページと同じ大きさにし、1ページを1枚に収める（端数で次の用紙にはみ出さないよう、少し小さく切る） -->
+<svelte:head>
+  {#if printSize}{@html `<style>@page { size: ${printSize.w}pt ${printSize.h}pt; margin: 0; }</style>`}{/if}
+</svelte:head>
 <div class="print-pages" aria-hidden="true">
   {#each app.pageHashes as h, i (h + i)}
-    <div class="print-page">{@html app.svgs.get(h) ?? ''}</div>
+    {@const pg = app.result?.pages[i]}
+    <div class="print-page" style:width="{pg?.width_pt ?? 595}pt" style:height="{(pg?.height_pt ?? 842) - 1}pt">{@html app.svgs.get(h) ?? ''}</div>
   {/each}
 </div>
 
@@ -233,8 +240,8 @@
     :global(body) { background: #fff !important; }
     .app { display: none; }
     .print-pages { display: block; }
-    .print-page { width: 210mm; break-after: page; page-break-after: always; }
+    .print-page { overflow: hidden; break-inside: avoid; break-after: page; page-break-after: always; }
     .print-page:last-child { break-after: auto; page-break-after: auto; }
-    .print-page :global(svg) { width: 210mm; height: auto; display: block; }
+    .print-page :global(svg) { width: 100%; height: auto; display: block; }
   }
 </style>

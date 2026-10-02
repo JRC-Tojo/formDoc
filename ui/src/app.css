@@ -42,8 +42,8 @@
   --input-bg: #15181c; --preview-bg: #0f1114; color-scheme: dark;
 }
 
-/* 印刷は文書のページだけ（App.svelte の .print-pages）。用紙は A4、余白は文書側で持つ */
-@page { size: A4; margin: 0; }
+/* 印刷は文書のページだけ（App.svelte の .print-pages）。用紙の大きさは App.svelte が文書に合わせて指定する */
+@page { margin: 0; }
 @media print {
   .backdrop, .toast { display: none !important; }
 }
