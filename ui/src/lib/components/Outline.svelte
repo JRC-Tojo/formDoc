@@ -131,6 +131,9 @@
 
   function onPointerDown(e: PointerEvent, id: string) {
     if (e.button !== 0) return;
+    // 文字の選択やブラウザ標準のドラッグを始めさせない。押した行にポインタを捕まえ、外に出ても移動を受け取る
+    e.preventDefault();
+    (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
     drag = { id, x: e.clientX, y: e.clientY, active: false };
   }
 
@@ -193,7 +196,7 @@
   }
 </script>
 
-<svelte:window onpointermove={onPointerMove} onpointerup={onPointerUp} />
+<svelte:window onpointermove={onPointerMove} onpointerup={onPointerUp} onpointercancel={() => ((drag = null), (drop = null))} />
 
 <div class="outline" class:dragging={drag?.active}>
   <div class="head">
@@ -295,7 +298,7 @@
   .item.drop-inside .row { outline: 2px solid var(--accent); }
   .row {
     display: flex; align-items: center; gap: 4px; width: 100%; border: none; background: none;
-    padding: 4px 6px 4px 2px; border-radius: 4px; text-align: left; cursor: grab; touch-action: none;
+    padding: 4px 6px 4px 2px; border-radius: 4px; text-align: left; cursor: grab; touch-action: none; user-select: none; -webkit-user-drag: none;
   }
   .item.selected .row { background: var(--accent-weak); }
   .row:hover { background: var(--panel-2); }

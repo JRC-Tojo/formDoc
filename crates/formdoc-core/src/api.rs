@@ -36,11 +36,9 @@ pub struct UpdateResult {
     pub compile_ms: f64,
 }
 
-/// 直前に組版した文書と、その生成コード（組版用・表示用）
+/// 直前に組版した文書と、コードモードで見せるコード（エラーのある部品も赤枠にしない）
 struct Last {
     doc: Box<Document>,
-    generated: Generated,
-    /// コードモードで見せるコード（エラーのある部品も赤枠にしない）
     view: Generated,
 }
 
@@ -198,7 +196,7 @@ impl Session {
         }
         let exportable = !issues.iter().any(|i| i.severity == Severity::Error);
         self.exportable = exportable;
-        self.mode = Some(Last { doc: Box::new(doc), generated, view });
+        self.mode = Some(Last { doc: Box::new(doc), view });
         UpdateResult {
             pages: self.pages(known),
             issues,
