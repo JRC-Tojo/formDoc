@@ -110,9 +110,10 @@
     ctx = { x: Math.min(e.clientX, window.innerWidth - 230), y: Math.min(e.clientY, window.innerHeight - 260), id };
   }
 
+  /** メニューの項目を実行してから閉じる（先に閉じると対象のIDが消える） */
   function run(fn: () => void) {
-    ctx = null;
     fn();
+    ctx = null;
   }
 </script>
 
@@ -167,7 +168,7 @@
 </div>
 
 {#if ctx}
-  {@const id = ctx.id}
+  {@const id = ctx?.id ?? null}
   <div class="ctx-backdrop" role="presentation" onmousedown={() => (ctx = null)} oncontextmenu={(e) => { e.preventDefault(); ctx = null; }}></div>
   <div class="ctx" role="menu" style:left="{ctx.x}px" style:top="{ctx.y}px">
     <button class="ghost" role="menuitem" onclick={() => run(openAdd)}>＋ この下に部品を追加…</button>

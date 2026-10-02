@@ -354,7 +354,8 @@ class AppState {
       d.blocks.splice(i >= 0 ? i + 1 : d.blocks.length, 0, ...added);
       for (const p of Object.keys(assets)) if (!d.assets.includes(p)) d.assets.push(p);
     });
-    this.selectedId = added[0]?.id ?? this.selectedId;
+    // 続けて挿入したときに後ろへ並ぶよう、最後に入れた部品を選ぶ
+    this.selectedId = added[added.length - 1]?.id ?? this.selectedId;
   }
 
   // ---------- 再評価・再組版 ----------

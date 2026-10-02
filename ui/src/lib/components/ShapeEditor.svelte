@@ -19,6 +19,7 @@
   let redoStack: string[] = [];
   let tool = $state<Tool>('select');
   let sel = $state<number | null>(null);
+  const GRIDS = [0.05, 0.1, 0.25, 0.5, 1, 2, 5, 10, 25, 50, 100];
   let grid = $state(0.5);
   let snap = $state(true);
   let ppu = $state(60); // 1単位あたりのピクセル
@@ -288,7 +289,7 @@
     const r = svgEl.getBoundingClientRect();
     const mx = e.clientX - r.left, my = e.clientY - r.top;
     const k = e.deltaY < 0 ? 1.15 : 1 / 1.15;
-    const next = Math.min(400, Math.max(8, ppu * k));
+    const next = Math.min(400, Math.max(0.01, ppu * k));
     origin = { x: mx - ((mx - origin.x) * next) / ppu, y: my - ((my - origin.y) * next) / ppu };
     ppu = next;
   }
@@ -299,8 +300,10 @@
     if (!xs.length) return;
     const r = svgEl.getBoundingClientRect();
     const w = Math.max(1, Math.max(...xs) - Math.min(...xs)), hgt = Math.max(1, Math.max(...ys) - Math.min(...ys));
-    ppu = Math.min(400, Math.max(8, Math.min((r.width - 80) / w, (r.height - 80) / hgt)));
-    origin = { x: 40 - Math.min(...xs) * ppu, y: r.height - 40 + Math.min(...ys) * ppu };
+    ppu = Math.min(400, Math.max(0.01, Math.min((r.width - 120) / w, (r.height - 120) / hgt)));
+    origin = { x: 60 - Math.min(...xs) * ppu, y: r.height - 60 + Math.min(...ys) * ppu };
+    // 図の大きさに合ったグリッド（画面上で 15px 以上）
+    grid = GRIDS.find((g) => g * ppu >= 15) ?? GRIDS[GRIDS.length - 1];
   }
 
   function onKey(e: KeyboardEvent) {
@@ -463,7 +466,7 @@
       <div class="row">
         <label class="inline"><input type="checkbox" bind:checked={snap} />グリッドに吸着</label>
         <select bind:value={grid}>
-          {#each [0.05, 0.1, 0.25, 0.5, 1] as g}<option value={g}>{g}</option>{/each}
+          {#each GRIDS as g}<option value={g}>{g}</option>{/each}
         </select>
       </div>
       <div class="row small muted">縮尺：1単位 = {block?.props.scale ?? 1} cm（部品の設定で変更）</div>
