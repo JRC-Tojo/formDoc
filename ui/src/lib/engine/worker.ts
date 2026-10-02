@@ -14,17 +14,23 @@ self.onmessage = async (ev: MessageEvent<Req>) => {
       case 'catalog':
         result = JSON.parse(wasm.catalog());
         break;
+      case 'styleInfo':
+        result = JSON.parse(wasm.style_info(args[0]));
+        break;
+      case 'setStyle':
+        result = JSON.parse(wasm.set_style(args[0]));
+        break;
       case 'newDocument':
-        result = JSON.parse(wasm.new_document(args[0]));
+        result = JSON.parse(wasm.new_document());
         break;
       case 'codeTemplate':
-        result = wasm.code_template(args[0]);
+        result = wasm.code_template();
         break;
       case 'updateDocument':
         result = JSON.parse(wasm.update_document(JSON.stringify(args[0]), JSON.stringify(args[1])));
         break;
       case 'updateProject':
-        result = JSON.parse(wasm.update_project(JSON.stringify(args[0]), args[1], JSON.stringify(args[2])));
+        result = JSON.parse(wasm.update_project(JSON.stringify(args[0]), JSON.stringify(args[1])));
         break;
       case 'setAsset':
         wasm.set_asset(args[0], args[1]);

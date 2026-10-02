@@ -11,6 +11,8 @@ export type Capability =
   | 'nativeSaveDialog'
   /** ブラウザ内への自動保存（IndexedDB） */
   | 'browserStorage'
+  /** 最近使ったファイルをパスで開き直す */
+  | 'recentFiles'
   /** 共有フォルダの社内ライブラリを参照（未実装：両版とも無効） */
   | 'sharedLibraryFolder';
 
@@ -25,6 +27,7 @@ const TABLE: Record<Capability, { web: boolean; desktop: boolean; reason: string
   fileWatch: { web: false, desktop: true, reason: 'デスクトップ版でのみ利用できます' },
   nativeSaveDialog: { web: false, desktop: true, reason: 'デスクトップ版でのみ利用できます' },
   browserStorage: { web: true, desktop: false, reason: 'Web版でのみ利用できます' },
+  recentFiles: { web: false, desktop: true, reason: 'Web版ではファイルをパスで開き直せないため、デスクトップ版でのみ利用できます' },
   sharedLibraryFolder: { web: false, desktop: false, reason: '準備中の機能です' },
 };
 

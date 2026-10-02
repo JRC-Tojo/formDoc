@@ -1,5 +1,5 @@
 // Web版の実装。エンジンは Web Worker（wasm）、保存はダウンロード、下書きは IndexedDB。
-import type { Drafts, Engine, Files, Platform } from './types';
+import type { Drafts, Engine, Files, Platform, SystemStore, TextFile } from './types';
 
 function workerEngine(): Engine {
   const worker = new Worker(new URL('../engine/worker.ts', import.meta.url), { type: 'module' });
@@ -20,10 +20,12 @@ function workerEngine(): Engine {
     });
   return {
     catalog: () => call('catalog'),
-    newDocument: (t) => call('newDocument', t),
-    codeTemplate: (t) => call('codeTemplate', t),
+    styleInfo: (src) => call('styleInfo', src),
+    setStyle: (src) => call('setStyle', src),
+    newDocument: () => call('newDocument'),
+    codeTemplate: () => call('codeTemplate'),
     updateDocument: (doc, known) => call('updateDocument', doc, known),
-    updateProject: (files, t, known) => call('updateProject', files, t, known),
+    updateProject: (files, known) => call('updateProject', files, known),
     setAsset: (path, bytes) => call('setAsset', path, bytes),
     removeAsset: (path) => call('removeAsset', path),
     pdf: () => call('pdf'),
@@ -58,10 +60,14 @@ const files: Files = {
   },
 };
 
+const STORES = ['drafts', 'styles', 'templates'] as const;
+
 function idb(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
-    const req = indexedDB.open('formdoc', 1);
-    req.onupgradeneeded = () => req.result.createObjectStore('drafts');
+    const req = indexedDB.open('formdoc', 2);
+    req.onupgradeneeded = () => {
+      for (const s of STORES) if (!req.result.objectStoreNames.contains(s)) req.result.createObjectStore(s);
+    };
     req.onsuccess = () => resolve(req.result);
     req.onerror = () => reject(req.error);
   });
@@ -90,6 +96,89 @@ const drafts: Drafts = {
   },
 };
 
+async function idbAll(store: string): Promise<[string, string][]> {
+  try {
+    const db = await idb();
+    return await new Promise((resolve) => {
+      const out: [string, string][] = [];
+      const r = db.transaction(store).objectStore(store).openCursor();
+      r.onsuccess = () => {
+        const c = r.result;
+        if (!c) return resolve(out);
+        out.push([String(c.key), String(c.value)]);
+        c.continue();
+      };
+      r.onerror = () => resolve(out);
+    });
+  } catch {
+    return [];
+  }
+}
+
+async function idbPut(store: string, key: string, value: string) {
+  const db = await idb();
+  await new Promise<void>((resolve, reject) => {
+    const tx = db.transaction(store, 'readwrite');
+    tx.objectStore(store).put(value, key);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+const SETTINGS_KEY = 'formdoc.settings';
+
+/** Web版のシステムフォルダ相当。設定は localStorage、スタイル・テンプレートは IndexedDB。 */
+const system: SystemStore = {
+  info: async () => null,
+  async loadSettings() {
+    try {
+      return localStorage.getItem(SETTINGS_KEY);
+    } catch {
+      return null;
+    }
+  },
+  async saveSettings(text) {
+    try {
+      localStorage.setItem(SETTINGS_KEY, text);
+    } catch {
+      /* 保存できない環境では既定値で動く */
+    }
+  },
+  async listStyles() {
+    return (await idbAll('styles')).map(([k, v]) => ({ path: `browser:${k}`, folder: 'browser', text: v }));
+  },
+  addStyle: (name, text) => idbPut('styles', name, text),
+  async listTemplates() {
+    return (await idbAll('templates')).map(([k, v]) => ({ path: `browser:${k}`, folder: 'browser', text: v }));
+  },
+  async saveTemplate(folder, name, text) {
+    if (folder === null) {
+      await idbPut('templates', name, text);
+      return `browser:${name}`;
+    }
+    // 公開先：Web版はフォルダに書き込めないため、ダウンロードして利用者が置く
+    await files.saveFile(name, new TextEncoder().encode(text));
+    return name;
+  },
+  pickTemplateFolder() {
+    return new Promise((resolve) => {
+      const input = document.createElement('input');
+      input.type = 'file';
+      (input as any).webkitdirectory = true;
+      input.onchange = async () => {
+        const list = [...(input.files ?? [])].filter((f) => f.name.toLowerCase().endsWith('.fdtpl'));
+        const first = input.files?.[0] as any;
+        const folder = first?.webkitRelativePath?.split('/')[0] ?? 'フォルダ';
+        const out: TextFile[] = [];
+        for (const f of list) out.push({ path: (f as any).webkitRelativePath || f.name, folder, text: await f.text() });
+        resolve({ folder, files: out });
+      };
+      input.addEventListener('cancel', () => resolve(null));
+      input.click();
+    });
+  },
+};
+
 export function createWebPlatform(): Platform {
-  return { engine: workerEngine(), files, folder: null, drafts };
+  return { engine: workerEngine(), files, folder: null, drafts, system };
 }

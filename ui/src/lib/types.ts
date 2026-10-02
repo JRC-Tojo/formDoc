@@ -8,18 +8,13 @@ export interface Block {
   props: Props;
 }
 
-export interface Meta {
-  title: string;
-  project: string;
-  author: string;
-  date: string;
-  chapter_start: number;
-  cover: boolean;
-}
+/** 文書情報。キーはスタイルの info.fields の key */
+export type Meta = Record<string, any>;
 
 export interface Doc {
   schema_version: number;
   library: string;
+  /** スタイルの id */
   template: string;
   meta: Meta;
   blocks: Block[];
@@ -96,21 +91,94 @@ export interface ComponentDef {
   label: string;
   icon?: string;
   help?: string;
+  /** 部品の分類（追加ダイアログの見出し） */
+  category?: string;
+  /** 置き換え先の案内。追加ダイアログには出さない（既存文書のために残している部品） */
+  deprecated?: string;
   fields: FieldDef[];
 }
 
-export interface Template {
+/** 文書情報の入力欄（スタイルの info.fields） */
+export interface MetaField {
+  key: string;
+  label: string;
+  type: 'text' | 'multiline' | 'int' | 'bool' | 'date' | 'select';
+  required?: boolean;
+  default?: any;
+  help?: string;
+  options?: string[];
+}
+
+/** スタイルの規則（スタイルファイルの info） */
+export interface StyleInfo {
   id: string;
   name: string;
   description: string;
   blocks: string[];
+  fields: MetaField[];
+  skeleton: Record<string, any>[];
   'max-heading-level': number;
   digits: Record<string, number>;
 }
 
+/** 選べるスタイル（ファイル1つ） */
+export interface StyleEntry {
+  /** 読み込み元（デスクトップはファイルパス、同梱は builtin:<file>、Web は browser:<file>） */
+  path: string;
+  source: string;
+  info: StyleInfo | null;
+  error?: string;
+}
+
+/** テンプレート（.fdtpl）の変数インターフェース */
+export interface TemplateInput {
+  name: string;
+  label: string;
+  unit?: string;
+  /** 既定値（テンプレート内の変数定義を入力にしたもの）。無ければ挿入時に必須 */
+  default?: number | null;
+}
+export interface TemplateExport {
+  name: string;
+  label: string;
+}
+export interface TemplateFile {
+  format: 'formdoc-template';
+  version: 1;
+  name: string;
+  description: string;
+  category: string;
+  /** 想定するスタイル（空なら全スタイル） */
+  styles: string[];
+  created: string;
+  blocks: Block[];
+  interface: { inputs: TemplateInput[]; exports: TemplateExport[] };
+  assets: Record<string, string>;
+}
+/** 一覧に並ぶテンプレート */
+export interface TemplateEntry {
+  file: TemplateFile;
+  /** 読み込み元（同梱 / このPC / フォルダのパス） */
+  source: string;
+  path?: string;
+}
+
+export interface Settings {
+  theme: 'system' | 'light' | 'dark';
+  /** UI の文字の大きさ（%） */
+  fontScale: number;
+  recentMax: number;
+  recent: string[];
+  /** テンプレートを読み込むフォルダ */
+  templateFolders: string[];
+  /** テンプレートの公開先（既定） */
+  publishFolder: string;
+}
+
 export interface Catalog {
   library_version: string;
-  templates: Template[];
+  styles: { file: string; source: string }[];
+  snippets: TemplateFile[];
   components: Record<string, ComponentDef>;
   references: Record<string, { title: string; label?: string }>;
   fonts: string[];
@@ -125,7 +193,9 @@ export interface ProjectFile {
 /** 保存ファイル（.fdoc）の中身。添付ファイルは base64 で同梱する。 */
 export interface SavedDoc {
   format: 'formdoc';
-  version: 1;
+  version: 1 | 2;
   document: Doc;
   assets: Record<string, string>;
+  /** 保存時のスタイルのソース（同じ文書なら同じPDFにするため同梱する。version 2 以降） */
+  style?: { file: string; source: string };
 }
