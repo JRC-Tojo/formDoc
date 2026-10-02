@@ -1,0 +1,105 @@
+# 計算書テンプレート定義。
+# 執筆者が触れない「文書の型」。ここを変えると、この型の全文書の体裁・規則が一律に変わる。
+
+id = "keisansho"
+name = "計算書"
+description = "構造計算書。変数・計算行・照査・記号説明・パラメトリック図を使う。"
+package = "@local/formdoc:0.1.0"
+show = "keisansho"
+max-heading-level = 4
+# 計算に使う値：表示桁で丸めた値を使う（読者が電卓で検算できるように）
+rounding = "display"
+
+# 執筆者が使える部品（並び順がGUIの「追加」メニューの順）
+blocks = [
+  "heading", "paragraph", "kijun", "vdef", "calc", "sum", "check", "where",
+  "table", "fig-beam", "fig-isection", "fig-shapes", "image", "pagebreak", "typst",
+]
+
+# 新規作成時の骨組み（必須の章）
+[[skeleton]]
+kind = "heading"
+level = 1
+text = "設計条件"
+
+[[skeleton]]
+kind = "heading"
+level = 1
+text = "設計計算"
+
+[[skeleton]]
+kind = "heading"
+level = 1
+text = "設計結果一覧"
+
+# 単位ごとの既定の表示桁（部品側で桁数を空欄にしたときに使う）
+[digits]
+"m" = 3
+"mm" = 0
+"kN" = 2
+"kN/m" = 2
+"kN*m" = 2
+"kN·m" = 2
+"kN/m2" = 2
+"N/mm2" = 1
+"km/h" = 0
+"Hz" = 3
+"" = 3
+
+[lint]
+# 句読点（計算書は「，．」）
+punctuation = { comma = "，", period = "．" }
+# 全角英数字を禁止（半角に統一）
+fullwidth-alnum = true
+# 半角カナを禁止
+halfwidth-kana = true
+
+# 表記ゆれ（左を右に統一）
+[[lint.replace]]
+from = "行なう"
+to = "行う"
+
+[[lint.replace]]
+from = "ﾓｰﾒﾝﾄ"
+to = "モーメント"
+
+[[lint.replace]]
+from = "曲げﾓｰﾒﾝﾄ"
+to = "曲げモーメント"
+
+[[lint.replace]]
+from = "下さい"
+to = "ください"
+
+[[lint.replace]]
+from = "出来る"
+to = "できる"
+
+[[lint.replace]]
+from = "但し"
+to = "ただし"
+
+[[lint.replace]]
+from = "及び"
+to = "および"
+
+[[lint.replace]]
+from = "又は"
+to = "または"
+
+# 単位表記の統一（大文字小文字の誤り）
+[[lint.unit]]
+from = "KN"
+to = "kN"
+
+[[lint.unit]]
+from = "kn"
+to = "kN"
+
+[[lint.unit]]
+from = "N/mm^2"
+to = "N/mm2"
+
+[[lint.unit]]
+from = "KM/H"
+to = "km/h"

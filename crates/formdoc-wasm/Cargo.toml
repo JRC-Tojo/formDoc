@@ -1,0 +1,13 @@
+[package]
+name = "formdoc-wasm"
+version.workspace = true
+edition.workspace = true
+description = "Web版のための wasm-bindgen ラッパー。Web Worker 内で formdoc-core を動かす"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+formdoc-core = { path = "../formdoc-core" }
+serde_json.workspace = true
+wasm-bindgen = "=0.2.129"

@@ -1,0 +1,23 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "formDoc",
+  "version": "0.1.0",
+  "identifier": "jp.formdoc.desktop",
+  "build": {
+    "frontendDist": "../dist-desktop",
+    "devUrl": "http://localhost:5173",
+    "beforeDevCommand": "npm run dev:desktop",
+    "beforeBuildCommand": "npm run build:desktop"
+  },
+  "app": {
+    "windows": [
+      { "label": "main", "title": "formDoc", "width": 1600, "height": 1000, "minWidth": 1100, "minHeight": 700 }
+    ],
+    "security": { "csp": null }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["nsis"],
+    "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.ico"]
+  }
+}

@@ -1,0 +1,174 @@
+# 部品（ブロック）定義。GUIの入力フォームはこの定義から自動生成される。
+# field.type: text / multiline / number / int / expr / var / varlist / select / bool / kijun / table / json / file
+# 描画は library/typst/formdoc の関数で行い、Typstコード生成は formdoc-core::codegen が担う。
+
+[heading]
+label = "見出し"
+icon = "H"
+help = "章・節の見出し。番号（§4． / 4.1 / (1) / 1)）は自動で付く。"
+fields = [
+  { key = "level", label = "階層", type = "select", options = ["1", "2", "3", "4"], default = "2", required = true },
+  { key = "text", label = "見出し文", type = "text", required = true },
+  { key = "symbol", label = "記号", type = "text", help = "作用の記号など（例: D, I, L_F）" },
+  { key = "kijun", label = "基準引用", type = "kijun", help = "右寄せで【鋼標準】第Ⅰ編 4.4.2 より を表示" },
+]
+
+[paragraph]
+label = "本文"
+icon = "¶"
+help = "本文の段落。{{L_b}} のように書くと変数の値（単位付き）が入る。"
+fields = [
+  { key = "text", label = "本文", type = "multiline", required = true },
+]
+
+[kijun]
+label = "基準引用"
+icon = "【】"
+help = "基準書の引用行。略称は登録済みのものから選ぶ。"
+fields = [
+  { key = "kijun", label = "基準", type = "kijun", required = true },
+  { key = "prefix", label = "前置きの文", type = "text", help = "例: 軸圧縮力を受ける板要素の照査（片縁支持板）" },
+]
+
+[vdef]
+label = "変数定義"
+icon = "x="
+help = "設計条件などの値を変数として定義する。以降の計算で名前を使って参照できる。"
+fields = [
+  { key = "name", label = "変数名", type = "var", required = true, help = "半角英字で始まる名前。添字は _ で（L_b, sigma_ck, gamma_f）" },
+  { key = "value", label = "値", type = "number", required = true },
+  { key = "unit", label = "単位", type = "text", help = "kN, kN/m, N/mm2, m, mm …" },
+  { key = "digits", label = "小数桁数", type = "int", help = "空欄なら単位ごとの既定値" },
+  { key = "desc", label = "説明", type = "text", help = "「ここに，」に表示される説明" },
+  { key = "display", label = "表示記号", type = "text", help = "数式表記を変える場合のみ（Typst数式。例: (b/t)_0）" },
+  { key = "label", label = "左の見出し", type = "text" },
+  { key = "show", label = "本文に表示", type = "bool", default = true },
+]
+
+[calc]
+label = "計算"
+icon = "="
+help = "式から値を計算し、「記号式 = 代入式 = 結果」の形で表示する。"
+fields = [
+  { key = "name", label = "変数名", type = "var", required = true },
+  { key = "expr", label = "式", type = "expr", required = true, help = "例: w * L^2 / 8、R_cr * sqrt(pi^2 * k_0 / (12 * (1 - nu^2)) * E / f_syk)" },
+  { key = "unit", label = "単位", type = "text" },
+  { key = "digits", label = "小数桁数", type = "int" },
+  { key = "desc", label = "説明", type = "text" },
+  { key = "display", label = "表示記号", type = "text" },
+  { key = "label", label = "左の見出し", type = "text" },
+  { key = "frac", label = "割り算を分数で表示", type = "bool", default = true },
+  { key = "units_in_sub", label = "代入式に単位を表示", type = "bool", default = false },
+  { key = "show_symbolic", label = "記号式を表示", type = "bool", default = true },
+  { key = "show", label = "本文に表示", type = "bool", default = true },
+]
+
+[sum]
+label = "内訳と合計"
+icon = "Σ"
+help = "荷重の内訳などを列挙し、下線の下に合計を表示する。"
+fields = [
+  { key = "items", label = "内訳", type = "table", columns = [
+      { key = "label", label = "名称", type = "text" },
+      { key = "name", label = "変数名", type = "var" },
+      { key = "expr", label = "式", type = "expr" },
+  ] },
+  { key = "name", label = "合計の変数名", type = "var", required = true },
+  { key = "unit", label = "単位", type = "text" },
+  { key = "digits", label = "小数桁数", type = "int" },
+  { key = "desc", label = "合計の説明", type = "text" },
+]
+
+[check]
+label = "照査"
+icon = "≦"
+help = "比較式を評価し、紙面上の値どうしで OK / NG を自動判定する。"
+fields = [
+  { key = "expr", label = "照査式", type = "expr", required = true, help = "例: b / t <= bt_0、M_d / M_ud <= 1.0" },
+  { key = "digits", label = "小数桁数", type = "int" },
+  { key = "unit", label = "単位", type = "text" },
+  { key = "lhs", label = "左辺の表示記号", type = "text", help = "Typst数式（例: (b/t)）" },
+  { key = "label", label = "左の見出し", type = "text" },
+]
+
+[where]
+label = "記号説明"
+icon = "ここに"
+help = "「ここに，」の記号説明。変数を空にすると、直前の計算で使った変数を自動で並べる。"
+fields = [
+  { key = "vars", label = "変数", type = "varlist" },
+]
+
+[table]
+label = "表"
+icon = "▦"
+help = "番号付きの表。セルに {{変数名}} と書くと値が入る。セルの結合・縦書きは各セルの設定で。"
+fields = [
+  { key = "caption", label = "表題", type = "text" },
+  { key = "data", label = "表", type = "grid" },
+]
+
+[fig-beam]
+label = "図：単純梁と荷重"
+icon = "⟂"
+help = "単純梁と集中荷重、影響線縦距の図。数値または変数名を指定。"
+fields = [
+  { key = "span", label = "支間長", type = "expr", required = true },
+  { key = "loads", label = "荷重位置（カンマ区切り）", type = "text", help = "左支点からの距離。例: 3.0, 5.8" },
+  { key = "eta", label = "影響線縦距（カンマ区切り）", type = "text" },
+  { key = "caption", label = "図題", type = "text" },
+]
+
+[fig-isection]
+label = "図：I形断面"
+icon = "I"
+help = "I形断面の寸法図。"
+fields = [
+  { key = "H", label = "高さ H", type = "expr", required = true },
+  { key = "B", label = "フランジ幅 B", type = "expr", required = true },
+  { key = "tw", label = "腹板厚 tw", type = "expr", required = true },
+  { key = "tf", label = "フランジ厚 tf", type = "expr", required = true },
+  { key = "note", label = "右側の注記", type = "text", help = "例: H−700×350×12×22（SM400）。{{H}} なども使える" },
+  { key = "caption", label = "図題", type = "text" },
+]
+
+[fig-shapes]
+label = "図：汎用図形"
+icon = "◇"
+help = "線・矩形・円・寸法線・文字を座標で配置する。座標に変数名を使える。"
+fields = [
+  { key = "shapes", label = "図形", type = "table", columns = [
+      { key = "kind", label = "種類", type = "select", options = ["line", "rect", "circle", "dim", "text"] },
+      { key = "x1", label = "x1", type = "expr" },
+      { key = "y1", label = "y1", type = "expr" },
+      { key = "x2", label = "x2 / 半径", type = "expr" },
+      { key = "y2", label = "y2", type = "expr" },
+      { key = "label", label = "文字", type = "text" },
+  ] },
+  { key = "scale", label = "縮尺（1単位=cm）", type = "number", default = 1.0 },
+  { key = "caption", label = "図題", type = "text" },
+]
+
+[image]
+label = "画像"
+icon = "🖼"
+help = "CAD図・写真・既存資料のPDFなど（PNG / JPG / SVG / PDF）。PDFはスクリーンショットではなく元データのまま挿入される。"
+fields = [
+  { key = "file", label = "ファイル", type = "file", required = true },
+  { key = "page", label = "PDFのページ", type = "int", default = 1, help = "PDFを選んだ場合に挿入するページ" },
+  { key = "width", label = "幅（%）", type = "int", default = 80 },
+  { key = "caption", label = "図題", type = "text" },
+]
+
+[pagebreak]
+label = "改ページ"
+icon = "⏎"
+fields = []
+
+[typst]
+label = "Typstコード"
+icon = "</>"
+help = "上級者向け。Typstを直接書く。社内標準パッケージの関数と、定義済み変数（v-変数名）を使える。"
+fields = [
+  { key = "code", label = "コード", type = "code", required = true },
+]

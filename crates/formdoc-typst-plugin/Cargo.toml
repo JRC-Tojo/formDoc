@@ -1,0 +1,14 @@
+[package]
+name = "formdoc-typst-plugin"
+version.workspace = true
+edition.workspace = true
+description = "formdoc-expr をTypstプラグイン（WASM）として公開する。コードモードでGUIと同じ計算・表記を使うため。"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+formdoc-expr = { path = "../formdoc-expr" }
+serde_json.workspace = true
+wasm-minimal-protocol = "0.2.1"
+serde.workspace = true

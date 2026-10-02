@@ -1,0 +1,17 @@
+[package]
+name = "formdoc-core"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+formdoc-expr = { path = "../formdoc-expr" }
+formdoc-library = { path = "../formdoc-library" }
+typst.workspace = true
+typst-layout = "=0.15.1"
+typst-pdf.workspace = true
+typst-svg.workspace = true
+typst-assets = { version = "=0.15.1", features = ["fonts"] }
+serde.workspace = true
+serde_json.workspace = true
+toml = "0.9"
+sha2 = "0.10"

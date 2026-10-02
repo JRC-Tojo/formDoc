@@ -1,0 +1,24 @@
+# Rust build output
+/target/
+ui/src-tauri/target/
+
+# Node
+node_modules/
+
+# 生成物（scripts/setup.mjs・ビルドで再生成）
+/library/typst/formdoc/*/formdoc_expr.wasm
+ui/src-tauri/gen/
+
+# 外部の同梱物（vendor.json に従い scripts/setup.mjs で取得）
+/library/fonts/
+/library/vendor/
+
+# 社内資料（パブリックリポジトリには含めない）
+/samples/
+__*.md
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

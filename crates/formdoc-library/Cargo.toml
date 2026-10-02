@@ -1,0 +1,8 @@
+[package]
+name = "formdoc-library"
+version.workspace = true
+edition.workspace = true
+description = "library/（社内標準Typstパッケージ・同梱パッケージ・フォント・テンプレート定義）をバイナリに埋め込む"
+
+[dependencies]
+include_dir = "0.7.4"

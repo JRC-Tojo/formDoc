@@ -1,0 +1,13 @@
+[package]
+name = "formdoc-cli"
+version.workspace = true
+edition.workspace = true
+description = "コマンドラインからの PDF 出力（コードモード・検証用）"
+
+[[bin]]
+name = "formdoc"
+path = "src/main.rs"
+
+[dependencies]
+formdoc-core = { path = "../formdoc-core" }
+serde_json.workspace = true
