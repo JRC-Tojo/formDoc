@@ -1,5 +1,6 @@
 //! 使い方:
 //!   formdoc compile <プロジェクトフォルダ> <出力.pdf> [--svg <出力フォルダ>]
+//!   formdoc gui <document.json> <出力.pdf> [--style <style.typ>] [--typst <出力.typ>]
 //!   formdoc fonts
 
 use std::path::{Path, PathBuf};
@@ -35,7 +36,16 @@ fn main() -> ExitCode {
             // GUI文書（document.json）を評価・組版する。--typst <file> で生成ソースも書き出す
             let text = std::fs::read_to_string(&args[1]).expect("document.json を読めません");
             let doc: formdoc_core::Document = serde_json::from_str(&text).expect("document.json の形式が不正です");
+            // スタイルは --style <file.typ>。省略時は文書の template と同じ id の同梱スタイル
+            let style = match args.iter().position(|a| a == "--style") {
+                Some(i) => std::fs::read_to_string(&args[i + 1]).expect("スタイルを読めません"),
+                None => formdoc_core::template::builtin_style(&doc.template).expect("同梱スタイルがありません"),
+            };
             let mut s = formdoc_core::Session::new();
+            if let Err(e) = s.set_style(&style) {
+                eprintln!("{e}");
+                return ExitCode::FAILURE;
+            }
             let r = s.update_document(doc, &[]);
             for i in &r.issues {
                 eprintln!("{:?} [{}] {}: {}", i.severity, i.block_id.as_deref().unwrap_or("-"), i.code, i.message);

@@ -1,5 +1,5 @@
 //! デスクトップ版。組版・計算は formdoc-core::api をそのまま呼ぶ（Web版の wasm と同じコード）。
-//! デスクトップ専用の機能（ローカルファイルの読み書き、フォルダ監視、VSCode起動）だけをここで実装する。
+//! デスクトップ専用の機能（ローカルファイルの読み書き、フォルダ監視、VSCode起動、システムフォルダ）だけをここで実装する。
 
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
@@ -9,7 +9,7 @@ use formdoc_core::Document;
 use notify::{RecursiveMode, Watcher};
 use serde::{Deserialize, Serialize};
 use tauri::ipc::{InvokeBody, Request, Response};
-use tauri::{AppHandle, Emitter, State};
+use tauri::{AppHandle, Emitter, Manager, State};
 
 #[derive(Default)]
 struct AppState {
@@ -56,13 +56,23 @@ fn catalog() -> R<api::Catalog> {
 }
 
 #[tauri::command]
-fn new_document(template: String) -> R<Document> {
-    api::new_document(&template)
+fn style_info(source: String) -> R<formdoc_core::template::Template> {
+    api::style_info(&source)
 }
 
 #[tauri::command]
-fn code_template(template: String) -> R<String> {
-    api::code_template(&template)
+fn set_style(state: State<'_, AppState>, source: String) -> R<formdoc_core::template::Template> {
+    state.session.lock().unwrap().set_style(&source)
+}
+
+#[tauri::command]
+fn new_document(state: State<'_, AppState>) -> R<Document> {
+    state.session.lock().unwrap().new_document()
+}
+
+#[tauri::command]
+fn code_template(state: State<'_, AppState>) -> R<String> {
+    state.session.lock().unwrap().code_template()
 }
 
 #[tauri::command]
@@ -71,9 +81,9 @@ async fn update_document(state: State<'_, AppState>, doc: Document, known: Vec<S
 }
 
 #[tauri::command]
-async fn update_project(state: State<'_, AppState>, files: Vec<ProjectFileIn>, template: String, known: Vec<String>) -> R<api::UpdateResult> {
+async fn update_project(state: State<'_, AppState>, files: Vec<ProjectFileIn>, known: Vec<String>) -> R<api::UpdateResult> {
     let files = files.into_iter().map(|f| (f.path, f.text.map(String::into_bytes).or(f.bytes).unwrap_or_default())).collect();
-    Ok(state.session.lock().unwrap().update_project(files, &template, &known))
+    Ok(state.session.lock().unwrap().update_project(files, &known))
 }
 
 #[tauri::command]
@@ -170,33 +180,156 @@ fn write_project_file(folder: String, path: String, text: String) -> R<()> {
     if path.contains("..") {
         return Err("プロジェクト外には書き込めません".into());
     }
+    if let Some(dir) = p.parent() {
+        std::fs::create_dir_all(dir).map_err(|e| format!("{} を作れません: {e}", dir.display()))?;
+    }
     std::fs::write(&p, text).map_err(|e| format!("{} に書き込めません: {e}", p.display()))
+}
+
+/// VSCode の実行ファイルを探す（PATH に code が無くても、既定のインストール先なら起動できるように）。
+#[cfg(windows)]
+fn find_vscode() -> Option<PathBuf> {
+    let mut cands = Vec::new();
+    if let Ok(local) = std::env::var("LOCALAPPDATA") {
+        cands.push(PathBuf::from(local).join("Programs").join("Microsoft VS Code").join("Code.exe"));
+    }
+    for var in ["ProgramFiles", "ProgramFiles(x86)"] {
+        if let Ok(pf) = std::env::var(var) {
+            cands.push(PathBuf::from(pf).join("Microsoft VS Code").join("Code.exe"));
+        }
+    }
+    cands.into_iter().find(|p| p.exists())
 }
 
 #[tauri::command]
 fn open_in_vscode(folder: String) -> R<()> {
     let main = PathBuf::from(&folder).join("main.typ");
     #[cfg(windows)]
-    let status = {
+    let ok = {
         use std::os::windows::process::CommandExt;
         const CREATE_NO_WINDOW: u32 = 0x0800_0000;
-        // code は code.cmd のため cmd 経由で起動する
-        std::process::Command::new("cmd")
-            .args(["/C", "code", &folder, &main.to_string_lossy()])
-            .creation_flags(CREATE_NO_WINDOW)
-            .status()
+        match find_vscode() {
+            Some(exe) => std::process::Command::new(exe).arg(&folder).arg(&main).spawn().is_ok(),
+            // code は code.cmd のため cmd 経由で起動する。空白・日本語を含むパスは引用符で囲む
+            None => std::process::Command::new("cmd")
+                .raw_arg(format!("/C code \"{}\" \"{}\"", folder, main.display()))
+                .creation_flags(CREATE_NO_WINDOW)
+                .status()
+                .is_ok_and(|s| s.success()),
+        }
     };
     #[cfg(not(windows))]
-    let status = std::process::Command::new("code").arg(&folder).arg(&main).status();
-    match status {
-        Ok(s) if s.success() => Ok(()),
-        _ => {
-            // VSCode が無い場合はフォルダを開く
-            #[cfg(windows)]
-            let _ = std::process::Command::new("explorer").arg(&folder).spawn();
-            Err("VSCode（code コマンド）が見つかりませんでした。フォルダを開きました。VSCodeの「シェルコマンド: PATH内に 'code' コマンドをインストール」を確認してください".into())
+    let ok = std::process::Command::new("code").arg(&folder).arg(&main).spawn().is_ok();
+    if ok {
+        return Ok(());
+    }
+    // VSCode が無い場合はフォルダを開く
+    let _ = open_path(folder);
+    Err("VSCode が見つかりませんでした。フォルダを開きました。VSCodeをインストールするか、VSCodeで「シェルコマンド: PATH内に 'code' コマンドをインストール」を実行してください".into())
+}
+
+/// フォルダ（またはファイル）を OS の既定のアプリで開く。
+#[tauri::command]
+fn open_path(path: String) -> R<()> {
+    #[cfg(windows)]
+    let r = std::process::Command::new("explorer").arg(&path).spawn();
+    #[cfg(target_os = "macos")]
+    let r = std::process::Command::new("open").arg(&path).spawn();
+    #[cfg(all(unix, not(target_os = "macos")))]
+    let r = std::process::Command::new("xdg-open").arg(&path).spawn();
+    r.map(|_| ()).map_err(|e| format!("{path} を開けません: {e}"))
+}
+
+// ---------- システムフォルダ（設定・スタイル・テンプレート） ----------
+
+/// システムフォルダ（Windows: %APPDATA%\formDoc）。無ければ作り、同梱スタイルのうち
+/// まだ無いものをコピーする（利用者が編集したファイルは上書きしない）。
+fn system_root(app: &AppHandle) -> R<PathBuf> {
+    let root = app.path().data_dir().map_err(|e| e.to_string())?.join("formDoc");
+    for sub in ["styles", "templates", "projects"] {
+        std::fs::create_dir_all(root.join(sub)).map_err(|e| format!("{} を作れません: {e}", root.display()))?;
+    }
+    for st in api::catalog()?.styles {
+        let p = root.join("styles").join(&st.file);
+        if !p.exists() {
+            let _ = std::fs::write(&p, st.source);
         }
     }
+    Ok(root)
+}
+
+#[derive(Serialize)]
+struct SystemInfo {
+    root: String,
+    styles: String,
+    templates: String,
+    projects: String,
+}
+
+#[tauri::command]
+fn system_info(app: AppHandle) -> R<SystemInfo> {
+    let root = system_root(&app)?;
+    let s = |p: PathBuf| p.to_string_lossy().into_owned();
+    Ok(SystemInfo { styles: s(root.join("styles")), templates: s(root.join("templates")), projects: s(root.join("projects")), root: s(root) })
+}
+
+#[tauri::command]
+fn read_settings(app: AppHandle) -> R<Option<String>> {
+    Ok(std::fs::read_to_string(system_root(&app)?.join("settings.json")).ok())
+}
+
+#[tauri::command]
+fn write_settings(app: AppHandle, text: String) -> R<()> {
+    std::fs::write(system_root(&app)?.join("settings.json"), text).map_err(|e| e.to_string())
+}
+
+#[derive(Serialize)]
+struct TextFile {
+    path: String,
+    /// 読み込んだフォルダ
+    folder: String,
+    text: String,
+}
+
+/// フォルダ直下の指定拡張子のファイルを読む（読めないファイルは飛ばす）。
+fn read_dir_ext(dir: &Path, ext: &str, out: &mut Vec<TextFile>) {
+    let Ok(rd) = std::fs::read_dir(dir) else { return };
+    let mut paths: Vec<PathBuf> = rd.filter_map(|e| e.ok().map(|e| e.path())).collect();
+    paths.sort();
+    for p in paths {
+        if p.extension().and_then(|e| e.to_str()).is_some_and(|e| e.eq_ignore_ascii_case(ext)) {
+            if let Ok(text) = std::fs::read_to_string(&p) {
+                out.push(TextFile { path: p.to_string_lossy().into_owned(), folder: dir.to_string_lossy().into_owned(), text });
+            }
+        }
+    }
+}
+
+#[tauri::command]
+fn list_styles(app: AppHandle) -> R<Vec<TextFile>> {
+    let mut out = Vec::new();
+    read_dir_ext(&system_root(&app)?.join("styles"), "typ", &mut out);
+    Ok(out)
+}
+
+/// テンプレート（.fdtpl）を、システムフォルダと指定フォルダから読む。
+#[tauri::command]
+fn list_templates(app: AppHandle, folders: Vec<String>) -> R<Vec<TextFile>> {
+    let mut out = Vec::new();
+    read_dir_ext(&system_root(&app)?.join("templates"), "fdtpl", &mut out);
+    for f in folders {
+        read_dir_ext(Path::new(&f), "fdtpl", &mut out);
+    }
+    Ok(out)
+}
+
+/// 起動時に渡されたファイル（.fdoc をダブルクリックして起動した場合）。
+#[tauri::command]
+fn startup_file() -> Option<String> {
+    std::env::args().skip(1).find(|a| {
+        let l = a.to_ascii_lowercase();
+        (l.ends_with(".fdoc") || l.ends_with(".json")) && Path::new(a).exists()
+    })
 }
 
 #[tauri::command]
@@ -226,6 +359,8 @@ pub fn run() {
         .manage(AppState::default())
         .invoke_handler(tauri::generate_handler![
             catalog,
+            style_info,
+            set_style,
             new_document,
             code_template,
             update_document,
@@ -239,6 +374,13 @@ pub fn run() {
             read_project,
             write_project_file,
             open_in_vscode,
+            open_path,
+            system_info,
+            read_settings,
+            write_settings,
+            list_styles,
+            list_templates,
+            startup_file,
             watch_project,
             unwatch_project,
         ])

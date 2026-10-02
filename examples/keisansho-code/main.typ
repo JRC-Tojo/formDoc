@@ -1,5 +1,6 @@
 #import "@local/formdoc:0.1.0": *
-#show: keisansho.with(title: "主桁の設計計算書", project: "〇〇駅ホーム改良設計", author: "設計8U", date: "2026年10月", chapter-start: 4)
+#import "style.typ": style
+#show: style.with(title: "主桁の設計計算書", project: "〇〇駅ホーム改良設計", author: "設計8U", date: "2026年10月", chapter-start: 4)
 
 = 主桁の設計
 == 作用

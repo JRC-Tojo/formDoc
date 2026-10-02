@@ -1,4 +1,4 @@
-//! 表記Lint。テンプレートの規則（template.toml の [lint]）に従い、文章の表記ぶれを検出する。
+//! 表記Lint。スタイルの規則（info.lint）に従い、文章の表記ぶれを検出する。
 //! 検出結果には置換内容（fix）を付け、GUIからワンクリックで直せるようにする。
 
 use crate::evaluate::{Fix, Issue, Severity};
@@ -190,7 +190,7 @@ pub fn lint_source(source: &str, t: &Template) -> Vec<Issue> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::template::load_template;
+    use crate::template::{builtin_style, parse_style};
 
     fn para(text: &str) -> Document {
         let mut props = serde_json::Map::new();
@@ -207,7 +207,7 @@ mod tests {
 
     #[test]
     fn punctuation_and_width() {
-        let t = load_template("keisansho").unwrap();
+        let t = parse_style(&builtin_style("keisansho").unwrap()).unwrap();
         let issues = lint(&para("設計を行なう。荷重は１０ｋＮとする、ただし{{L_b}}。"), &t);
         let codes: Vec<&str> = issues.iter().map(|i| i.code.as_str()).collect();
         assert!(codes.contains(&"lint-punctuation"));

@@ -6,9 +6,43 @@
 
 use serde::Serialize;
 
-use crate::evaluate::{Report, Severity, refs_in_text};
-use crate::model::{Block, Document, Grid};
-use crate::template::Template;
+use serde_json::Value;
+
+use crate::evaluate::{Report, Severity};
+use crate::model::{Block, Document, Grid, parse_ymd};
+use crate::template::{MetaField, Template};
+
+/// 社内標準パッケージ。
+pub const PACKAGE: &str = "@local/formdoc:0.1.0";
+
+/// 文書情報の1項目を style 関数の引数にする。値が無ければ None（スタイル側の既定値を使う）。
+fn meta_arg(f: &MetaField, v: Option<&Value>) -> Option<String> {
+    let v = v.filter(|v| !v.is_null()).or(f.default.as_ref())?;
+    Some(match f.kind.as_str() {
+        "int" => match v {
+            Value::Number(n) => n.as_f64().map(|x| x.round() as i64).unwrap_or(0).to_string(),
+            Value::String(s) => s.trim().parse::<i64>().ok()?.to_string(),
+            _ => return None,
+        },
+        "bool" => v.as_bool().unwrap_or(false).to_string(),
+        "date" => {
+            let s = v.as_str().unwrap_or("").trim();
+            match parse_ymd(s) {
+                Some((y, m, d)) => format!("datetime(year: {y}, month: {m}, day: {d})"),
+                None if s.is_empty() => "none".into(),
+                None => lit(s),
+            }
+        }
+        _ => match v.as_str().map(str::trim) {
+            Some("") | None => "none".into(),
+            Some(s) => lit(s),
+        },
+    })
+}
+
+fn style_args(doc: &Document, t: &Template) -> Vec<String> {
+    t.fields.iter().filter_map(|f| meta_arg(f, doc.meta.get(&f.key)).map(|a| format!("{}: {a}", f.key))).collect()
+}
 
 #[derive(Debug, Clone, Serialize)]
 pub struct BlockSpan {
@@ -131,7 +165,7 @@ fn rounding_str(r: formdoc_expr::Rounding) -> &'static str {
     }
 }
 
-fn table_code(b: &Block, report: &Report) -> String {
+fn table_code(b: &Block) -> String {
     let grid: Grid = b.props.get("data").cloned().and_then(|v| serde_json::from_value(v).ok()).unwrap_or_default();
     let ncols = grid.rows.iter().map(Vec::len).max().unwrap_or(1).max(1);
     // 結合で覆われるセルを飛ばす
@@ -154,7 +188,6 @@ fn table_code(b: &Block, report: &Report) -> String {
                 format!("[#vt({})]", lit(&c.text))
             } else {
                 // 表のセルの変数は値のみ（単位は見出しに書く）
-                let _ = report;
                 text_content(&c.text, false)
             };
             let mut args = Vec::new();
@@ -310,7 +343,7 @@ fn block_code(b: &Block, t: &Template, report: &Report) -> String {
             let vars = res.map(|r| r.vars.clone()).unwrap_or_default();
             format!("#where-list({})", vars.iter().map(|v| ident(v)).collect::<Vec<_>>().join(", "))
         }
-        "table" => table_code(b, report),
+        "table" => table_code(b),
         "fig-beam" => {
             let list = |key: &str| -> String {
                 let items: Vec<String> = b
@@ -401,21 +434,16 @@ fn error_box(b: &Block, report: &Report) -> String {
 }
 
 /// GUI文書をTypstソースに変換する。
-/// `for_export` が true のときはエラーのあるブロックを赤枠ではなく出力から除く（呼び出し側でエクスポート自体を止める想定）。
+/// エラーのあるブロックは赤枠のメッセージに置き換える（PDF出力は呼び出し側で止める）。
 pub fn generate(doc: &Document, t: &Template, report: &Report) -> Generated {
-    let m = &doc.meta;
     let mut out = String::new();
-    out.push_str(&format!("#import \"{}\": *\n", t.package));
-    out.push_str(&format!(
-        "#show: {}.with(title: {}, project: {}, author: {}, date: {}, chapter-start: {}, cover: {})\n\n",
-        t.show,
-        lit(if m.title.is_empty() { &t.name } else { &m.title }),
-        if m.project.is_empty() { "none".into() } else { lit(&m.project) },
-        if m.author.is_empty() { "none".into() } else { lit(&m.author) },
-        if m.date.is_empty() { "none".into() } else { lit(&m.date_text()) },
-        m.chapter_start.max(1),
-        m.cover
-    ));
+    out.push_str(&format!("#import \"{PACKAGE}\": *
+"));
+    out.push_str("#import \"style.typ\": style
+");
+    out.push_str(&format!("#show: style.with({})
+
+", style_args(doc, t).join(", ")));
     let mut spans = Vec::new();
     for b in &doc.blocks {
         let has_error = report.blocks.get(&b.id).is_some_and(|r| r.status == "error");
@@ -429,6 +457,5 @@ pub fn generate(doc: &Document, t: &Template, report: &Report) -> Generated {
         out.push_str("\n\n");
         spans.push(BlockSpan { id: b.id.clone(), start, end: out.lines().count() });
     }
-    let _ = refs_in_text;
     Generated { source: out, spans }
 }

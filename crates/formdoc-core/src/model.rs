@@ -15,6 +15,7 @@ pub struct Document {
     /// 作成に使ったライブラリの版。開いた環境の版と異なれば警告する。
     #[serde(default)]
     pub library: String,
+    /// スタイルの id（スタイルの中身は保存ファイルに同梱する）
     pub template: String,
     #[serde(default)]
     pub meta: Meta,
@@ -29,47 +30,52 @@ fn schema_version() -> u32 {
     SCHEMA_VERSION
 }
 
-#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]
-pub struct Meta {
-    #[serde(default)]
-    pub title: String,
-    #[serde(default)]
-    pub project: String,
-    #[serde(default)]
-    pub author: String,
-    /// "2026-10-02" 形式
-    #[serde(default)]
-    pub date: String,
-    #[serde(default = "one")]
-    pub chapter_start: u32,
-    #[serde(default = "yes")]
-    pub cover: bool,
-}
+/// 文書情報（表紙など）。キーはスタイルの `info.fields` の key（= style 関数の引数名）。
+/// 旧形式の `chapter_start` は読み込み時に `chapter-start` に読み替える。
+#[derive(Debug, Clone, Default, Serialize, PartialEq)]
+#[serde(transparent)]
+pub struct Meta(pub Map<String, Value>);
 
-fn one() -> u32 {
-    1
-}
-
-fn yes() -> bool {
-    true
+impl<'de> Deserialize<'de> for Meta {
+    fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
+        let mut m = Map::<String, Value>::deserialize(d)?;
+        if let Some(v) = m.remove("chapter_start") {
+            m.entry("chapter-start").or_insert(v);
+        }
+        Ok(Meta(m))
+    }
 }
 
 impl Meta {
-    pub fn ymd(&self) -> Option<(i32, u8, u8)> {
-        let mut it = self.date.split(['-', '/', '.']);
-        let y = it.next()?.trim().parse().ok()?;
-        let m = it.next()?.trim().parse().ok()?;
-        let d = it.next()?.trim().parse().ok()?;
-        Some((y, m, d))
+    pub fn get(&self, key: &str) -> Option<&Value> {
+        self.0.get(key).filter(|v| !v.is_null())
     }
 
-    /// 表紙に出す日付（和文表記）。
-    pub fn date_text(&self) -> String {
-        match self.ymd() {
-            Some((y, m, _)) => format!("{y}年{m}月"),
-            None => self.date.clone(),
-        }
+    pub fn str(&self, key: &str) -> &str {
+        self.get(key).and_then(Value::as_str).unwrap_or("")
     }
+
+    pub fn set(&mut self, key: &str, v: impl Into<Value>) {
+        self.0.insert(key.to_string(), v.into());
+    }
+
+    /// 日付（"2026-10-02" 形式）を年月日にする。
+    pub fn ymd_of(&self, key: &str) -> Option<(i32, u8, u8)> {
+        parse_ymd(self.str(key))
+    }
+
+    /// PDFの作成日時に使う日付（"date" 欄）。
+    pub fn ymd(&self) -> Option<(i32, u8, u8)> {
+        self.ymd_of("date")
+    }
+}
+
+pub fn parse_ymd(s: &str) -> Option<(i32, u8, u8)> {
+    let mut it = s.split(['-', '/', '.']);
+    let y = it.next()?.trim().parse().ok()?;
+    let m = it.next()?.trim().parse().ok()?;
+    let d = it.next()?.trim().parse().ok()?;
+    Some((y, m, d))
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]

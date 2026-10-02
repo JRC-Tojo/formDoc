@@ -23,14 +23,28 @@ pub fn catalog() -> Result<String, JsError> {
     serde_json::to_string(&api::catalog().map_err(err)?).map_err(err)
 }
 
+/// スタイルの info を読む（一覧表示用。セッションは変えない）。
 #[wasm_bindgen]
-pub fn new_document(template: &str) -> Result<String, JsError> {
-    serde_json::to_string(&api::new_document(template).map_err(err)?).map_err(err)
+pub fn style_info(source: &str) -> Result<String, JsError> {
+    serde_json::to_string(&api::style_info(source).map_err(err)?).map_err(err)
+}
+
+/// GUIモードのスタイルを設定し、その info を返す。
+#[wasm_bindgen]
+pub fn set_style(source: &str) -> Result<String, JsError> {
+    let t = SESSION.with(|s| s.borrow_mut().set_style(source)).map_err(err)?;
+    serde_json::to_string(&t).map_err(err)
 }
 
 #[wasm_bindgen]
-pub fn code_template(template: &str) -> Result<String, JsError> {
-    api::code_template(template).map_err(err)
+pub fn new_document() -> Result<String, JsError> {
+    let d = SESSION.with(|s| s.borrow().new_document()).map_err(err)?;
+    serde_json::to_string(&d).map_err(err)
+}
+
+#[wasm_bindgen]
+pub fn code_template() -> Result<String, JsError> {
+    SESSION.with(|s| s.borrow().code_template()).map_err(err)
 }
 
 /// GUI文書を更新する。known は既に表示済みのページハッシュ（JSON配列）。
@@ -43,13 +57,13 @@ pub fn update_document(doc_json: &str, known_json: &str) -> Result<String, JsErr
 
 /// コードモード。files_json は [{"path": "main.typ", "text": "..."}]
 #[wasm_bindgen]
-pub fn update_project(files_json: &str, template: &str, known_json: &str) -> Result<String, JsError> {
+pub fn update_project(files_json: &str, known_json: &str) -> Result<String, JsError> {
     let files: Vec<api::ProjectFile> = serde_json::from_str(files_json).map_err(err)?;
     let files = files
         .into_iter()
         .map(|f| (f.path, f.text.map(String::into_bytes).or(f.bytes).unwrap_or_default()))
         .collect();
-    let r = SESSION.with(|s| s.borrow_mut().update_project(files, template, &known(known_json)));
+    let r = SESSION.with(|s| s.borrow_mut().update_project(files, &known(known_json)));
     serde_json::to_string(&r).map_err(err)
 }
 
