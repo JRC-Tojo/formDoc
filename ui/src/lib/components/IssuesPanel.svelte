@@ -22,10 +22,11 @@
 
   function go(i: Issue) {
     if (i.block_id) app.selectedId = i.block_id;
+    else if (i.field?.startsWith('meta.') || i.code === 'style') app.selectedId = null;
   }
 
   function blockLabel(i: Issue): string {
-    if (!i.block_id) return app.mode === 'code' ? (i.field ?? '') : '文書';
+    if (!i.block_id) return app.mode === 'code' ? (i.field ?? '') : '文書情報';
     const b = app.doc?.blocks.find((x) => x.id === i.block_id);
     return b ? (app.catalog?.components[b.kind]?.label ?? b.kind) : '';
   }

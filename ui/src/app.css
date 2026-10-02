@@ -15,10 +15,37 @@
   --ok: #2e7d32;
   --radius: 6px;
   --mono: 'Cascadia Code', Consolas, 'Courier New', monospace;
+  --input-bg: #fff;
+  --preview-bg: #e3e6ea;
+  /* 設定の「文字の大きさ」（1 = 100%） */
+  --font-scale: 1;
+  color-scheme: light;
   font-family: 'Noto Sans JP', 'Yu Gothic UI', 'Meiryo UI', system-ui, sans-serif;
-  font-size: 13px;
+  font-size: calc(13px * var(--font-scale));
   color: var(--text);
   background: var(--bg);
+}
+
+/* ダークモード：設定が「OSに合わせる」ならOSの設定、「ダーク」なら常に */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --bg: #15181c; --panel: #1d2126; --panel-2: #23282e; --line: #2f353d; --line-strong: #3d454f;
+    --text: #e3e7ec; --muted: #9aa5b1; --accent: #6ea1f0; --accent-weak: #22324a;
+    --error: #ef6b6b; --error-weak: #3a2124; --warn: #e0a24a; --warn-weak: #3a2f1c; --ok: #6cc070;
+    --input-bg: #15181c; --preview-bg: #0f1114; color-scheme: dark;
+  }
+}
+:root[data-theme='dark'] {
+  --bg: #15181c; --panel: #1d2126; --panel-2: #23282e; --line: #2f353d; --line-strong: #3d454f;
+  --text: #e3e7ec; --muted: #9aa5b1; --accent: #6ea1f0; --accent-weak: #22324a;
+  --error: #ef6b6b; --error-weak: #3a2124; --warn: #e0a24a; --warn-weak: #3a2f1c; --ok: #6cc070;
+  --input-bg: #15181c; --preview-bg: #0f1114; color-scheme: dark;
+}
+
+/* 印刷は文書のページだけ（App.svelte の .print-pages）。用紙は A4、余白は文書側で持つ */
+@page { size: A4; margin: 0; }
+@media print {
+  .backdrop, .toast { display: none !important; }
 }
 * { box-sizing: border-box; }
 html, body, #app { margin: 0; height: 100%; }
@@ -29,10 +56,10 @@ button {
 button:hover:not(:disabled) { background: var(--accent-weak); border-color: var(--accent); }
 button:disabled { opacity: 0.45; cursor: not-allowed; }
 button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
-button.primary:hover:not(:disabled) { background: #174c99; }
+button.primary:hover:not(:disabled) { filter: brightness(0.9); }
 button.ghost { border-color: transparent; background: transparent; }
 input, textarea, select {
-  font: inherit; color: inherit; background: #fff; border: 1px solid var(--line-strong);
+  font: inherit; color: inherit; background: var(--input-bg); border: 1px solid var(--line-strong);
   border-radius: 4px; padding: 4px 6px; width: 100%;
 }
 input:focus, textarea:focus, select:focus { outline: 2px solid var(--accent-weak); border-color: var(--accent); }

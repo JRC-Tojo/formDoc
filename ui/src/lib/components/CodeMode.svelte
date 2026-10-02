@@ -49,18 +49,18 @@
       <button onclick={() => app.openCodeFolder()} title="プロジェクトフォルダ（main.typ）を開いて監視します">フォルダを開く…</button>
     </Gate>
     <Gate cap="openInVSCode">
-      <button onclick={() => app.openInVSCode()} title="フォルダをVSCodeで開き、保存のたびにプレビューを更新します">VSCodeで開く</button>
+      <button onclick={() => app.openInVSCode()} title="VSCodeで開き、保存のたびにプレビューを更新します。フォルダを選んでいなければ、システムフォルダの projects に作業フォルダ（main.typ・style.typ）を作って開きます">VSCodeで開く</button>
     </Gate>
     {#if app.codeFolder}
       <span class="folder small mono" title={app.codeFolder}>監視中: {app.codeFolder}</span>
       <button class="small" onclick={() => app.closeCodeFolder()}>監視をやめる</button>
     {/if}
     <span class="spacer"></span>
-    <span class="small muted">#import "@local/formdoc:0.1.0": * の関数を使えます</span>
+    <span class="small muted">@local/formdoc の関数と、style.typ（スタイル「{app.style?.info.name}」）を使えます</span>
   </div>
   {#if app.codeFolder}
     <div class="external muted">
-      <p>外部エディタで <code>main.typ</code> を編集して保存すると、右のプレビューが更新されます。</p>
+      <p>外部エディタで <code>main.typ</code> を編集して保存すると、右のプレビューが更新されます。体裁は同じフォルダの <code>style.typ</code> で決まります。</p>
       <p class="small">GUIと同じ社内標準パッケージ（@local/formdoc）で組版されるため、体裁・計算結果はGUIで作った文書と一致します。</p>
     </div>
   {/if}

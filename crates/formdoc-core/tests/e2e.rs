@@ -150,3 +150,20 @@ fn old_meta_chapter_start_is_migrated() {
     s.update_document(doc, &[]);
     assert!(s.export_typst().unwrap().contains("chapter-start: 4"));
 }
+
+#[test]
+fn builtin_snippets_compile_without_errors() {
+    // 同梱テンプレート（I形断面・単純梁）をそのまま文書にして組版できる。汎用図形の評価値も返る
+    let snippets = formdoc_core::template::builtin_snippets();
+    assert!(snippets.len() >= 2);
+    for sn in snippets {
+        let mut s = session();
+        let mut doc = s.new_document().unwrap();
+        doc.blocks = serde_json::from_value(sn["blocks"].clone()).unwrap();
+        let r = s.update_document(doc, &[]);
+        let errors: Vec<_> = r.issues.iter().filter(|i| format!("{:?}", i.severity) == "Error").collect();
+        assert!(errors.is_empty(), "{}: {errors:?}", sn["name"]);
+        let shapes = r.blocks.values().find(|b| !b.shapes.is_empty()).expect("図形の評価値");
+        assert!(shapes.shapes.iter().all(|v| v.x1.is_some() || !v.pts.is_empty()));
+    }
+}

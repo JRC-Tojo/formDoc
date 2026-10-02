@@ -31,7 +31,7 @@
 </div>
 
 <style>
-  .preview { display: flex; flex-direction: column; height: 100%; min-height: 0; background: #e3e6ea; }
+  .preview { display: flex; flex-direction: column; height: 100%; min-height: 0; background: var(--preview-bg); }
   .bar { display: flex; justify-content: space-between; align-items: center; padding: 4px 10px; background: var(--panel); border-bottom: 1px solid var(--line); }
   .zoom { display: flex; align-items: center; gap: 2px; }
   .zoom button { padding: 0 8px; }

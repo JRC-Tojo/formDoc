@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { app } from './lib/state.svelte';
-  import { TARGET } from './lib/platform';
+  import { TARGET, has } from './lib/platform';
   import Gate from './lib/components/Gate.svelte';
   import Outline from './lib/components/Outline.svelte';
   import Inspector from './lib/components/Inspector.svelte';
@@ -9,40 +9,83 @@
   import Preview from './lib/components/Preview.svelte';
   import IssuesPanel from './lib/components/IssuesPanel.svelte';
   import CodeMode from './lib/components/CodeMode.svelte';
+  import InsertDialog from './lib/components/InsertDialog.svelte';
+  import SaveTemplateDialog from './lib/components/SaveTemplateDialog.svelte';
+  import SettingsDialog from './lib/components/SettingsDialog.svelte';
+  import ShapeEditor from './lib/components/ShapeEditor.svelte';
 
-  let newMenu = $state(false);
+  let recentMenu = $state(false);
+
+  const docTitle = $derived(`${app.dirty ? '● ' : ''}${app.doc?.meta.title || '無題'} - formDoc`);
+  $effect(() => {
+    document.title = docTitle;
+  });
 
   onMount(() => {
     app.init();
     const onKey = (e: KeyboardEvent) => {
-      if (!(e.ctrlKey || e.metaKey)) return;
+      if (!(e.ctrlKey || e.metaKey) || app.dialog) return;
       const k = e.key.toLowerCase();
+      const inCode = !!(e.target as HTMLElement)?.closest('.cm-editor');
       if (k === 's') {
         e.preventDefault();
         if (app.mode === 'gui') app.save(e.shiftKey);
-      } else if (k === 'z' && app.mode === 'gui' && !(e.target as HTMLElement)?.closest('.cm-editor')) {
+      } else if (k === 'p') {
+        // ブラウザ標準の印刷（画面全体）ではなく、文書だけを印刷する
+        e.preventDefault();
+        app.print();
+      } else if (k === 'z' && app.mode === 'gui' && !inCode) {
         e.preventDefault();
         e.shiftKey ? app.redo() : app.undo();
-      } else if (k === 'y' && app.mode === 'gui' && !(e.target as HTMLElement)?.closest('.cm-editor')) {
+      } else if (k === 'y' && app.mode === 'gui' && !inCode) {
         e.preventDefault();
         app.redo();
       }
     };
     window.addEventListener('keydown', onKey);
+
+    // 未保存の変更があるときは閉じさせない（Web：タブ・ウィンドウを閉じる／再読み込み）
     const onUnload = (e: BeforeUnloadEvent) => {
-      if (app.dirty && TARGET === 'desktop') e.preventDefault();
+      if (app.dirty) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
     };
     window.addEventListener('beforeunload', onUnload);
+
+    // ブラウザ（WebView2）標準の右クリックメニューは出さない。入力欄では切り取り・貼り付けのために残す
+    const onContext = (e: MouseEvent) => {
+      const t = e.target as HTMLElement;
+      if (!t?.closest('input, textarea, [contenteditable], .cm-editor')) e.preventDefault();
+    };
+    window.addEventListener('contextmenu', onContext);
+
+    // デスクトップ：ウィンドウを閉じる前に確認する
+    let unlistenClose: (() => void) | null = null;
+    if (TARGET === 'desktop') {
+      (async () => {
+        const { getCurrentWindow } = await import('@tauri-apps/api/window');
+        const { ask } = await import('@tauri-apps/plugin-dialog');
+        const win = getCurrentWindow();
+        unlistenClose = await win.onCloseRequested(async (ev) => {
+          if (!app.dirty) return;
+          ev.preventDefault();
+          const ok = await ask('保存していない変更があります。破棄して閉じますか？', { title: 'formDoc', kind: 'warning', okLabel: '破棄して閉じる', cancelLabel: 'キャンセル' });
+          if (ok) await win.destroy();
+        });
+      })();
+    }
     return () => {
       window.removeEventListener('keydown', onKey);
       window.removeEventListener('beforeunload', onUnload);
+      window.removeEventListener('contextmenu', onContext);
+      unlistenClose?.();
     };
   });
 
-  async function newDoc(t: string) {
-    newMenu = false;
-    if (app.dirty && !confirm('保存していない変更があります。破棄して新規作成しますか？')) return;
-    await app.newDocument(t);
+  function openRecent(p: string) {
+    recentMenu = false;
+    app.openPath(p, true);
   }
 </script>
 
@@ -58,17 +101,23 @@
 
     {#if app.mode === 'gui'}
       <div class="group">
-        <span class="new">
-          <button onclick={() => (newMenu = !newMenu)}>新規</button>
-          {#if newMenu}
+        <button onclick={() => app.newDocument()} title="新しい文書（文書情報でスタイルを選んで始めます）">新規</button>
+        <span class="open">
+          <button onclick={() => app.open()}>開く…</button><Gate cap="recentFiles"><button class="drop" onclick={() => (recentMenu = !recentMenu)} title="最近使ったファイル">▾</button></Gate>
+          {#if recentMenu}
+            <div class="menu-backdrop" role="presentation" onmousedown={() => (recentMenu = false)}></div>
             <div class="menu">
-              {#each app.catalog?.templates ?? [] as t}
-                <button class="ghost" onclick={() => newDoc(t.id)} title={t.description}>{t.name}</button>
+              <div class="small muted head">最近使ったファイル</div>
+              {#each app.settings.recent as p}
+                <button class="ghost" onclick={() => openRecent(p)} title={p}>
+                  <span class="fname">{p.split(/[\\/]/).pop()}</span><span class="small muted fpath">{p}</span>
+                </button>
+              {:else}
+                <div class="small muted head">まだありません</div>
               {/each}
             </div>
           {/if}
         </span>
-        <button onclick={() => app.open()}>開く…</button>
         <button onclick={() => app.save()} title="Ctrl+S">保存{app.dirty ? ' *' : ''}</button>
         <Gate cap="nativeSaveDialog"><button onclick={() => app.save(true)} title="Ctrl+Shift+S">名前を付けて保存…</button></Gate>
       </div>
@@ -77,13 +126,15 @@
         <button onclick={() => app.redo()} title="やり直し (Ctrl+Y)">↷</button>
       </div>
       <div class="group">
-        <button onclick={() => app.convertToCode()} title="この文書を、同じ体裁のTypstコードに変換してコードモードで開きます">Typstに変換</button>
-        <button onclick={() => app.exportTypst()}>Typst書き出し</button>
+        <button onclick={() => app.convertToCode()} disabled={!app.style} title="この文書を、同じ体裁のTypstコードに変換してコードモードで開きます">Typstに変換</button>
+        <button onclick={() => app.exportTypst()} disabled={!app.style}>Typst書き出し</button>
       </div>
     {/if}
 
     <span class="spacer"></span>
     {#if app.filePath}<span class="path small muted" title={app.filePath}>{app.filePath}</span>{/if}
+    <button onclick={() => (app.dialog = { kind: 'settings' })} title="設定（テーマ・文字の大きさ・最近使ったファイル・テンプレートのフォルダ）">⚙ 設定</button>
+    <button disabled={!app.result?.exportable} onclick={() => app.print()} title={app.result?.exportable ? '文書を印刷 (Ctrl+P)' : 'エラーを解消すると印刷できます'}>印刷</button>
     <button class="primary" disabled={!app.result?.exportable} onclick={() => app.exportPdf()}
       title={app.result?.exportable ? 'PDFを出力' : 'エラーを解消するとPDFを出力できます'}>PDF出力</button>
   </header>
@@ -111,6 +162,23 @@
   {/if}
 </div>
 
+{#if app.dialog?.kind === 'insert'}
+  <InsertDialog />
+{:else if app.dialog?.kind === 'saveTemplate'}
+  <SaveTemplateDialog blockId={app.dialog.blockId} />
+{:else if app.dialog?.kind === 'settings'}
+  <SettingsDialog />
+{:else if app.dialog?.kind === 'shapes'}
+  <ShapeEditor blockId={app.dialog.blockId} />
+{/if}
+
+<!-- 印刷用：文書のページだけ（@media print で画面の代わりに出す） -->
+<div class="print-pages" aria-hidden="true">
+  {#each app.pageHashes as h, i (h + i)}
+    <div class="print-page">{@html app.svgs.get(h) ?? ''}</div>
+  {/each}
+</div>
+
 <style>
   .app { display: flex; flex-direction: column; height: 100vh; }
   .toolbar {
@@ -123,12 +191,18 @@
   .modes button { border: none; border-radius: 0; }
   .modes button.on { background: var(--accent); color: #fff; }
   .group { display: inline-flex; gap: 4px; padding-left: 10px; border-left: 1px solid var(--line); }
-  .new { position: relative; }
+  .open { position: relative; display: inline-flex; }
+  .open > button:first-child { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+  .drop { border-top-left-radius: 0; border-bottom-left-radius: 0; border-left: none; padding: 4px 6px; }
+  .menu-backdrop { position: fixed; inset: 0; z-index: 29; }
   .menu {
     position: absolute; top: 110%; left: 0; z-index: 30; background: var(--panel); border: 1px solid var(--line-strong);
-    border-radius: var(--radius); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15); padding: 4px; display: flex; flex-direction: column; min-width: 140px;
+    border-radius: var(--radius); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15); padding: 4px; display: flex; flex-direction: column;
+    min-width: 320px; max-width: 520px;
   }
-  .menu button { text-align: left; }
+  .menu .head { padding: 4px 8px; }
+  .menu button { text-align: left; display: flex; flex-direction: column; align-items: flex-start; }
+  .fpath { max-width: 480px; overflow: hidden; text-overflow: ellipsis; }
   .spacer { flex: 1; }
   .path { max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .loading { flex: 1; display: grid; place-items: center; color: var(--muted); }
@@ -150,7 +224,17 @@
 
   .toast {
     position: fixed; bottom: 190px; left: 50%; transform: translateX(-50%); padding: 8px 16px; border-radius: var(--radius);
-    background: #263238; color: #fff; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25); z-index: 50; max-width: 70vw;
+    background: #263238; color: #fff; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25); z-index: 150; max-width: 70vw;
   }
   .toast.error { background: var(--error); }
+
+  .print-pages { display: none; }
+  @media print {
+    :global(body) { background: #fff !important; }
+    .app { display: none; }
+    .print-pages { display: block; }
+    .print-page { width: 210mm; break-after: page; page-break-after: always; }
+    .print-page:last-child { break-after: auto; page-break-after: auto; }
+    .print-page :global(svg) { width: 210mm; height: auto; display: block; }
+  }
 </style>

@@ -1,0 +1,135 @@
+{
+ "format": "formdoc-template",
+ "version": 1,
+ "name": "単純梁と集中荷重",
+ "description": "単純梁に集中荷重が2点載る図（支間・荷重位置の寸法つき）。荷重の数を変えるときは図を描き足す。",
+ "category": "荷重",
+ "styles": [],
+ "created": "2026-10-02",
+ "blocks": [
+  {
+   "id": "t1",
+   "kind": "vdef",
+   "props": {
+    "name": "L",
+    "value": 8.0,
+    "unit": "m",
+    "desc": "支間長",
+    "show": false
+   }
+  },
+  {
+   "id": "t2",
+   "kind": "vdef",
+   "props": {
+    "name": "a_1",
+    "value": 3.0,
+    "unit": "m",
+    "desc": "左支点から荷重 P1 までの距離",
+    "show": false
+   }
+  },
+  {
+   "id": "t3",
+   "kind": "vdef",
+   "props": {
+    "name": "a_2",
+    "value": 5.8,
+    "unit": "m",
+    "desc": "左支点から荷重 P2 までの距離",
+    "show": false
+   }
+  },
+  {
+   "id": "t4",
+   "kind": "fig-shapes",
+   "props": {
+    "caption": "載荷状態",
+    "scale": 1.0,
+    "shapes": [
+     {
+      "kind": "line",
+      "x1": "0",
+      "y1": "0",
+      "x2": "L",
+      "y2": "0"
+     },
+     {
+      "kind": "polygon",
+      "pts": "0, 0; -0.15, -0.3; 0.15, -0.3"
+     },
+     {
+      "kind": "polygon",
+      "pts": "L, 0; L - 0.15, -0.3; L + 0.15, -0.3"
+     },
+     {
+      "kind": "arrow",
+      "x1": "a_1",
+      "y1": "1",
+      "x2": "a_1",
+      "y2": "0.05"
+     },
+     {
+      "kind": "arrow",
+      "x1": "a_2",
+      "y1": "1",
+      "x2": "a_2",
+      "y2": "0.05"
+     },
+     {
+      "kind": "text",
+      "x1": "a_1",
+      "y1": "1.2",
+      "label": "P1"
+     },
+     {
+      "kind": "text",
+      "x1": "a_2",
+      "y1": "1.2",
+      "label": "P2"
+     },
+     {
+      "kind": "dim",
+      "x1": "0",
+      "y1": "-0.7",
+      "x2": "a_1",
+      "y2": "-0.7",
+      "label": "{{a_1}}"
+     },
+     {
+      "kind": "dim",
+      "x1": "0",
+      "y1": "-1.2",
+      "x2": "L",
+      "y2": "-1.2",
+      "label": "{{L}}"
+     }
+    ]
+   }
+  }
+ ],
+ "interface": {
+  "inputs": [
+   {
+    "name": "L",
+    "label": "支間長",
+    "unit": "m",
+    "default": 8.0
+   },
+   {
+    "name": "a_1",
+    "label": "荷重 P1 の位置",
+    "unit": "m",
+    "default": 3.0
+   },
+   {
+    "name": "a_2",
+    "label": "荷重 P2 の位置",
+    "unit": "m",
+    "default": 5.8
+   }
+  ],
+  "exports": []
+ },
+ "assets": {}
+}
