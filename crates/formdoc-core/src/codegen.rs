@@ -387,8 +387,22 @@ fn block_code(b: &Block, t: &Template, report: &Report) -> String {
                 let kind = sh.get("kind").and_then(|v| v.as_str()).unwrap_or("line");
                 let p = |x: &str, y: &str| format!("({}, {})", value_arg(g(x), report, t.rounding), value_arg(g(y), report, t.rounding));
                 let label = sh.get("label").and_then(|v| v.as_str()).unwrap_or("");
+                let fill = match sh.get("fill").and_then(|v| v.as_str()).unwrap_or("") {
+                    "gray" => ", fill: luma(210)",
+                    "dark" => ", fill: luma(90)",
+                    "black" => ", fill: black",
+                    _ => "",
+                };
                 items.push(match kind {
-                    "circle" => format!("(kind: \"circle\", at: {}, r: {})", p("x1", "y1"), value_arg(g("x2"), report, t.rounding)),
+                    "circle" => format!("(kind: \"circle\", at: {}, r: {}{fill})", p("x1", "y1"), value_arg(g("x2"), report, t.rounding)),
+                    "rect" => format!("(kind: \"rect\", from: {}, to: {}{fill})", p("x1", "y1"), p("x2", "y2")),
+                    "polygon" => {
+                        let pts: Vec<String> = crate::evaluate::split_points(sh.get("pts").and_then(|v| v.as_str()).unwrap_or(""))
+                            .iter()
+                            .map(|(x, y)| format!("({}, {}),", value_arg(x, report, t.rounding), value_arg(y, report, t.rounding)))
+                            .collect();
+                        format!("(kind: \"polygon\", pts: ({}){fill})", pts.concat())
+                    }
                     "text" => format!("(kind: \"text\", at: {}, body: {})", p("x1", "y1"), text_content(label, true)),
                     "dim" => format!("(kind: \"dim\", from: {}, to: {}, label: {})", p("x1", "y1"), p("x2", "y2"), text_content(label, false)),
                     k => format!("(kind: {}, from: {}, to: {})", lit(k), p("x1", "y1"), p("x2", "y2")),

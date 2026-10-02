@@ -5,15 +5,15 @@
 
   let dragId = $state<string | null>(null);
   let dropIndex = $state<number | null>(null);
-  let menuOpen = $state(false);
+  /** 右クリックメニュー（id が null なら一覧の余白） */
+  let ctx = $state<{ x: number; y: number; id: string | null } | null>(null);
 
   const comps = $derived(app.catalog?.components ?? {});
-  const allowed = $derived(app.template?.blocks ?? []);
 
   /** 見出し番号（§4． / 4.1 / (1) / 1)）をテンプレートと同じ規則で計算 */
   const numbering = $derived.by(() => {
     const out: Record<string, string> = {};
-    const c = [(app.doc?.meta.chapter_start ?? 1) - 1, 0, 0, 0];
+    const c = [Number(app.doc?.meta['chapter-start'] ?? 1) - 1, 0, 0, 0];
     for (const b of app.doc?.blocks ?? []) {
       if (b.kind !== 'heading') continue;
       const lv = Math.min(Math.max(Number(b.props.level ?? 2), 1), 4);
@@ -98,9 +98,21 @@
     dropIndex = null;
   }
 
-  function add(kind: string) {
-    menuOpen = false;
-    app.addBlock(kind);
+  function openAdd() {
+    if (!app.style) return app.flash('先に文書情報でスタイルを選んでください', 'error');
+    app.dialog = { kind: 'insert' };
+  }
+
+  function onContext(e: MouseEvent, id: string | null) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (id) app.selectedId = id;
+    ctx = { x: Math.min(e.clientX, window.innerWidth - 230), y: Math.min(e.clientY, window.innerHeight - 260), id };
+  }
+
+  function run(fn: () => void) {
+    ctx = null;
+    fn();
   }
 </script>
 
@@ -111,7 +123,7 @@
     </button>
   </div>
 
-  <ol class="list" ondragleave={() => (dropIndex = null)}>
+  <ol class="list" ondragleave={() => (dropIndex = null)} oncontextmenu={(e) => onContext(e, null)}>
     {#each app.doc?.blocks ?? [] as b, i (b.id)}
       {@const st = status(b)}
       <li
@@ -126,7 +138,7 @@
         ondrop={onDrop}
         ondragend={() => { dragId = null; dropIndex = null; }}
       >
-        <button class="row" onclick={() => (app.selectedId = b.id)}>
+        <button class="row" onclick={() => (app.selectedId = b.id)} oncontextmenu={(e) => onContext(e, b.id)}>
           {#if b.kind === 'heading'}
             <span class="num">{numbering[b.id]}</span>
           {:else}
@@ -144,19 +156,7 @@
   </ol>
 
   <div class="foot">
-    <div class="add">
-      <button class="primary" onclick={() => (menuOpen = !menuOpen)}>＋ 部品を追加</button>
-      {#if menuOpen}
-        <div class="menu" role="menu">
-          <div class="menu-note small muted">選択中の部品の下に追加します</div>
-          {#each allowed as kind}
-            <button class="ghost" role="menuitem" onclick={() => add(kind)} title={comps[kind]?.help}>
-              <span class="icon">{comps[kind]?.icon}</span>{comps[kind]?.label ?? kind}
-            </button>
-          {/each}
-        </div>
-      {/if}
-    </div>
+    <button class="primary" onclick={openAdd} title="部品・テンプレートを選んで、選択中の部品の下に追加します">＋ 部品を追加…</button>
     {#if app.selected}
       <div class="ops">
         <button title="複製" onclick={() => app.duplicateBlock(app.selectedId!)}>複製</button>
@@ -165,6 +165,31 @@
     {/if}
   </div>
 </div>
+
+{#if ctx}
+  {@const id = ctx.id}
+  <div class="ctx-backdrop" role="presentation" onmousedown={() => (ctx = null)} oncontextmenu={(e) => { e.preventDefault(); ctx = null; }}></div>
+  <div class="ctx" role="menu" style:left="{ctx.x}px" style:top="{ctx.y}px">
+    <button class="ghost" role="menuitem" onclick={() => run(openAdd)}>＋ この下に部品を追加…</button>
+    {#if id}
+      {@const b = app.doc?.blocks.find((x) => x.id === id)}
+      <hr />
+      <button class="ghost" role="menuitem" onclick={() => run(() => app.duplicateBlock(id))}>複製</button>
+      <button class="ghost" role="menuitem" onclick={() => run(() => app.shiftBlock(id, -1))}>上へ移動</button>
+      <button class="ghost" role="menuitem" onclick={() => run(() => app.shiftBlock(id, 1))}>下へ移動</button>
+      {#if b?.kind === 'fig-shapes'}
+        <button class="ghost" role="menuitem" onclick={() => run(() => (app.dialog = { kind: 'shapes', blockId: id }))}>図を描く…</button>
+      {/if}
+      <hr />
+      <button class="ghost" role="menuitem" onclick={() => run(() => (app.dialog = { kind: 'saveTemplate', blockId: id }))}
+        title={b?.kind === 'heading' ? '見出しと、その配下の節をまとめて保存します' : 'この部品を保存します'}>
+        テンプレートとして保存…{b?.kind === 'heading' ? '（節ごと）' : ''}
+      </button>
+      <hr />
+      <button class="ghost danger" role="menuitem" onclick={() => run(() => app.removeBlock(id))}>削除</button>
+    {/if}
+  </div>
+{/if}
 
 <style>
   .outline { display: flex; flex-direction: column; height: 100%; min-height: 0; }
@@ -193,13 +218,13 @@
   .st.ng { color: #fff; background: var(--warn); }
   .st.warn { color: var(--warn); background: var(--warn-weak); }
   .foot { border-top: 1px solid var(--line); padding: 8px; display: flex; gap: 6px; justify-content: space-between; }
-  .add { position: relative; }
-  .menu {
-    position: absolute; bottom: 110%; left: 0; z-index: 20; background: var(--panel); border: 1px solid var(--line-strong);
-    border-radius: var(--radius); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15); padding: 4px; width: 220px;
-    display: flex; flex-direction: column; max-height: 60vh; overflow: auto;
+  .ctx-backdrop { position: fixed; inset: 0; z-index: 60; }
+  .ctx {
+    position: fixed; z-index: 61; background: var(--panel); border: 1px solid var(--line-strong); border-radius: var(--radius);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2); padding: 4px; min-width: 210px; display: flex; flex-direction: column;
   }
-  .menu-note { padding: 4px 8px; }
-  .menu button { text-align: left; display: flex; gap: 6px; }
+  .ctx button { text-align: left; }
+  .ctx hr { border: none; border-top: 1px solid var(--line); margin: 3px 0; width: 100%; }
+  .ctx .danger { color: var(--error); }
   .ops { display: flex; gap: 4px; }
 </style>

@@ -48,6 +48,8 @@
   {:else if def.type === 'int'}
     <input id={def.key} type="number" step="1" min="0" class="mono" value={value ?? ''}
       oninput={(e) => onchange(e.currentTarget.value === '' ? null : Math.round(Number(e.currentTarget.value)))} />
+  {:else if def.type === 'date'}
+    <input id={def.key} type="date" value={value ?? ''} oninput={(e) => onchange(e.currentTarget.value)} />
   {:else if def.type === 'bool'}
     <label class="check"><input type="checkbox" checked={value ?? def.default ?? false} onchange={(e) => onchange(e.currentTarget.checked)} />{def.label}</label>
   {:else if def.type === 'select'}

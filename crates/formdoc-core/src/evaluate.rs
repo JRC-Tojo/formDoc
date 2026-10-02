@@ -65,6 +65,39 @@ pub struct BlockResult {
     /// sum ブロックの内訳ごとの桁
     #[serde(skip_serializing_if = "Option::is_none")]
     pub value: Option<f64>,
+    /// 汎用図形の座標の評価値（描画エディタで、変数式の点を正しい位置に描くため）
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub shapes: Vec<ShapeValues>,
+}
+
+#[derive(Debug, Clone, Serialize, PartialEq, Default)]
+pub struct ShapeValues {
+    pub x1: Option<f64>,
+    pub y1: Option<f64>,
+    pub x2: Option<f64>,
+    pub y2: Option<f64>,
+    /// 多角形の頂点
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub pts: Vec<(Option<f64>, Option<f64>)>,
+}
+
+/// 多角形の頂点リスト「x, y; x, y; …」を (x式, y式) に分ける。式の中のカンマ（関数の引数）は括弧の深さで区別する。
+pub fn split_points(s: &str) -> Vec<(String, String)> {
+    s.split(';')
+        .filter(|p| !p.trim().is_empty())
+        .map(|p| {
+            let mut depth = 0i32;
+            for (i, c) in p.char_indices() {
+                match c {
+                    '(' => depth += 1,
+                    ')' => depth -= 1,
+                    ',' if depth == 0 => return (p[..i].trim().to_string(), p[i + 1..].trim().to_string()),
+                    _ => {}
+                }
+            }
+            (p.trim().to_string(), String::new())
+        })
+        .collect()
 }
 
 #[derive(Debug, Clone, Serialize, Default)]
@@ -350,11 +383,37 @@ impl Ctx<'_> {
             }
             "fig-shapes" => {
                 for (i, sh) in b.arr("shapes").iter().enumerate() {
-                    for k in ["x1", "y1", "x2", "y2"] {
-                        if let Some(s) = sh.get(k).and_then(|v| v.as_str()) {
-                            self.value_of(b, &format!("shapes.{i}.{k}"), s);
+                    let mut out = ShapeValues::default();
+                    let kind = sh.get("kind").and_then(|v| v.as_str()).unwrap_or("line");
+                    if kind == "polygon" {
+                        let pts = split_points(sh.get("pts").and_then(|v| v.as_str()).unwrap_or(""));
+                        if pts.len() < 2 {
+                            self.r.issue(b, &format!("shapes.{i}.pts"), Severity::Error, "required", "多角形の頂点を2点以上入力してください（x, y; x, y; …）");
+                        }
+                        for (x, y) in pts {
+                            let f = format!("shapes.{i}.pts");
+                            let xv = self.value_of(b, &f, &x);
+                            let yv = self.value_of(b, &f, &y);
+                            out.pts.push((xv, yv));
+                        }
+                    } else {
+                        let keys: &[&str] = match kind {
+                            "text" => &["x1", "y1"],
+                            "circle" => &["x1", "y1", "x2"],
+                            _ => &["x1", "y1", "x2", "y2"],
+                        };
+                        for k in keys {
+                            let src = sh.get(*k).and_then(|v| v.as_str()).unwrap_or("");
+                            let v = self.value_of(b, &format!("shapes.{i}.{k}"), src);
+                            match *k {
+                                "x1" => out.x1 = v,
+                                "y1" => out.y1 = v,
+                                "x2" => out.x2 = v,
+                                _ => out.y2 = v,
+                            }
                         }
                     }
+                    res.shapes.push(out);
                 }
             }
             "image" => {

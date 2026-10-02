@@ -10,14 +10,13 @@
   const result = $derived(block ? app.result?.blocks[block.id] : null);
   const general = $derived(issues.filter((i) => !i.field));
 
-  const metaFields: FieldDef[] = [
-    { key: 'title', label: '表題', type: 'text', required: true },
-    { key: 'project', label: '業務名', type: 'text' },
-    { key: 'author', label: '作成者（部署）', type: 'text' },
-    { key: 'date', label: '作成日', type: 'text', help: '2026-10-02 の形式。PDFの作成日時にも使われます（同じ文書なら同じPDFになるよう、出力した日時は使いません）' },
-    { key: 'chapter_start', label: '最初の章番号（§）', type: 'int', help: '分冊で章番号を続ける場合に指定' },
-    { key: 'cover', label: '表紙を付ける', type: 'bool', default: true },
-  ];
+  const metaIssues = $derived(
+    (app.result?.issues ?? []).filter((i) => !i.block_id && i.field?.startsWith('meta.')).map((i) => ({ ...i, field: i.field!.slice(5) })),
+  );
+  const metaFields = $derived<FieldDef[]>(
+    (app.template?.fields ?? []).map((f) => ({ key: f.key, label: f.label, type: f.type, required: f.required, help: f.help, options: f.options, default: f.default })),
+  );
+  const current = $derived(app.style?.source);
 </script>
 
 <div class="inspector">
@@ -29,6 +28,9 @@
       {/if}
       {#if def.help}<p class="small muted">{def.help}</p>{/if}
       {#each general as i}<div class="msg small {i.severity}">{i.message}</div>{/each}
+      {#if block.kind === 'fig-shapes'}
+        <button class="primary draw" onclick={() => (app.dialog = { kind: 'shapes', blockId: block.id })}>✎ 図を描く…</button>
+      {/if}
     </header>
     {#each def.fields as f (block.id + f.key)}
       <Field def={f} value={block.props[f.key]} {issues} onchange={(v) => app.setProp(block.id, f.key, v)} />
@@ -36,14 +38,38 @@
   {:else if app.doc}
     <header>
       <div class="kind">📄 文書情報</div>
-      <p class="small muted">
-        文書の型: <b>{app.template?.name}</b>（{app.template?.description}）<br />
-        体裁（書体・余白・見出し番号・図表番号）は型で固定されており、ここでは変更できません。
-      </p>
+      {#if !app.style}
+        <p class="start">スタイルを選ぶと執筆を始められます。スタイルは文書全体の体裁（書体・余白・見出し・表紙）と、ここで入力する項目を決めます。</p>
+      {/if}
     </header>
-    {#each metaFields as f}
-      <Field def={f} value={(app.doc.meta as any)[f.key]} onchange={(v) => app.setMeta(f.key, v)} />
-    {/each}
+    <div class="styles">
+      <div class="lbl">スタイル</div>
+      {#each app.styles as st (st.path)}
+        <button class="style" class:on={st.source === current} disabled={!st.info} onclick={() => app.chooseStyle(st)} title={st.error ?? st.path}>
+          <span class="sname">{st.info?.name ?? st.path.split(/[\/]/).pop()}</span>
+          <span class="small muted">{st.error ? `読み込めません: ${st.error}` : st.info?.description}</span>
+        </button>
+      {:else}
+        <p class="small muted">スタイルが見つかりません。</p>
+      {/each}
+      {#if app.style && !app.styles.some((s) => s.source === current)}
+        <div class="small muted">この文書は保存時のスタイル「{app.style.info.name}」で組版しています。</div>
+      {/if}
+      <div class="sfoot small">
+        {#if app.systemPath}
+          <button class="ghost small" onclick={() => app.platform?.system.openPath?.(app.systemPath!.styles)}>スタイルのフォルダを開く</button>
+        {:else}
+          <button class="ghost small" onclick={() => app.importStyle()}>スタイル（.typ）を取り込む…</button>
+        {/if}
+        <button class="ghost small" onclick={() => app.loadStyles()}>再読み込み</button>
+      </div>
+    </div>
+    {#if app.style}
+      <p class="small muted">体裁はスタイルで固定されており、ここでは変更できません。</p>
+      {#each metaFields as f (app.style.info.id + f.key)}
+        <Field def={f} value={app.doc.meta[f.key]} issues={metaIssues} onchange={(v) => app.setMeta(f.key, v)} />
+      {/each}
+    {/if}
   {/if}
 </div>
 
@@ -56,6 +82,14 @@
   .summary.ng { background: var(--warn-weak); color: var(--warn); }
   .summary.error { background: var(--error-weak); color: var(--error); }
   p { margin: 6px 0 0; }
+  .draw { margin-top: 8px; }
+  .start { padding: 8px 10px; background: var(--accent-weak); border-radius: 4px; }
+  .styles { margin-bottom: 14px; display: flex; flex-direction: column; gap: 4px; }
+  .lbl { font-weight: 600; font-size: 12px; }
+  .style { display: flex; flex-direction: column; align-items: flex-start; text-align: left; white-space: normal; padding: 6px 10px; }
+  .style.on { border-color: var(--accent); background: var(--accent-weak); }
+  .sname { font-weight: 600; }
+  .sfoot { display: flex; gap: 4px; }
   .msg { margin-top: 4px; padding: 2px 6px; border-radius: 3px; }
   .msg.error { color: var(--error); background: var(--error-weak); }
   .msg.warning { color: var(--warn); background: var(--warn-weak); }

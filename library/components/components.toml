@@ -1,9 +1,11 @@
 # 部品（ブロック）定義。GUIの入力フォームはこの定義から自動生成される。
-# field.type: text / multiline / number / int / expr / var / varlist / select / bool / kijun / table / json / file
+# category: 「部品を追加」ダイアログの分類。deprecated: 一覧に出さない（既存文書のために残す部品。値は置き換え先の案内）
+# field.type: text / multiline / date / number / int / expr / var / varlist / select / bool / kijun / table / json / file
 # 描画は library/typst/formdoc の関数で行い、Typstコード生成は formdoc-core::codegen が担う。
 
 [heading]
 label = "見出し"
+category = "文章"
 icon = "H"
 help = "章・節の見出し。番号（§4． / 4.1 / (1) / 1)）は自動で付く。"
 fields = [
@@ -15,6 +17,7 @@ fields = [
 
 [paragraph]
 label = "本文"
+category = "文章"
 icon = "¶"
 help = "本文の段落。{{L_b}} のように書くと変数の値（単位付き）が入る。"
 fields = [
@@ -23,6 +26,7 @@ fields = [
 
 [kijun]
 label = "基準引用"
+category = "文章"
 icon = "【】"
 help = "基準書の引用行。略称は登録済みのものから選ぶ。"
 fields = [
@@ -32,6 +36,7 @@ fields = [
 
 [vdef]
 label = "変数定義"
+category = "計算"
 icon = "x="
 help = "設計条件などの値を変数として定義する。以降の計算で名前を使って参照できる。"
 fields = [
@@ -47,6 +52,7 @@ fields = [
 
 [calc]
 label = "計算"
+category = "計算"
 icon = "="
 help = "式から値を計算し、「記号式 = 代入式 = 結果」の形で表示する。"
 fields = [
@@ -65,6 +71,7 @@ fields = [
 
 [sum]
 label = "内訳と合計"
+category = "計算"
 icon = "Σ"
 help = "荷重の内訳などを列挙し、下線の下に合計を表示する。"
 fields = [
@@ -81,6 +88,7 @@ fields = [
 
 [check]
 label = "照査"
+category = "計算"
 icon = "≦"
 help = "比較式を評価し、紙面上の値どうしで OK / NG を自動判定する。"
 fields = [
@@ -93,6 +101,7 @@ fields = [
 
 [where]
 label = "記号説明"
+category = "計算"
 icon = "ここに"
 help = "「ここに，」の記号説明。変数を空にすると、直前の計算で使った変数を自動で並べる。"
 fields = [
@@ -101,6 +110,7 @@ fields = [
 
 [table]
 label = "表"
+category = "図表"
 icon = "▦"
 help = "番号付きの表。セルに {{変数名}} と書くと値が入る。セルの結合・縦書きは各セルの設定で。"
 fields = [
@@ -110,6 +120,8 @@ fields = [
 
 [fig-beam]
 label = "図：単純梁と荷重"
+category = "図表"
+deprecated = "テンプレート「単純梁と集中荷重」を使ってください"
 icon = "⟂"
 help = "単純梁と集中荷重、影響線縦距の図。数値または変数名を指定。"
 fields = [
@@ -121,6 +133,8 @@ fields = [
 
 [fig-isection]
 label = "図：I形断面"
+category = "図表"
+deprecated = "テンプレート「I形断面」を使ってください"
 icon = "I"
 help = "I形断面の寸法図。"
 fields = [
@@ -134,16 +148,19 @@ fields = [
 
 [fig-shapes]
 label = "図：汎用図形"
+category = "図表"
 icon = "◇"
-help = "線・矩形・円・寸法線・文字を座標で配置する。座標に変数名を使える。"
+help = "線・矢印・矩形・円・多角形・寸法線・文字。「図を描く」で描きながら作れる。座標に変数や式を使うと、値に合わせて形が変わる（テンプレートにすると寸法違いの図を使い回せる）。"
 fields = [
   { key = "shapes", label = "図形", type = "table", columns = [
-      { key = "kind", label = "種類", type = "select", options = ["line", "rect", "circle", "dim", "text"] },
+      { key = "kind", label = "種類", type = "select", options = ["line", "arrow", "rect", "circle", "polygon", "dim", "text"] },
       { key = "x1", label = "x1", type = "expr" },
       { key = "y1", label = "y1", type = "expr" },
       { key = "x2", label = "x2 / 半径", type = "expr" },
       { key = "y2", label = "y2", type = "expr" },
+      { key = "pts", label = "頂点（多角形）", type = "expr", help = "x, y; x, y; …" },
       { key = "label", label = "文字", type = "text" },
+      { key = "fill", label = "塗り", type = "select", options = ["", "gray", "dark", "black"] },
   ] },
   { key = "scale", label = "縮尺（1単位=cm）", type = "number", default = 1.0 },
   { key = "caption", label = "図題", type = "text" },
@@ -151,6 +168,7 @@ fields = [
 
 [image]
 label = "画像"
+category = "図表"
 icon = "🖼"
 help = "CAD図・写真・既存資料のPDFなど（PNG / JPG / SVG / PDF）。PDFはスクリーンショットではなく元データのまま挿入される。"
 fields = [
@@ -162,11 +180,13 @@ fields = [
 
 [pagebreak]
 label = "改ページ"
+category = "その他"
 icon = "⏎"
 fields = []
 
 [typst]
 label = "Typstコード"
+category = "その他"
 icon = "</>"
 help = "上級者向け。Typstを直接書く。社内標準パッケージの関数と、定義済み変数（v-変数名）を使える。"
 fields = [

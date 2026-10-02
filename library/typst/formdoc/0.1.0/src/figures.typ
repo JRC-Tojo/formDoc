@@ -85,8 +85,10 @@
 
 /// 汎用図形。shapes は辞書の配列:
 ///   (kind: "line", from: (x, y), to: (x, y))
-///   (kind: "rect", from: (x, y), to: (x, y))
-///   (kind: "circle", at: (x, y), r: 1)
+///   (kind: "arrow", from: (x, y), to: (x, y))          … to の側に矢印
+///   (kind: "rect", from: (x, y), to: (x, y), fill: luma(210))
+///   (kind: "circle", at: (x, y), r: 1, fill: none)
+///   (kind: "polygon", pts: ((x, y), (x, y), …), fill: none)
 ///   (kind: "dim", from: (x, y), to: (x, y), label: "5.000")
 ///   (kind: "text", at: (x, y), body: [文字])
 /// 座標・半径には数値または変数を指定できる。
@@ -96,9 +98,12 @@
   cetz.canvas(length: unit, {
     import cetz.draw: *
     for sh in shapes {
+      let fill = sh.at("fill", default: none)
       if sh.kind == "line" { line(p(sh.from), p(sh.to), stroke: 0.6pt) }
-      else if sh.kind == "rect" { rect(p(sh.from), p(sh.to), stroke: 0.6pt) }
-      else if sh.kind == "circle" { circle(p(sh.at), radius: _num(sh.r) * k, stroke: 0.6pt) }
+      else if sh.kind == "arrow" { line(p(sh.from), p(sh.to), stroke: 0.6pt, mark: (end: "stealth", fill: black, scale: 0.6)) }
+      else if sh.kind == "rect" { rect(p(sh.from), p(sh.to), stroke: 0.6pt, fill: fill) }
+      else if sh.kind == "circle" { circle(p(sh.at), radius: _num(sh.r) * k, stroke: 0.6pt, fill: fill) }
+      else if sh.kind == "polygon" and sh.pts.len() >= 2 { line(..sh.pts.map(p), close: true, stroke: 0.6pt, fill: fill) }
       else if sh.kind == "dim" {
         let (a, b) = (p(sh.from), p(sh.to))
         line(a, b, mark: (start: "straight", end: "straight", scale: 0.5), stroke: 0.4pt)
