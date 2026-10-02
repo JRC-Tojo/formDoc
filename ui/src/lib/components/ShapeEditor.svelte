@@ -1,6 +1,7 @@
 <script lang="ts">
   // 汎用図形の描画エディタ。マウスで描き、点をドラッグして直す。座標は表の値（数値または式）として保存する。
   // 変数や式を使った座標は、評価した値の位置に描いてロックする（ドラッグで数値に戻してしまわないように）。
+  import { onMount } from 'svelte';
   import { app } from '../state.svelte';
   import Modal from './Modal.svelte';
 
@@ -313,7 +314,7 @@
       }
     } else if (e.key === 'Enter' && tool === 'polygon') finishPolygon();
     else if (e.key === 'Escape' && (polyPts.length || draft)) {
-      e.stopPropagation();
+      e.preventDefault();
       polyPts = [];
       draft = null;
     } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
@@ -359,12 +360,15 @@
     app.dialog = null;
   }
 
+  // 開いたときは図形全体が見えるようにする
+  onMount(() => requestAnimationFrame(fit));
+
   const FILL: Record<string, string> = { gray: '#d2d2d2', dark: '#5a5a5a', black: '#000' };
 
   // 画面のグリッド線
   const gridLines = $derived.by(() => {
     const out: { x1: number; y1: number; x2: number; y2: number; major: boolean }[] = [];
-    if (!svgEl || grid <= 0 || grid * ppu < 6) return out;
+    if (grid <= 0 || grid * ppu < 6) return out;
     const r = { width: 2000, height: 1400 };
     const x0 = Math.floor(-origin.x / ppu / grid) * grid, x1 = (r.width - origin.x) / ppu;
     const y0 = Math.floor((origin.y - r.height) / ppu / grid) * grid, y1 = origin.y / ppu;
@@ -374,7 +378,8 @@
   });
 </script>
 
-<svelte:window onkeydown={onKey} onmouseup={onUp} />
+<!-- Esc で多角形の描きかけを消すとき、ダイアログが閉じないよう先に（capture で）受ける -->
+<svelte:window onkeydowncapture={onKey} onmouseup={onUp} />
 
 <Modal title="図を描く{block?.props.caption ? `：${block.props.caption}` : ''}" onclose={cancel} width="1180px" height="760px">
   <div class="editor">

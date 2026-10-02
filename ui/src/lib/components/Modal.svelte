@@ -12,7 +12,7 @@
   }: { title: string; onclose: () => void; width?: string; height?: string; children: Snippet; footer?: Snippet } = $props();
 
   function onKey(e: KeyboardEvent) {
-    if (e.key === 'Escape') {
+    if (e.key === 'Escape' && !e.defaultPrevented) {
       e.stopPropagation();
       onclose();
     }
