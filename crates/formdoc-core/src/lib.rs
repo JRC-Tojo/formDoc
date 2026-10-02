@@ -1,6 +1,7 @@
 //! formDoc のコア。IOを持たず、Web版（wasm）とデスクトップ版（Tauri）の両方から同じコードで使う。
 
 pub mod api;
+pub mod code;
 pub mod codegen;
 pub mod compile;
 pub mod evaluate;

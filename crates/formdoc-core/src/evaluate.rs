@@ -598,7 +598,24 @@ impl Ctx<'_> {
                     self.r.issue(b, "file", Severity::Error, "required", "画像ファイルを選んでください");
                 }
             }
-            "pagebreak" | "typst" => {}
+            "pagebreak" => {}
+            "typst" => {
+                // コードの中の vdef / vcalc を変数として定義する（後ろの部品から使えるように）
+                for d in crate::code::code_defs(b.str("code")) {
+                    match d {
+                        crate::code::CodeDef::Value { name, value, unit, digits, desc } => {
+                            let digits = digits.or_else(|| self.t.default_digits(&unit));
+                            self.define(b, "code", &name, VarValue { value, digits, unit, display: None, desc });
+                        }
+                        crate::code::CodeDef::Calc { name, expr, unit, digits, desc } => {
+                            let digits = digits.or_else(|| self.t.default_digits(&unit));
+                            if let Some(o) = self.calc(b, "code", &expr, &unit, digits) {
+                                self.define(b, "code", &name, VarValue { value: o.value, digits, unit, display: None, desc });
+                            }
+                        }
+                    }
+                }
+            }
             other => self.r.issue(b, "", Severity::Error, "block-kind", format!("不明な部品です: {other}")),
         }
         let errors_after = self.r.issues.iter().filter(|i| i.severity == Severity::Error && i.block_id.as_deref() == Some(&b.id)).count();

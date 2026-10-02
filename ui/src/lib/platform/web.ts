@@ -23,13 +23,12 @@ function workerEngine(): Engine {
     styleInfo: (src) => call('styleInfo', src),
     setStyle: (src) => call('setStyle', src),
     newDocument: () => call('newDocument'),
-    codeTemplate: () => call('codeTemplate'),
     updateDocument: (doc, known) => call('updateDocument', doc, known),
-    updateProject: (files, known) => call('updateProject', files, known),
+    code: () => call('code'),
+    applyCode: (code) => call('applyCode', code),
     setAsset: (path, bytes) => call('setAsset', path, bytes),
     removeAsset: (path) => call('removeAsset', path),
     pdf: () => call('pdf'),
-    exportTypst: () => call('exportTypst'),
   };
 }
 

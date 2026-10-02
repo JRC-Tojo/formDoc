@@ -9,13 +9,12 @@ const engine: Engine = {
   styleInfo: (source) => invoke('style_info', { source }),
   setStyle: (source) => invoke('set_style', { source }),
   newDocument: () => invoke('new_document'),
-  codeTemplate: () => invoke('code_template'),
   updateDocument: (doc, known) => invoke('update_document', { doc, known }),
-  updateProject: (files, known) => invoke('update_project', { files, known }),
+  code: () => invoke('code'),
+  applyCode: (code) => invoke('apply_code', { code }),
   setAsset: (path, bytes) => invoke('set_asset', bytes, { headers: { 'x-path': encodeURIComponent(path) } }),
   removeAsset: (path) => invoke('remove_asset', { path }),
   pdf: async () => new Uint8Array(await invoke<ArrayBuffer>('pdf')),
-  exportTypst: () => invoke('export_typst'),
 };
 
 const readPath = async (path: string) => new Uint8Array(await invoke<ArrayBuffer>('read_file', { path }));

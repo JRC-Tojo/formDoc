@@ -52,7 +52,7 @@ fn main() -> ExitCode {
             }
             eprintln!("{} pages, {} vars, exportable={}, {:.0} ms", r.pages.len(), r.vars.len(), r.exportable, r.compile_ms);
             if let Some(i) = args.iter().position(|a| a == "--typst") {
-                std::fs::write(&args[i + 1], s.export_typst().unwrap_or_default()).unwrap();
+                std::fs::write(&args[i + 1], s.code().unwrap_or_default()).unwrap();
             }
             match s.pdf() {
                 Ok(pdf) => {

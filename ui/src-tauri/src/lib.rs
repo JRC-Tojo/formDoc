@@ -7,7 +7,7 @@ use std::sync::Mutex;
 use formdoc_core::api::{self, Session};
 use formdoc_core::Document;
 use notify::{RecursiveMode, Watcher};
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use tauri::ipc::{InvokeBody, Request, Response};
 use tauri::{AppHandle, Emitter, Manager, State};
 
@@ -71,19 +71,8 @@ fn new_document(state: State<'_, AppState>) -> R<Document> {
 }
 
 #[tauri::command]
-fn code_template(state: State<'_, AppState>) -> R<String> {
-    state.session.lock().unwrap().code_template()
-}
-
-#[tauri::command]
 async fn update_document(state: State<'_, AppState>, doc: Document, known: Vec<String>) -> R<api::UpdateResult> {
     Ok(state.session.lock().unwrap().update_document(doc, &known))
-}
-
-#[tauri::command]
-async fn update_project(state: State<'_, AppState>, files: Vec<ProjectFileIn>, known: Vec<String>) -> R<api::UpdateResult> {
-    let files = files.into_iter().map(|f| (f.path, f.text.map(String::into_bytes).or(f.bytes).unwrap_or_default())).collect();
-    Ok(state.session.lock().unwrap().update_project(files, &known))
 }
 
 #[tauri::command]
@@ -103,9 +92,16 @@ async fn pdf(state: State<'_, AppState>) -> R<Response> {
     Ok(Response::new(state.session.lock().unwrap().pdf()?))
 }
 
+/// コードモードで見せるコード（直前に組版した文書の Typst）。
 #[tauri::command]
-fn export_typst(state: State<'_, AppState>) -> Option<String> {
-    state.session.lock().unwrap().export_typst()
+fn code(state: State<'_, AppState>) -> Option<String> {
+    state.session.lock().unwrap().code()
+}
+
+/// コードモードの編集を文書に戻す。
+#[tauri::command]
+fn apply_code(state: State<'_, AppState>, code: String) -> R<formdoc_core::code::Applied> {
+    state.session.lock().unwrap().apply_code(&code)
 }
 
 // ---------- ファイル（デスクトップのみ） ----------
@@ -122,15 +118,6 @@ fn write_file(request: Request<'_>) -> R<()> {
 }
 
 // ---------- コードモードのプロジェクトフォルダ ----------
-
-#[derive(Deserialize)]
-struct ProjectFileIn {
-    path: String,
-    #[serde(default)]
-    text: Option<String>,
-    #[serde(default)]
-    bytes: Option<Vec<u8>>,
-}
 
 #[derive(Serialize)]
 struct ProjectFileOut {
@@ -362,13 +349,12 @@ pub fn run() {
             style_info,
             set_style,
             new_document,
-            code_template,
             update_document,
-            update_project,
             set_asset,
             remove_asset,
             pdf,
-            export_typst,
+            code,
+            apply_code,
             read_file,
             write_file,
             read_project,

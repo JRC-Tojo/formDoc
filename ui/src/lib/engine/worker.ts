@@ -23,14 +23,14 @@ self.onmessage = async (ev: MessageEvent<Req>) => {
       case 'newDocument':
         result = JSON.parse(wasm.new_document());
         break;
-      case 'codeTemplate':
-        result = wasm.code_template();
-        break;
       case 'updateDocument':
         result = JSON.parse(wasm.update_document(JSON.stringify(args[0]), JSON.stringify(args[1])));
         break;
-      case 'updateProject':
-        result = JSON.parse(wasm.update_project(JSON.stringify(args[0]), JSON.stringify(args[1])));
+      case 'code':
+        result = wasm.code() ?? null;
+        break;
+      case 'applyCode':
+        result = JSON.parse(wasm.apply_code(args[0]));
         break;
       case 'setAsset':
         wasm.set_asset(args[0], args[1]);
@@ -43,9 +43,6 @@ self.onmessage = async (ev: MessageEvent<Req>) => {
         (self as any).postMessage({ id, ok: true, result: bytes }, [bytes.buffer]);
         return;
       }
-      case 'exportTypst':
-        result = wasm.export_typst() ?? null;
-        break;
       default:
         throw new Error(`unknown method ${method}`);
     }

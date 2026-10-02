@@ -7,7 +7,6 @@ import type {
   Catalog,
   Doc,
   Issue,
-  ProjectFile,
   SavedDoc,
   Settings,
   StyleEntry,
@@ -30,10 +29,6 @@ export const DEFAULT_SETTINGS: Settings = {
 
 export function uid(): string {
   return 'b' + Math.random().toString(36).slice(2, 9);
-}
-
-function clone<T>(v: T): T {
-  return JSON.parse(JSON.stringify(v));
 }
 
 export function b64encode(bytes: Uint8Array): string {
@@ -110,7 +105,7 @@ class AppState {
   filePath = $state<string | null>(null);
   assets: Record<string, Uint8Array> = {};
 
-  // コードモード
+  // コードモード：同じ文書を Typst で見る。codeFolder は VSCode と同期しているフォルダ
   codeText = $state('');
   codeFolder = $state<string | null>(null);
   private unwatch: (() => void) | null = null;
@@ -383,7 +378,7 @@ class AppState {
 
   async refresh() {
     if (!this.platform) return;
-    if (this.mode === 'gui' && !this.style) {
+    if (!this.style) {
       this.result = null;
       this.pageHashes = [];
       return;
@@ -396,19 +391,16 @@ class AppState {
     this.compiling = true;
     try {
       const known = [...this.svgs.keys()];
-      let r: UpdateResult;
-      if (this.mode === 'gui') {
-        if (!this.doc) return;
-        r = await this.platform.engine.updateDocument($state.snapshot(this.doc) as Doc, known);
-      } else {
-        r = await this.platform.engine.updateProject(await this.codeFiles(), known);
-      }
+      // どちらのモードでも組版するのは同じ文書（コードモードはその見え方の1つ）
+      if (!this.doc) return;
+      const r: UpdateResult = await this.platform.engine.updateDocument($state.snapshot(this.doc) as Doc, known);
       for (const p of r.pages) if (p.svg) this.svgs.set(p.hash, p.svg);
       // 古いページのSVGを捨てる
       const keep = new Set(r.pages.map((p) => p.hash));
       if (r.pages.length) for (const h of [...this.svgs.keys()]) if (!keep.has(h)) this.svgs.delete(h);
       if (r.pages.length) this.pageHashes = r.pages.map((p) => p.hash);
       this.result = r;
+      await this.afterRefresh();
     } catch (e: any) {
       this.flash(`組版に失敗しました: ${e?.message ?? e}`, 'error');
     } finally {
@@ -744,112 +736,122 @@ class AppState {
     window.print();
   }
 
-  async exportTypst() {
-    const src = await this.platform!.engine.exportTypst();
-    if (!src) return;
-    await this.platform!.files.saveFile('main.typ', new TextEncoder().encode(src));
-    if (this.style) await this.platform!.files.saveFile('style.typ', new TextEncoder().encode(this.style.source));
-  }
+  // ---------- コードモード（同じ文書を Typst で見る・編集する） ----------
 
-  // ---------- コードモード ----------
+  /** コードの編集から文書を変えた直後（このときはエディタの内容を置き換えない） */
+  private fromCode = false;
+  /** VSCode 用のフォルダに最後に書いた main.typ */
+  private lastWritten = '';
+  private codeTimer: ReturnType<typeof setTimeout> | null = null;
 
-  private async codeFiles(): Promise<ProjectFile[]> {
-    if (this.codeFolder && this.platform?.folder) return this.platform.folder.read(this.codeFolder);
-    const files: ProjectFile[] = [{ path: 'main.typ', text: this.codeText }];
-    if (this.style) files.push({ path: 'style.typ', text: this.style.source });
-    return files;
+  /** 組版のあと：コードモードならコードを最新にし、VSCode 用のフォルダと同期する */
+  private async afterRefresh() {
+    if (this.mode !== 'code' && !this.codeFolder) return;
+    if (!this.fromCode) {
+      const code = await this.platform!.engine.code();
+      if (code != null) this.codeText = code;
+    }
+    this.fromCode = false;
+    await this.writeFolder();
   }
 
   async enterCodeMode() {
     if (!this.style) {
-      this.flash('先に文書情報でスタイルを選んでください（コードモードも同じスタイルで組版します）', 'error');
+      this.flash('先に文書情報でスタイルを選んでください', 'error');
       return;
     }
     this.mode = 'code';
-    this.svgs.clear();
-    this.pageHashes = [];
-    if (!this.codeText) {
-      const draft = has('browserStorage') ? await this.platform?.drafts?.load('code') : null;
-      this.codeText = draft ?? (await this.platform!.engine.codeTemplate());
-    }
-    await this.refresh();
+    this.codeText = (await this.platform!.engine.code()) ?? '';
   }
 
-  async enterGuiMode() {
+  enterGuiMode() {
     this.mode = 'gui';
-    this.svgs.clear();
-    this.pageHashes = [];
-    await this.refresh();
   }
 
+  /** コードを書き換えた（エディタ・外部エディタ）。少し待ってから文書に戻す */
   setCode(text: string) {
     this.codeText = text;
-    if (has('browserStorage')) this.platform?.drafts?.save('code', text);
-    this.schedule(400);
+    if (this.codeTimer) clearTimeout(this.codeTimer);
+    this.codeTimer = setTimeout(() => this.applyCode(text), 400);
   }
 
-  /** GUI文書を Typst に書き出してコードモードで続ける */
-  async convertToCode() {
-    await this.refresh();
-    const src = await this.platform!.engine.exportTypst();
-    if (!src) return;
-    this.codeText = src;
-    this.codeFolder = null;
-    await this.enterCodeMode();
-    this.flash('GUI文書をTypstに変換しました（元のGUI文書は変更されません）');
-  }
-
-  async openCodeFolder() {
-    const f = this.platform?.folder;
-    if (!f) return;
-    const dir = await f.pick();
-    if (dir) await this.useCodeFolder(dir);
-  }
-
-  /** 選んだフォルダをコードモードのプロジェクトとして開き、監視を始める。main.typ・style.typ が無ければ作る */
-  async useCodeFolder(dir: string) {
-    const f = this.platform?.folder;
-    if (!f) return;
-    const files = await f.read(dir);
-    if (!files.some((x) => x.path === 'main.typ')) {
-      await f.write(dir, 'main.typ', this.codeText || (await this.platform!.engine.codeTemplate()));
+  private lastWarnings = '';
+  private async applyCode(text: string) {
+    try {
+      const r = await this.platform!.engine.applyCode(text);
+      const w = r.warnings.join(' / ');
+      if (w && w !== this.lastWarnings) this.flash(w, 'error');
+      this.lastWarnings = w;
+      if (JSON.stringify(r.doc.blocks) === JSON.stringify($state.snapshot(this.doc?.blocks))) return;
+      this.fromCode = true;
+      this.edit((d) => {
+        d.blocks = r.doc.blocks;
+      }, 'code');
+    } catch (e: any) {
+      this.flash(e?.message ?? String(e), 'error');
     }
-    if (!files.some((x) => x.path === 'style.typ') && this.style) await f.write(dir, 'style.typ', this.style.source);
-    this.unwatch?.();
-    this.codeFolder = dir;
-    this.unwatch = await f.watch(dir, () => this.schedule(150));
-    this.mode = 'code';
-    this.svgs.clear();
-    this.pageHashes = [];
-    await this.refresh();
-    this.flash(`${dir} を監視しています。外部エディタで保存するとプレビューが更新されます`);
+  }
+
+  /** コード（main.typ）とスタイル（style.typ）をファイルとして保存する */
+  async saveCodeFiles() {
+    const code = await this.platform!.engine.code();
+    if (!code || !this.style) return;
+    await this.platform!.files.saveFile('main.typ', new TextEncoder().encode(code));
+    await this.platform!.files.saveFile('style.typ', new TextEncoder().encode(this.style.source));
+  }
+
+  // ---------- VSCode で開く（デスクトップ） ----------
+
+  private async writeFolder() {
+    const f = this.platform?.folder;
+    if (!f || !this.codeFolder || !this.style) return;
+    const code = this.mode === 'code' ? this.codeText : ((await this.platform!.engine.code()) ?? '');
+    if (code && code !== this.lastWritten) {
+      this.lastWritten = code;
+      await f.write(this.codeFolder, 'main.typ', code);
+      await f.write(this.codeFolder, 'style.typ', this.style.source);
+    }
+  }
+
+  /** 外部エディタで main.typ が保存された → 文書に戻す */
+  private async onFolderChanged() {
+    const f = this.platform?.folder;
+    if (!f || !this.codeFolder) return;
+    const files = await f.read(this.codeFolder);
+    const main = files.find((x) => x.path === 'main.typ')?.text;
+    if (main == null || main === this.lastWritten) return;
+    this.lastWritten = main;
+    this.setCode(main);
+  }
+
+  /** VSCodeで開く。文書をシステムフォルダの projects/<表題>_<日付>/ に main.typ・style.typ として書き出し、保存を監視する */
+  async openInVSCode() {
+    const f = this.platform?.folder;
+    if (!f) return;
+    if (!this.style) return this.flash('先に文書情報でスタイルを選んでください', 'error');
+    if (!this.codeFolder) {
+      const base = this.systemPath?.projects;
+      if (!base) return;
+      const title = safeFileName(String(this.doc?.meta.title || 'document'));
+      const stamp = new Date().toISOString().slice(0, 10);
+      this.codeFolder = `${base}\\${title}_${stamp}`;
+      this.lastWritten = '';
+      await this.writeFolder();
+      this.unwatch?.();
+      this.unwatch = await f.watch(this.codeFolder, () => setTimeout(() => this.onFolderChanged(), 150));
+    }
+    try {
+      await f.openInVSCode(this.codeFolder);
+      this.flash(`VSCodeで開きました。保存すると、この文書に反映されます（${this.codeFolder}）`);
+    } catch (e: any) {
+      this.flash(e?.message ?? String(e), 'error');
+    }
   }
 
   async closeCodeFolder() {
     this.unwatch?.();
     this.unwatch = null;
     this.codeFolder = null;
-    await this.refresh();
-  }
-
-  /** VSCodeで開く。フォルダが未選択なら、システムフォルダの projects/ に作業フォルダを作って開く */
-  async openInVSCode() {
-    const f = this.platform?.folder;
-    if (!f) return;
-    if (!this.codeFolder) {
-      if (!this.style) return this.flash('先に文書情報でスタイルを選んでください', 'error');
-      const base = this.systemPath?.projects;
-      if (!base) return this.openCodeFolder();
-      const title = safeFileName(String(this.doc?.meta.title || 'document'));
-      const stamp = new Date().toISOString().slice(0, 10);
-      await this.useCodeFolder(`${base}\\${title}_${stamp}`);
-    }
-    if (!this.codeFolder) return;
-    try {
-      await f.openInVSCode(this.codeFolder);
-    } catch (e: any) {
-      this.flash(e?.message ?? String(e), 'error');
-    }
   }
 }
 

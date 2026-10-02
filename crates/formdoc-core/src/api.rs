@@ -3,7 +3,7 @@
 
 use std::collections::{BTreeMap, HashSet};
 
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use typst_layout::PagedDocument;
 
 use crate::codegen::{self, Generated};
@@ -36,31 +36,21 @@ pub struct UpdateResult {
     pub compile_ms: f64,
 }
 
-#[derive(Debug, Clone, Deserialize)]
-pub struct ProjectFile {
-    pub path: String,
-    /// テキストファイル
-    #[serde(default)]
-    pub text: Option<String>,
-    /// バイナリ（base64は使わず数値配列。サイズが大きい画像は set_asset を使う）
-    #[serde(default)]
-    pub bytes: Option<Vec<u8>>,
-}
-
-enum Mode {
-    Gui { doc: Box<Document>, generated: Generated },
-    Code,
+/// 直前に組版した文書と、その生成コード（組版用・表示用）
+struct Last {
+    doc: Box<Document>,
+    generated: Generated,
+    /// コードモードで見せるコード（エラーのある部品も赤枠にしない）
+    view: Generated,
 }
 
 pub struct Session {
     world: FormdocWorld,
     /// GUIモードのスタイル（ソースと、評価した info）
     style: Option<(String, Template)>,
-    /// コードモードのプロジェクトの style.typ（Lint用）
-    code_style: Option<(String, Template)>,
     assets: BTreeMap<String, Vec<u8>>,
     last: Option<PagedDocument>,
-    mode: Mode,
+    mode: Option<Last>,
     exportable: bool,
     date: Option<(i32, u8, u8)>,
 }
@@ -88,10 +78,9 @@ impl Session {
         Self {
             world: FormdocWorld::new(),
             style: None,
-            code_style: None,
             assets: BTreeMap::new(),
             last: None,
-            mode: Mode::Code,
+            mode: None,
             exportable: false,
             date: None,
         }
@@ -125,12 +114,6 @@ impl Session {
         let t = template::parse_style(source)?;
         self.style = Some((source.to_string(), t.clone()));
         Ok(t)
-    }
-
-    /// 現在のスタイルで、コードモードの新規 main.typ を作る。
-    pub fn code_template(&self) -> Result<String, String> {
-        let (_, t) = self.style.as_ref().ok_or("スタイルが選ばれていません")?;
-        Ok(code_template(t))
     }
 
     /// 現在のスタイルで新規文書を作る（文書情報の既定値と骨組み）。
@@ -191,6 +174,7 @@ impl Session {
             }
         }
         let generated = codegen::generate(&doc, &t, &report);
+        let view = codegen::generate_with(&doc, &t, &report, false);
         self.date = doc.meta.ymd();
         self.world.set_today(self.date);
         self.world.set_files(self.files_with(&generated.source));
@@ -214,7 +198,7 @@ impl Session {
         }
         let exportable = !issues.iter().any(|i| i.severity == Severity::Error);
         self.exportable = exportable;
-        self.mode = Mode::Gui { doc: Box::new(doc), generated };
+        self.mode = Some(Last { doc: Box::new(doc), generated, view });
         UpdateResult {
             pages: self.pages(known),
             issues,
@@ -226,49 +210,6 @@ impl Session {
         }
     }
 
-    /// コードモード: プロジェクトのファイル一式（main.typ ほか）で再コンパイルする。
-    /// プロジェクトに style.typ があれば、その info の Lint 規則で main.typ を検査する。
-    pub fn update_project(&mut self, files: Vec<(String, Vec<u8>)>, known: &[String]) -> UpdateResult {
-        let text_of = |name: &str| files.iter().find(|(p, _)| p.trim_start_matches('/') == name).map(|(_, b)| String::from_utf8_lossy(b).to_string());
-        let main = text_of("main.typ");
-        let style = match text_of("style.typ") {
-            Some(src) => match &self.code_style {
-                Some((s, t)) if *s == src => Some(t.clone()),
-                _ => {
-                    let t = template::parse_style(&src).ok();
-                    if let Some(t) = &t {
-                        self.code_style = Some((src, t.clone()));
-                    }
-                    t
-                }
-            },
-            None => None,
-        };
-        let mut all: Vec<(String, Vec<u8>)> = self.assets.iter().map(|(p, b)| (format!("/{p}"), b.clone())).collect();
-        all.extend(files.into_iter().map(|(p, b)| (format!("/{}", p.trim_start_matches('/')), b)));
-        self.world.set_today(None);
-        self.world.set_files(all);
-        let (diagnostics, ms) = self.run();
-        let mut issues: Vec<Issue> = diagnostics
-            .iter()
-            .map(|d| Issue {
-                block_id: None,
-                field: Some(format!("{}:{}", d.file.clone().unwrap_or_default(), d.line.unwrap_or(0))),
-                severity: if d.severity == "error" { Severity::Error } else { Severity::Warning },
-                code: "typst".into(),
-                message: d.message.clone(),
-                fix: None,
-            })
-            .collect();
-        if let (Some(src), Some(t)) = (main, style) {
-            issues.extend(lint::lint_source(&src, &t));
-        }
-        let exportable = !diagnostics.iter().any(|d| d.severity == "error");
-        self.exportable = exportable;
-        self.mode = Mode::Code;
-        UpdateResult { pages: self.pages(known), issues, diagnostics, exportable, compile_ms: ms, ..Default::default() }
-    }
-
     /// PDFを出力する。エラーが残っている文書は出力しない（品質のばらつきを防ぐ）。
     pub fn pdf(&self) -> Result<Vec<u8>, String> {
         if !self.exportable {
@@ -278,17 +219,16 @@ impl Session {
         compile::render_pdf(doc, "formdoc", self.date).map_err(|e| e.join("\n"))
     }
 
-    /// GUI文書を、コードモードで編集できるTypstソースとして書き出す。
-    pub fn export_typst(&self) -> Option<String> {
-        match &self.mode {
-            Mode::Gui { generated, doc } => Some(format!(
-                "// formDoc から書き出し（スタイル: {} / ライブラリ {}）\n// 同じフォルダの style.typ（スタイル）で組版します。「VSCodeで開く」などで編集できます。\n{}",
-                doc.template,
-                formdoc_library::version(),
-                generated.source.lines().filter(|l| !l.starts_with("// @block")).collect::<Vec<_>>().join("\n")
-            )),
-            Mode::Code => None,
-        }
+    /// コードモードで見せるコード（直前に組版した文書を、部品ごとの目印つきの Typst にしたもの）。
+    pub fn code(&self) -> Option<String> {
+        self.mode.as_ref().map(|m| m.view.source.clone())
+    }
+
+    /// コードモードの編集を、直前に組版した文書に戻す（変わった部品は Typstコード部品になる）。
+    pub fn apply_code(&self, code: &str) -> Result<crate::code::Applied, String> {
+        let m = self.mode.as_ref().ok_or("文書がまだ組版されていません")?;
+        let (_, t) = self.style.as_ref().ok_or("スタイルが選ばれていません")?;
+        Ok(crate::code::apply(&m.doc, &m.view.codes, &codegen::header(&m.doc, t), code))
     }
 }
 
@@ -354,31 +294,4 @@ pub fn catalog() -> Result<Catalog, String> {
 /// スタイルの info だけを読む（スタイル一覧の表示用。セッションの状態は変えない）。
 pub fn style_info(source: &str) -> Result<Template, String> {
     template::parse_style(source)
-}
-
-/// コードモードの新規プロジェクトの main.typ（同じフォルダに style.typ を置く前提）。
-pub fn code_template(t: &Template) -> String {
-    let title = t.field("title").and_then(|f| f.default.as_ref()).and_then(|v| v.as_str()).unwrap_or(&t.name).to_string();
-    format!(
-        r#"#import "{pkg}": *
-#import "style.typ": style
-#show: style.with(title: {title})
-
-= 設計条件
-
-#let L = vdef("L", 5.000, unit: "m", desc: "支間長")
-#let w = vdef("w", 10.0, unit: "kN/m", desc: "等分布荷重")
-#def-line(L)
-#def-line(w)
-
-= 設計計算
-== 曲げモーメント #h(1fr) #kijun("鋼標準", "第Ⅰ編 4.5")
-
-#let M = vcalc("M", "w * L^2 / 8", w, L, unit: "kN*m", digits: 2, desc: "最大曲げモーメント")
-#calc-line(M)
-#where-list(M, w, L)
-"#,
-        pkg = codegen::PACKAGE,
-        title = codegen::lit(&title),
-    )
 }

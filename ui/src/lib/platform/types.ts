@@ -1,5 +1,11 @@
 import type { Catalog, Doc, ProjectFile, StyleInfo, UpdateResult } from '../types';
 
+/** コードモードの編集を文書に戻した結果 */
+export interface CodeApplied {
+  doc: Doc;
+  warnings: string[];
+}
+
 /** 組版エンジン。Web版は Web Worker 内の wasm、デスクトップ版は Tauri コマンド（ネイティブ）。中身は同じ formdoc-core。 */
 export interface Engine {
   catalog(): Promise<Catalog>;
@@ -9,14 +15,14 @@ export interface Engine {
   setStyle(source: string): Promise<StyleInfo>;
   /** 現在のスタイルで新規文書を作る */
   newDocument(): Promise<Doc>;
-  /** 現在のスタイルで、コードモードの新規 main.typ を作る */
-  codeTemplate(): Promise<string>;
   updateDocument(doc: Doc, known: string[]): Promise<UpdateResult>;
-  updateProject(files: ProjectFile[], known: string[]): Promise<UpdateResult>;
+  /** コードモードで見せるコード（直前に組版した文書を、部品ごとの目印つきの Typst にしたもの） */
+  code(): Promise<string | null>;
+  /** コードモードの編集を、直前に組版した文書に戻す（変わった部品は Typstコード部品になる） */
+  applyCode(code: string): Promise<CodeApplied>;
   setAsset(path: string, bytes: Uint8Array): Promise<void>;
   removeAsset(path: string): Promise<void>;
   pdf(): Promise<Uint8Array>;
-  exportTypst(): Promise<string | null>;
 }
 
 /** ファイルの入出力。 */

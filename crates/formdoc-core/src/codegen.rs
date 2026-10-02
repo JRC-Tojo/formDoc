@@ -56,6 +56,9 @@ pub struct BlockSpan {
 pub struct Generated {
     pub source: String,
     pub spans: Vec<BlockSpan>,
+    /// 部品ごとのコード（赤枠に置き換える前のもの。コードモードの編集を文書に戻すときに比べる）
+    #[serde(skip)]
+    pub codes: std::collections::HashMap<String, String>,
 }
 
 impl Generated {
@@ -404,9 +407,9 @@ pub fn generate(doc: &Document, t: &Template, report: &Report) -> Generated {
 
 /// error_boxes が false のときは、エラーのあるブロックも赤枠に置き換えずそのまま出す（コードモードの表示用）。
 pub fn generate_with(doc: &Document, t: &Template, report: &Report, error_boxes: bool) -> Generated {
-    let mut g = Gen { out: header(doc, t), spans: Vec::new(), t, report, error_boxes };
+    let mut g = Gen { out: header(doc, t), spans: Vec::new(), codes: Default::default(), t, report, error_boxes };
     g.blocks(&doc.blocks);
-    Generated { source: g.out, spans: g.spans }
+    Generated { source: g.out, spans: g.spans, codes: g.codes }
 }
 
 /// 生成ソースの先頭（パッケージ・スタイルの読み込みと文書情報）。
@@ -420,6 +423,7 @@ pub fn header(doc: &Document, t: &Template) -> String {
 struct Gen<'a> {
     out: String,
     spans: Vec<BlockSpan>,
+    codes: std::collections::HashMap<String, String>,
     t: &'a Template,
     report: &'a Report,
     error_boxes: bool,
@@ -442,7 +446,9 @@ impl Gen<'_> {
                 continue;
             }
             let has_error = self.report.blocks.get(&b.id).is_some_and(|r| r.status == "error");
-            let code = if has_error && self.error_boxes { error_box(b, self.report) } else { block_code(b, self.t, self.report) };
+            let plain = block_code(b, self.t, self.report);
+            let code = if has_error && self.error_boxes { error_box(b, self.report) } else { plain.clone() };
+            self.codes.insert(b.id.clone(), plain);
             let start = self.line_no();
             self.out.push_str(&format!("// @block {}\n", b.id));
             self.out.push_str(&code);

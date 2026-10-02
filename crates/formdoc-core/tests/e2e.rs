@@ -90,36 +90,6 @@ fn duplicate_variable_and_lint() {
 }
 
 #[test]
-fn code_mode_compiles_and_lints() {
-    let mut s = session();
-    let t = parse_style(&style()).unwrap();
-    let src = formdoc_core::api::code_template(&t);
-    let r = s.update_project(vec![("main.typ".into(), src.into_bytes()), ("style.typ".into(), style().into_bytes())], &[]);
-    assert!(r.exportable, "{:?}", r.diagnostics);
-    // プロジェクトの style.typ の Lint 規則が効く
-    let bad = "#import \"@local/formdoc:0.1.0\": *\n#import \"style.typ\": style\n#show: style\n設計を行なう。\n";
-    let r = s.update_project(vec![("main.typ".into(), bad.into()), ("style.typ".into(), style().into_bytes())], &[]);
-    assert!(r.issues.iter().any(|i| i.code == "lint-wording"), "{:?}", r.issues);
-    let r = s.update_project(vec![("main.typ".into(), b"#import \"@local/formdoc:0.1.0\": *\n#kijun(\"unknown\", \"1\")\n".to_vec())], &[]);
-    assert!(!r.exportable);
-    assert!(r.diagnostics.iter().any(|d| d.message.contains("未登録の基準書") && d.line == Some(2)), "{:?}", r.diagnostics);
-}
-
-#[test]
-fn gui_export_to_typst_compiles_identically() {
-    // 「Typstとして書き出し」したソースをコードモードで組版すると、GUIと同じPDFになる
-    // （PDFの作成日時はコードモードでは入らず、ページのハッシュはソース位置を含むため、SVGで比べる）
-    let mut gui = session();
-    let g = gui.update_document(sample(), &[]);
-    let src = gui.export_typst().unwrap();
-    let mut code = Session::new();
-    let r = code.update_project(vec![("main.typ".into(), src.into_bytes()), ("style.typ".into(), style().into_bytes())], &[]);
-    assert!(r.exportable, "{:?}", r.diagnostics);
-    let svgs = |r: &formdoc_core::api::UpdateResult| r.pages.iter().map(|p| p.svg.clone().unwrap()).collect::<Vec<_>>();
-    assert_eq!(svgs(&r), svgs(&g));
-}
-
-#[test]
 fn new_document_has_skeleton() {
     let d = session().new_document().unwrap();
     assert_eq!(d.blocks.len(), 3);
@@ -148,7 +118,7 @@ fn old_meta_chapter_start_is_migrated() {
     assert_eq!(doc.meta.get("chapter-start").and_then(|v| v.as_i64()), Some(4));
     let mut s = session();
     s.update_document(doc, &[]);
-    assert!(s.export_typst().unwrap().contains("chapter-start: 4"));
+    assert!(s.code().unwrap().contains("chapter-start: 4"));
 }
 
 #[test]
@@ -261,5 +231,47 @@ fn group_hides_internal_variables_and_exports() {
     let r = s.update_document(doc, &[]);
     assert_eq!(errors(&r), ["c2:calc"]);
     assert_eq!(r.vars.iter().find(|v| v.name == "a1").unwrap().value, 1400.0);
-    assert!(s.export_typst().unwrap().contains("// @group g1"));
+    assert!(s.code().unwrap().contains("// @group g1"));
+}
+
+#[test]
+fn code_view_round_trips_to_the_same_document() {
+    // コードモードで何も変えなければ、文書はそのまま
+    let mut s = session();
+    let doc = sample();
+    s.update_document(doc.clone(), &[]);
+    let code = s.code().unwrap();
+    assert!(code.contains("// @block b11") && code.contains("// @group g1"));
+    let a = s.apply_code(&code).unwrap();
+    assert!(a.warnings.is_empty(), "{:?}", a.warnings);
+    assert_eq!(a.doc, doc);
+}
+
+#[test]
+fn code_edit_becomes_typst_block_and_keeps_variables() {
+    let mut s = session();
+    let doc = sample();
+    s.update_document(doc.clone(), &[]);
+    let code = s.code().unwrap();
+    // 変数定義 V の値をコードで書き換える → その部品は Typstコード部品になり、V は引き続き使える
+    let start = code.find("// @block b6\n").unwrap();
+    let end = start + code[start..].find("\n\n").unwrap();
+    let edited = format!("{}// @block b6\n#let v-V = vdef(\"V\", 120.0, unit: \"km/h\", digits: 0, desc: \"最高速度\"){}", &code[..start], &code[end..]);
+    // 目印の無い行を足すと、新しい Typstコード部品になる
+    let edited = edited.replace("// @block b9\n", "#v(1em)\n\n// @block b9\n");
+    let a = s.apply_code(&edited).unwrap();
+    let b6 = a.doc.blocks.iter().find(|b| b.id == "b6").unwrap();
+    assert_eq!(b6.kind, "typst");
+    assert_eq!(a.doc.blocks.len(), doc.blocks.len() + 1);
+    assert!(a.doc.blocks.iter().any(|b| b.kind == "typst" && b.str("code") == "#v(1em)"));
+    // 他の部品はそのまま
+    assert_eq!(a.doc.blocks.iter().find(|b| b.id == "b11").unwrap(), doc.blocks.iter().find(|b| b.id == "b11").unwrap());
+    let r = s.update_document(a.doc, &[]);
+    assert!(r.exportable, "{:?}", r.issues.iter().filter(|i| format!("{:?}", i.severity) == "Error").collect::<Vec<_>>());
+    // V = 120 で後ろの計算（i）が変わる
+    let i = r.vars.iter().find(|v| v.name == "i").unwrap();
+    assert_ne!(i.text, "0.425");
+    // 先頭の文書情報の行を変えると案内が出る
+    let code = s.code().unwrap().replacen("#show: style.with(", "#show: style.with(foo: 1, ", 1);
+    assert!(!s.apply_code(&code).unwrap().warnings.is_empty());
 }

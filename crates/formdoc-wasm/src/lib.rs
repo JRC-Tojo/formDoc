@@ -42,11 +42,6 @@ pub fn new_document() -> Result<String, JsError> {
     serde_json::to_string(&d).map_err(err)
 }
 
-#[wasm_bindgen]
-pub fn code_template() -> Result<String, JsError> {
-    SESSION.with(|s| s.borrow().code_template()).map_err(err)
-}
-
 /// GUI文書を更新する。known は既に表示済みのページハッシュ（JSON配列）。
 #[wasm_bindgen]
 pub fn update_document(doc_json: &str, known_json: &str) -> Result<String, JsError> {
@@ -55,16 +50,17 @@ pub fn update_document(doc_json: &str, known_json: &str) -> Result<String, JsErr
     serde_json::to_string(&r).map_err(err)
 }
 
-/// コードモード。files_json は [{"path": "main.typ", "text": "..."}]
+/// コードモードで見せるコード（直前に組版した文書の Typst）。
 #[wasm_bindgen]
-pub fn update_project(files_json: &str, known_json: &str) -> Result<String, JsError> {
-    let files: Vec<api::ProjectFile> = serde_json::from_str(files_json).map_err(err)?;
-    let files = files
-        .into_iter()
-        .map(|f| (f.path, f.text.map(String::into_bytes).or(f.bytes).unwrap_or_default()))
-        .collect();
-    let r = SESSION.with(|s| s.borrow_mut().update_project(files, &known(known_json)));
-    serde_json::to_string(&r).map_err(err)
+pub fn code() -> Option<String> {
+    SESSION.with(|s| s.borrow().code())
+}
+
+/// コードモードの編集を文書に戻す。{"doc": …, "warnings": […]}
+#[wasm_bindgen]
+pub fn apply_code(code: &str) -> Result<String, JsError> {
+    let a = SESSION.with(|s| s.borrow().apply_code(code)).map_err(err)?;
+    serde_json::to_string(&a).map_err(err)
 }
 
 #[wasm_bindgen]
@@ -80,9 +76,4 @@ pub fn remove_asset(path: &str) {
 #[wasm_bindgen]
 pub fn pdf() -> Result<Vec<u8>, JsError> {
     SESSION.with(|s| s.borrow().pdf()).map_err(err)
-}
-
-#[wasm_bindgen]
-pub fn export_typst() -> Option<String> {
-    SESSION.with(|s| s.borrow().export_typst())
 }

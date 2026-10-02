@@ -26,7 +26,7 @@
   }
 
   function blockLabel(i: Issue): string {
-    if (!i.block_id) return app.mode === 'code' ? (i.field ?? '') : '文書情報';
+    if (!i.block_id) return '文書情報';
     const b = app.doc?.blocks.find((x) => x.id === i.block_id);
     return b ? (app.catalog?.components[b.kind]?.label ?? b.kind) : '';
   }

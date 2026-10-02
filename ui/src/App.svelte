@@ -31,15 +31,15 @@
       const inCode = !!(e.target as HTMLElement)?.closest('.cm-editor');
       if (k === 's') {
         e.preventDefault();
-        if (app.mode === 'gui') app.save(e.shiftKey);
+        app.save(e.shiftKey);
       } else if (k === 'p') {
         // ブラウザ標準の印刷（画面全体）ではなく、文書だけを印刷する
         e.preventDefault();
         app.print();
-      } else if (k === 'z' && app.mode === 'gui' && !inCode) {
+      } else if (k === 'z' && !inCode) {
         e.preventDefault();
         e.shiftKey ? app.redo() : app.undo();
-      } else if (k === 'y' && app.mode === 'gui' && !inCode) {
+      } else if (k === 'y' && !inCode) {
         e.preventDefault();
         app.redo();
       }
@@ -97,41 +97,36 @@
     <span class="target small">{TARGET === 'desktop' ? 'デスクトップ版' : 'Web版'}</span>
 
     <div class="modes" role="tablist">
-      <button role="tab" class:on={app.mode === 'gui'} onclick={() => app.enterGuiMode()}>部品で作成</button>
-      <button role="tab" class:on={app.mode === 'code'} onclick={() => app.enterCodeMode()}>コードで作成（Typst）</button>
+      <button role="tab" class:on={app.mode === 'gui'} onclick={() => app.enterGuiMode()} title="部品を並べて編集します">部品で作成</button>
+      <button role="tab" class:on={app.mode === 'code'} onclick={() => app.enterCodeMode()} title="同じ文書を Typst のコードとして編集します">コードで作成（Typst）</button>
     </div>
 
-    {#if app.mode === 'gui'}
-      <div class="group">
-        <button onclick={() => app.newDocument()} title="新しい文書（文書情報でスタイルを選んで始めます）">新規</button>
-        <span class="open">
-          <button onclick={() => app.open()}>開く…</button><Gate cap="recentFiles"><button class="drop" onclick={() => (recentMenu = !recentMenu)} title="最近使ったファイル">▾</button></Gate>
-          {#if recentMenu}
-            <div class="menu-backdrop" role="presentation" onmousedown={() => (recentMenu = false)}></div>
-            <div class="menu">
-              <div class="small muted head">最近使ったファイル</div>
-              {#each app.settings.recent as p}
-                <button class="ghost" onclick={() => openRecent(p)} title={p}>
-                  <span class="fname">{p.split(/[\\/]/).pop()}</span><span class="small muted fpath">{p}</span>
-                </button>
-              {:else}
-                <div class="small muted head">まだありません</div>
-              {/each}
-            </div>
-          {/if}
-        </span>
-        <button onclick={() => app.save()} title="Ctrl+S">保存{app.dirty ? ' *' : ''}</button>
-        <Gate cap="nativeSaveDialog"><button onclick={() => app.save(true)} title="Ctrl+Shift+S">名前を付けて保存…</button></Gate>
-      </div>
-      <div class="group">
-        <button onclick={() => app.undo()} title="元に戻す (Ctrl+Z)">↶</button>
-        <button onclick={() => app.redo()} title="やり直し (Ctrl+Y)">↷</button>
-      </div>
-      <div class="group">
-        <button onclick={() => app.convertToCode()} disabled={!app.style} title="この文書を、同じ体裁のTypstコードに変換してコードモードで開きます">Typstに変換</button>
-        <button onclick={() => app.exportTypst()} disabled={!app.style}>Typst書き出し</button>
-      </div>
-    {/if}
+    <!-- どちらのモードでも編集しているのは同じ文書 -->
+    <div class="group">
+      <button onclick={() => app.newDocument()} title="新しい文書（文書情報でスタイルを選んで始めます）">新規</button>
+      <span class="open">
+        <button onclick={() => app.open()}>開く…</button><Gate cap="recentFiles"><button class="drop" onclick={() => (recentMenu = !recentMenu)} title="最近使ったファイル">▾</button></Gate>
+        {#if recentMenu}
+          <div class="menu-backdrop" role="presentation" onmousedown={() => (recentMenu = false)}></div>
+          <div class="menu">
+            <div class="small muted head">最近使ったファイル</div>
+            {#each app.settings.recent as p}
+              <button class="ghost" onclick={() => openRecent(p)} title={p}>
+                <span class="fname">{p.split(/[\\/]/).pop()}</span><span class="small muted fpath">{p}</span>
+              </button>
+            {:else}
+              <div class="small muted head">まだありません</div>
+            {/each}
+          </div>
+        {/if}
+      </span>
+      <button onclick={() => app.save()} title="Ctrl+S">保存{app.dirty ? ' *' : ''}</button>
+      <Gate cap="nativeSaveDialog"><button onclick={() => app.save(true)} title="Ctrl+Shift+S">名前を付けて保存…</button></Gate>
+    </div>
+    <div class="group">
+      <button onclick={() => app.undo()} title="元に戻す (Ctrl+Z)">↶</button>
+      <button onclick={() => app.redo()} title="やり直し (Ctrl+Y)">↷</button>
+    </div>
 
     <span class="spacer"></span>
     {#if app.filePath}<span class="path small muted" title={app.filePath}>{app.filePath}</span>{/if}
