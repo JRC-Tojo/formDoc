@@ -1,5 +1,5 @@
 # 部品（ブロック）定義。GUIの入力フォームはこの定義から自動生成される。
-# category: 「部品を追加」ダイアログの分類。deprecated: 一覧に出さない（既存文書のために残す部品。値は置き換え先の案内）
+# category: 「部品を追加」ダイアログの分類
 # field.type: text / multiline / date / number / int / expr / var / varlist / select / bool / kijun / table / json / file
 # 描画は library/typst/formdoc の関数で行い、Typstコード生成は formdoc-core::codegen が担う。
 
@@ -118,39 +118,11 @@ fields = [
   { key = "data", label = "表", type = "grid" },
 ]
 
-[fig-beam]
-label = "図：単純梁と荷重"
-category = "図表"
-deprecated = "テンプレート「単純梁と集中荷重」を使ってください"
-icon = "⟂"
-help = "単純梁と集中荷重、影響線縦距の図。数値または変数名を指定。"
-fields = [
-  { key = "span", label = "支間長", type = "expr", required = true },
-  { key = "loads", label = "荷重位置（カンマ区切り）", type = "text", help = "左支点からの距離。例: 3.0, 5.8" },
-  { key = "eta", label = "影響線縦距（カンマ区切り）", type = "text" },
-  { key = "caption", label = "図題", type = "text" },
-]
-
-[fig-isection]
-label = "図：I形断面"
-category = "図表"
-deprecated = "テンプレート「I形断面」を使ってください"
-icon = "I"
-help = "I形断面の寸法図。"
-fields = [
-  { key = "H", label = "高さ H", type = "expr", required = true },
-  { key = "B", label = "フランジ幅 B", type = "expr", required = true },
-  { key = "tw", label = "腹板厚 tw", type = "expr", required = true },
-  { key = "tf", label = "フランジ厚 tf", type = "expr", required = true },
-  { key = "note", label = "右側の注記", type = "text", help = "例: H−700×350×12×22（SM400）。{{H}} なども使える" },
-  { key = "caption", label = "図題", type = "text" },
-]
-
 [fig-shapes]
 label = "図：汎用図形"
 category = "図表"
 icon = "◇"
-help = "線・矢印・矩形・円・多角形・寸法線・文字。「図を描く」で描きながら作れる。座標に変数や式を使うと、値に合わせて形が変わる（テンプレートにすると寸法違いの図を使い回せる）。"
+help = "線・矢印・矩形・円・多角形・寸法線・文字。「図を描く」で描きながら作れる。座標に変数や式を使うと、値に合わせて形が変わる。図形ごとに縦横の繰り返し（回数・間隔）を指定でき、式の中で繰り返しの番号 ix・iy（0始まり）を使える。文字には {{変数}} のほか {{式}}・{{式:桁}} も書ける。"
 fields = [
   { key = "shapes", label = "図形", type = "table", columns = [
       { key = "kind", label = "種類", type = "select", options = ["line", "arrow", "rect", "circle", "polygon", "dim", "text"] },
@@ -161,6 +133,10 @@ fields = [
       { key = "pts", label = "頂点（多角形）", type = "expr", help = "x, y; x, y; …" },
       { key = "label", label = "文字", type = "text" },
       { key = "fill", label = "塗り", type = "select", options = ["", "gray", "dark", "black"] },
+      { key = "nx", label = "横の回数", type = "expr", help = "繰り返し（空欄は1回）" },
+      { key = "dx", label = "横の間隔", type = "expr" },
+      { key = "ny", label = "縦の回数", type = "expr" },
+      { key = "dy", label = "縦の間隔", type = "expr" },
   ] },
   { key = "scale", label = "縮尺（1単位=cm）", type = "number", default = 1.0 },
   { key = "caption", label = "図題", type = "text" },

@@ -41,7 +41,14 @@
 #let B = vdef("B", 350, unit: "mm", digits: 0)
 #let tw = vdef("t_w", 12, unit: "mm", digits: 0)
 #let tf = vdef("t_f", 22, unit: "mm", digits: 0)
-#grid(columns: (auto, 1fr), column-gutter: 2em, fig-isection(H, B, tw, tf),
+#let (h, bb, w, f) = (H.value, B.value, tw.value, tf.value)
+#grid(columns: (auto, 1fr), column-gutter: 2em, align: horizon,
+  fig-shapes((
+    (kind: "rect", from: (-bb / 2, 0), to: (bb / 2, f), fill: luma(210)),
+    (kind: "rect", from: (-bb / 2, h - f), to: (bb / 2, h), fill: luma(210)),
+    (kind: "rect", from: (-w / 2, f), to: (w / 2, h - f), fill: luma(210)),
+    (kind: "dim", from: (-bb / 2, h + 60), to: (bb / 2, h + 60), label: val(B, unit: false)),
+  ), scale: 0.006),
   [H−#val(H, unit: false)×#val(B, unit: false)×#val(tw, unit: false)×#val(tf, unit: false)（SM400）])
 
 === 板要素の耐荷性の照査
@@ -59,7 +66,14 @@
 #where-list(Rcr, k0, E, nu, fsyk)
 
 === 影響線
-#fd-figure(fig-beam(Lb, loads: (3.0, 5.8), eta: (0.625, 0.275)), caption: [c点の影響線])
+#fd-figure(fig-shapes((
+  (kind: "line", from: (0, 0), to: (8, 0)),
+  (kind: "polygon", pts: ((0, 0), (-0.15, -0.3), (0.15, -0.3))),
+  (kind: "polygon", pts: ((8, 0), (7.85, -0.3), (8.15, -0.3))),
+  (kind: "arrow", from: (3.0, 1), to: (3.0, 0.05)),
+  (kind: "arrow", from: (5.8, 1), to: (5.8, 0.05)),
+  (kind: "dim", from: (0, 1.4), to: (8, 1.4), label: val(Lb, unit: false)),
+)), caption: [載荷状態])
 
 #fd-table(columns: 4, caption: [反力のまとめ],
   header: ([設計作用], [記号], [鉛直反力 (kN)], [水平反力 (kN)]),

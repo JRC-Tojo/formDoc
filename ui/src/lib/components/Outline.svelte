@@ -55,11 +55,9 @@
       case 'kijun':
         return `【${p.kijun?.abbr ?? ''}】${p.kijun?.loc ?? ''}`;
       case 'table':
-      case 'fig-beam':
-      case 'fig-isection':
       case 'fig-shapes':
       case 'image':
-        return p.caption || p.file || (b.kind === 'fig-isection' ? `I形断面 ${p.H ?? ''}×${p.B ?? ''}×${p.tw ?? ''}×${p.tf ?? ''}` : comps[b.kind]?.label ?? '');
+        return p.caption || p.file || comps[b.kind]?.label || '';
       case 'pagebreak':
         return '改ページ';
       case 'typst':

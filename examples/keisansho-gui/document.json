@@ -231,13 +231,71 @@
   },
   {
    "id": "b20",
-   "kind": "fig-isection",
+   "kind": "fig-shapes",
    "props": {
-    "H": "H",
-    "B": "B",
-    "tw": "t_w",
-    "tf": "t_f",
-    "note": "H−{{H}}×{{B}}×{{t_w}}×{{t_f}}（SM400）"
+    "caption": "I形断面",
+    "scale": 0.006,
+    "shapes": [
+     {
+      "kind": "rect",
+      "x1": "-B / 2",
+      "y1": "0",
+      "x2": "B / 2",
+      "y2": "t_f",
+      "fill": "gray"
+     },
+     {
+      "kind": "rect",
+      "x1": "-B / 2",
+      "y1": "H - t_f",
+      "x2": "B / 2",
+      "y2": "H",
+      "fill": "gray"
+     },
+     {
+      "kind": "rect",
+      "x1": "-t_w / 2",
+      "y1": "t_f",
+      "x2": "t_w / 2",
+      "y2": "H - t_f",
+      "fill": "gray"
+     },
+     {
+      "kind": "dim",
+      "x1": "-B / 2",
+      "y1": "H + 60",
+      "x2": "B / 2",
+      "y2": "H + 60",
+      "label": "{{B}}"
+     },
+     {
+      "kind": "dim",
+      "x1": "-B / 2 - 80",
+      "y1": "0",
+      "x2": "-B / 2 - 80",
+      "y2": "H",
+      "label": "{{H}}"
+     },
+     {
+      "kind": "text",
+      "x1": "t_w / 2 + 60",
+      "y1": "H / 2",
+      "label": "{{t_w}}"
+     },
+     {
+      "kind": "text",
+      "x1": "B / 2 + 60",
+      "y1": "H - t_f / 2",
+      "label": "{{t_f}}"
+     }
+    ]
+   }
+  },
+  {
+   "id": "b20n",
+   "kind": "paragraph",
+   "props": {
+    "text": "H−{{H}}×{{B}}×{{t_w}}×{{t_f}}（SM400）"
    }
   },
   {
@@ -365,16 +423,6 @@
    "props": {
     "level": 3,
     "text": "影響線"
-   }
-  },
-  {
-   "id": "b33",
-   "kind": "fig-beam",
-   "props": {
-    "span": "L_b",
-    "loads": "3.0, 5.8",
-    "eta": "0.625, 0.275",
-    "caption": "c点の影響線"
    }
   },
   {

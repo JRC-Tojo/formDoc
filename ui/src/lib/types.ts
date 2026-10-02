@@ -48,8 +48,8 @@ export interface BlockResult {
   vars?: string[];
   digits?: number;
   value?: number;
-  /** 汎用図形の座標の評価値 */
-  shapes?: { x1: number | null; y1: number | null; x2: number | null; y2: number | null; pts?: [number | null, number | null][] }[];
+  /** 汎用図形の評価値（図形ごとに、繰り返しの各回） */
+  shapes?: { x1: number | null; y1: number | null; x2: number | null; y2: number | null; pts?: [number | null, number | null][]; label?: string }[][];
 }
 
 export interface PageOut {

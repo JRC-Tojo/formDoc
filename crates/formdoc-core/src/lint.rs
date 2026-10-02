@@ -22,11 +22,7 @@ fn text_fields(b: &Block) -> Vec<(String, String)> {
             push("label", b.str("label"));
         }
         "check" => push("label", b.str("label")),
-        "fig-beam" | "fig-shapes" | "image" => push("caption", b.str("caption")),
-        "fig-isection" => {
-            push("caption", b.str("caption"));
-            push("note", b.str("note"));
-        }
+        "fig-shapes" | "image" => push("caption", b.str("caption")),
         "table" => {
             push("caption", b.str("caption"));
             let grid: Grid = b.props.get("data").cloned().and_then(|x| serde_json::from_value(x).ok()).unwrap_or_default();

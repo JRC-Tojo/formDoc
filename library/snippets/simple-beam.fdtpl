@@ -1,8 +1,8 @@
 {
  "format": "formdoc-template",
  "version": 1,
- "name": "単純梁と集中荷重",
- "description": "単純梁に集中荷重が2点載る図（支間・荷重位置の寸法つき）。荷重の数を変えるときは図を描き足す。",
+ "name": "単純梁と集中荷重（影響線つき）",
+ "description": "単純梁に集中荷重を等間隔で n 個載せた図と、左支点反力の影響線。荷重の数・間隔を変えると図と縦距（η = 1 − x/L）が自動で変わる。縦距の和 Ση を公開する。",
  "category": "荷重",
  "styles": [],
  "created": "2026-10-02",
@@ -22,10 +22,10 @@
    "id": "t2",
    "kind": "vdef",
    "props": {
-    "name": "a_1",
+    "name": "a",
     "value": 3.0,
     "unit": "m",
-    "desc": "左支点から荷重 P1 までの距離",
+    "desc": "左支点から最初の荷重までの距離",
     "show": false
    }
   },
@@ -33,18 +33,30 @@
    "id": "t3",
    "kind": "vdef",
    "props": {
-    "name": "a_2",
-    "value": 5.8,
+    "name": "s",
+    "value": 2.8,
     "unit": "m",
-    "desc": "左支点から荷重 P2 までの距離",
+    "desc": "荷重の間隔",
     "show": false
    }
   },
   {
    "id": "t4",
+   "kind": "vdef",
+   "props": {
+    "name": "n",
+    "value": 2,
+    "unit": "",
+    "desc": "荷重の数",
+    "show": false,
+    "digits": 0
+   }
+  },
+  {
+   "id": "t5",
    "kind": "fig-shapes",
    "props": {
-    "caption": "載荷状態",
+    "caption": "載荷状態と左支点反力の影響線",
     "scale": 1.0,
     "shapes": [
      {
@@ -64,47 +76,104 @@
      },
      {
       "kind": "arrow",
-      "x1": "a_1",
+      "x1": "a",
       "y1": "1",
-      "x2": "a_1",
-      "y2": "0.05"
-     },
-     {
-      "kind": "arrow",
-      "x1": "a_2",
-      "y1": "1",
-      "x2": "a_2",
-      "y2": "0.05"
+      "x2": "a",
+      "y2": "0.05",
+      "nx": "n",
+      "dx": "s"
      },
      {
       "kind": "text",
-      "x1": "a_1",
+      "x1": "a",
       "y1": "1.2",
-      "label": "P1"
-     },
-     {
-      "kind": "text",
-      "x1": "a_2",
-      "y1": "1.2",
-      "label": "P2"
+      "label": "P{{ix + 1:0}}",
+      "nx": "n",
+      "dx": "s"
      },
      {
       "kind": "dim",
       "x1": "0",
-      "y1": "-0.7",
-      "x2": "a_1",
-      "y2": "-0.7",
-      "label": "{{a_1}}"
-     },
-     {
-      "kind": "dim",
-      "x1": "0",
-      "y1": "-1.2",
+      "y1": "1.9",
       "x2": "L",
-      "y2": "-1.2",
+      "y2": "1.9",
       "label": "{{L}}"
+     },
+     {
+      "kind": "dim",
+      "x1": "0",
+      "y1": "1.55",
+      "x2": "a",
+      "y2": "1.55",
+      "label": "{{a}}"
+     },
+     {
+      "kind": "dim",
+      "x1": "a",
+      "y1": "1.55",
+      "x2": "a + s",
+      "y2": "1.55",
+      "label": "{{s}}",
+      "nx": "n - 1",
+      "dx": "s"
+     },
+     {
+      "kind": "line",
+      "x1": "0",
+      "y1": "-1.0",
+      "x2": "L",
+      "y2": "-1.0"
+     },
+     {
+      "kind": "line",
+      "x1": "0",
+      "y1": "-1.0",
+      "x2": "0",
+      "y2": "-2.0"
+     },
+     {
+      "kind": "line",
+      "x1": "0",
+      "y1": "-2.0",
+      "x2": "L",
+      "y2": "-1.0"
+     },
+     {
+      "kind": "line",
+      "x1": "a",
+      "y1": "-1.0",
+      "x2": "a",
+      "y2": "-1.0 - (1 - (a + ix * s) / L)",
+      "nx": "n",
+      "dx": "s"
+     },
+     {
+      "kind": "text",
+      "x1": "a + 0.3",
+      "y1": "-1.0 - (1 - (a + ix * s) / L) / 2",
+      "label": "{{1 - (a + ix * s) / L:3}}",
+      "nx": "n",
+      "dx": "s"
+     },
+     {
+      "kind": "text",
+      "x1": "-0.6",
+      "y1": "-1.5",
+      "label": "1.0"
      }
     ]
+   }
+  },
+  {
+   "id": "t6",
+   "kind": "calc",
+   "props": {
+    "name": "eta_sum",
+    "expr": "n * (1 - a / L) - s * n * (n - 1) / (2 * L)",
+    "digits": 3,
+    "desc": "影響線縦距の和",
+    "display": "Σ eta",
+    "show_symbolic": true
    }
   }
  ],
@@ -117,19 +186,30 @@
     "default": 8.0
    },
    {
-    "name": "a_1",
-    "label": "荷重 P1 の位置",
+    "name": "a",
+    "label": "最初の荷重の位置",
     "unit": "m",
     "default": 3.0
    },
    {
-    "name": "a_2",
-    "label": "荷重 P2 の位置",
+    "name": "s",
+    "label": "荷重の間隔",
     "unit": "m",
-    "default": 5.8
+    "default": 2.8
+   },
+   {
+    "name": "n",
+    "label": "荷重の数",
+    "unit": "",
+    "default": 2
    }
   ],
-  "exports": []
+  "exports": [
+   {
+    "name": "eta_sum",
+    "label": "影響線縦距の和"
+   }
+  ]
  },
  "assets": {}
 }

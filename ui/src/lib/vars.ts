@@ -9,9 +9,6 @@ export type RenameMap = Record<string, string>;
 
 const IDENT = /[A-Za-z][A-Za-z0-9_]*/g;
 
-/** 型は text だが中身がカンマ区切りの式の項目 */
-const EXPR_LIST = new Set(['fig-beam.loads', 'fig-beam.eta']);
-
 /** 式中の変数名（関数呼び出し・定数 pi・数値の指数 1e5 を除く） */
 function exprIdents(expr: string, fn: (name: string, start: number, end: number) => void) {
   for (const m of expr.matchAll(IDENT)) {
@@ -20,7 +17,7 @@ function exprIdents(expr: string, fn: (name: string, start: number, end: number)
     const prev = expr[start - 1] ?? '';
     if (/[0-9.]/.test(prev)) continue; // 1e5, 2.5e-3
     if (/^\s*\(/.test(expr.slice(end))) continue; // 関数
-    if (m[0] === 'pi') continue;
+    if (m[0] === 'pi' || m[0] === 'ix' || m[0] === 'iy') continue; // 定数・図形の繰り返し番号
     fn(m[0], start, end);
   }
 }
@@ -38,12 +35,24 @@ function renameExpr(expr: string, map: RenameMap): string {
 
 const REF = /\{\{\s*([^{}]+?)\s*\}\}/g;
 
+/** {{名前}} のほか、図形の文字の {{式}}・{{式:桁}} も読む */
+function splitRef(inner: string): { expr: string; digits: string } {
+  const m = /^(.*?)(:\s*\d+\s*)$/.exec(inner);
+  return m ? { expr: m[1].trim(), digits: m[2] } : { expr: inner.trim(), digits: '' };
+}
+
 function textRefs(text: string): string[] {
-  return [...text.matchAll(REF)].map((m) => m[1]);
+  const out: string[] = [];
+  for (const m of text.matchAll(REF)) exprIdents(splitRef(m[1]).expr, (n) => out.push(n));
+  return out;
 }
 
 function renameText(text: string, map: RenameMap): string {
-  return text.replace(REF, (all, name) => (map[name] !== undefined ? `{{${map[name]}}}` : all));
+  return text.replace(REF, (all, inner) => {
+    const { expr, digits } = splitRef(inner);
+    const renamed = renameExpr(expr, map);
+    return renamed === expr ? all : `{{${renamed}${digits}}}`;
+  });
 }
 
 const CODE_REF = /\bv-([A-Za-z][A-Za-z0-9_]*)(?![A-Za-z0-9_-])/g;
@@ -59,10 +68,6 @@ interface Visitor {
 
 function visitValue(kind: string, f: FieldDef, value: any, v: Visitor) {
   if (value == null || value === '') return;
-  if (EXPR_LIST.has(`${kind}.${f.key}`)) {
-    for (const part of String(value).split(/[,、，]/)) exprIdents(part, (n) => v.ref(n));
-    return;
-  }
   switch (f.type) {
     case 'var':
       if (typeof value === 'string' && value.trim()) v.def(value.trim());
@@ -91,12 +96,6 @@ function visitValue(kind: string, f: FieldDef, value: any, v: Visitor) {
 
 function renameValue(kind: string, f: FieldDef, value: any, map: RenameMap): any {
   if (value == null || value === '') return value;
-  if (EXPR_LIST.has(`${kind}.${f.key}`)) {
-    return String(value)
-      .split(/([,、，])/)
-      .map((p) => (/^[,、，]$/.test(p) ? p : renameExpr(p, map)))
-      .join('');
-  }
   switch (f.type) {
     case 'var':
       return typeof value === 'string' && map[value.trim()] !== undefined ? map[value.trim()] : value;

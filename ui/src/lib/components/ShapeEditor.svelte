@@ -4,10 +4,15 @@
   import { onMount } from 'svelte';
   import { app } from '../state.svelte';
   import Modal from './Modal.svelte';
+  import { evalExpr, formatLabel } from '../expr';
 
   let { blockId }: { blockId: string } = $props();
 
-  type Shape = { kind: string; x1?: string; y1?: string; x2?: string; y2?: string; pts?: string; label?: string; fill?: string };
+  type Shape = {
+    kind: string; x1?: string; y1?: string; x2?: string; y2?: string; pts?: string; label?: string; fill?: string;
+    /** 繰り返し：横・縦の回数と間隔（式）。式の中で番号 ix・iy（0始まり）を使える */
+    nx?: string; dx?: string; ny?: string; dy?: string;
+  };
   type Tool = 'select' | 'line' | 'arrow' | 'rect' | 'circle' | 'polygon' | 'dim' | 'text';
   type Pt = { x: number; y: number };
 
@@ -43,30 +48,40 @@
 
   // ---------- 座標の評価 ----------
 
-  /** 元の表の式 → 評価値（エンジンが返した値） */
-  const evalMap = $derived.by(() => {
-    const m = new Map<string, number>();
-    const vals = app.result?.blocks[blockId]?.shapes ?? [];
-    original.forEach((sh, i) => {
-      const v = vals[i];
-      if (!v) return;
-      for (const k of ['x1', 'y1', 'x2', 'y2'] as const) if (sh[k] && v[k] != null) m.set(sh[k]!.trim(), v[k]!);
-      splitPts(sh.pts ?? '').forEach(([x, y], j) => {
-        const p = v.pts?.[j];
-        if (p?.[0] != null) m.set(x, p[0]);
-        if (p?.[1] != null) m.set(y, p[1]);
-      });
-    });
-    for (const v of app.result?.vars ?? []) m.set(v.name, v.value);
-    return m;
-  });
+  // 表示用の評価。正式な値は保存後にエンジンが計算する（プレビュー・PDF はそちら）
+  const varValues = $derived(new Map((app.result?.vars ?? []).map((v) => [v.name, v.value])));
+  const varTexts = $derived(new Map((app.result?.vars ?? []).map((v) => [v.name, v.text])));
 
   const NUM = /^-?(\d+\.?\d*|\.\d+)(e-?\d+)?$/i;
   const isNum = (s: string | undefined) => s != null && NUM.test(s.trim());
-  function val(s: string | undefined): number | null {
+  function val(s: string | undefined, ix = 0, iy = 0): number | null {
     if (s == null || s.trim() === '') return null;
     if (isNum(s)) return Number(s);
-    return evalMap.get(s.trim()) ?? null;
+    return evalExpr(s, (n) => (n === 'ix' ? ix : n === 'iy' ? iy : varValues.get(n)));
+  }
+
+  /** 繰り返しの各回 [ix, iy] */
+  function instances(sh: Shape): [number, number][] {
+    const cnt = (v: string | undefined) => (v == null || v.trim() === '' ? 1 : Math.max(0, Math.min(200, Math.round(val(v) ?? 1))));
+    const out: [number, number][] = [];
+    for (let iy = 0; iy < cnt(sh.ny); iy++) for (let ix = 0; ix < cnt(sh.nx); ix++) out.push([ix, iy]);
+    return out;
+  }
+
+  type Geom = { x1: number | null; y1: number | null; x2: number | null; y2: number | null; pts: [number | null, number | null][]; label: string };
+  /** 繰り返しの1回分の形（平行移動ずみ）。円の半径は移動しない */
+  function geom(sh: Shape, ix: number, iy: number): Geom {
+    const ox = ix * (val(sh.dx) ?? 0), oy = iy * (val(sh.dy) ?? 0);
+    const mv = (v: number | null, o: number) => (v == null ? null : v + o);
+    const label = formatLabel(sh.label ?? '', (n) => (n === 'ix' ? ix : n === 'iy' ? iy : varValues.get(n)), (n) => varTexts.get(n));
+    return {
+      x1: mv(val(sh.x1, ix, iy), ox),
+      y1: mv(val(sh.y1, ix, iy), oy),
+      x2: sh.kind === 'circle' ? val(sh.x2, ix, iy) : mv(val(sh.x2, ix, iy), ox),
+      y2: mv(val(sh.y2, ix, iy), oy),
+      pts: splitPts(sh.pts ?? '').map(([a, b]) => [mv(val(a, ix, iy), ox), mv(val(b, ix, iy), oy)]),
+      label,
+    };
   }
 
   function splitPts(s: string): [string, string][] {
@@ -349,10 +364,6 @@
     sel = j;
   }
 
-  function labelText(s: string | undefined): string {
-    return (s ?? '').replace(/\{\{\s*([^{}]+?)\s*\}\}/g, (all, n) => app.result?.vars.find((v) => v.name === n)?.text ?? all);
-  }
-
   function apply() {
     app.setProp(blockId, 'shapes', JSON.parse(JSON.stringify(shapes)));
     app.dialog = null;
@@ -408,33 +419,31 @@
 
         {#each [...shapes, ...(draft ? [draft] : [])] as sh, i}
           {@const isDraft = draft != null && i === shapes.length}
-          {@const x1 = val(sh.x1)}
-          {@const y1 = val(sh.y1)}
-          {@const x2 = val(sh.x2)}
-          {@const y2 = val(sh.y2)}
           {@const fill = FILL[sh.fill ?? ''] ?? 'none'}
           <!-- svelte-ignore a11y_no_static_element_interactions -->
           <g class="shape" class:sel={sel === i} class:draft={isDraft} onmousedown={(e) => !isDraft && onShapeDown(e, i)}>
-            {#if (sh.kind === 'line' || sh.kind === 'arrow' || sh.kind === 'dim') && x1 != null && y1 != null && x2 != null && y2 != null}
-              <line x1={sx(x1)} y1={sy(y1)} x2={sx(x2)} y2={sy(y2)} class="hit" />
-              <line x1={sx(x1)} y1={sy(y1)} x2={sx(x2)} y2={sy(y2)} class="stroke" class:thin={sh.kind === 'dim'}
-                marker-end={sh.kind === 'line' ? undefined : 'url(#arrow)'} marker-start={sh.kind === 'dim' ? 'url(#arrow-s)' : undefined} />
-              {#if sh.kind === 'dim'}
-                <text x={(sx(x1) + sx(x2)) / 2} y={(sy(y1) + sy(y2)) / 2 - 6} class="label small">{labelText(sh.label)}</text>
-              {/if}
-            {:else if sh.kind === 'rect' && x1 != null && y1 != null && x2 != null && y2 != null}
-              <rect x={Math.min(sx(x1), sx(x2))} y={Math.min(sy(y1), sy(y2))} width={Math.abs(sx(x2) - sx(x1))} height={Math.abs(sy(y2) - sy(y1))}
-                class="stroke" style:fill={fill} class:hollow={fill === 'none'} />
-            {:else if sh.kind === 'circle' && x1 != null && y1 != null && x2 != null}
-              <circle cx={sx(x1)} cy={sy(y1)} r={Math.abs(x2) * ppu} class="stroke" style:fill={fill} class:hollow={fill === 'none'} />
-            {:else if sh.kind === 'polygon'}
-              {@const pts = splitPts(sh.pts ?? '').map(([a, b]) => [val(a), val(b)])}
-              {#if pts.every(([a, b]) => a != null && b != null) && pts.length >= 2}
-                <polygon points={pts.map(([a, b]) => `${sx(a!)},${sy(b!)}`).join(' ')} class="stroke" style:fill={fill} class:hollow={fill === 'none'} />
-              {/if}
-            {:else if sh.kind === 'text' && x1 != null && y1 != null}
-              <text x={sx(x1)} y={sy(y1)} class="label">{labelText(sh.label) || '（文字）'}</text>
-            {/if}
+            {#each instances(sh) as [ix, iy] (ix + ',' + iy)}
+              {@const g = geom(sh, ix, iy)}
+              <g class:repeat={ix > 0 || iy > 0}>
+                {#if (sh.kind === 'line' || sh.kind === 'arrow' || sh.kind === 'dim') && g.x1 != null && g.y1 != null && g.x2 != null && g.y2 != null}
+                  <line x1={sx(g.x1)} y1={sy(g.y1)} x2={sx(g.x2)} y2={sy(g.y2)} class="hit" />
+                  <line x1={sx(g.x1)} y1={sy(g.y1)} x2={sx(g.x2)} y2={sy(g.y2)} class="stroke" class:thin={sh.kind === 'dim'}
+                    marker-end={sh.kind === 'line' ? undefined : 'url(#arrow)'} marker-start={sh.kind === 'dim' ? 'url(#arrow-s)' : undefined} />
+                  {#if sh.kind === 'dim'}
+                    <text x={(sx(g.x1) + sx(g.x2)) / 2} y={(sy(g.y1) + sy(g.y2)) / 2 - 6} class="label small">{g.label}</text>
+                  {/if}
+                {:else if sh.kind === 'rect' && g.x1 != null && g.y1 != null && g.x2 != null && g.y2 != null}
+                  <rect x={Math.min(sx(g.x1), sx(g.x2))} y={Math.min(sy(g.y1), sy(g.y2))} width={Math.abs(sx(g.x2) - sx(g.x1))} height={Math.abs(sy(g.y2) - sy(g.y1))}
+                    class="stroke" style:fill={fill} class:hollow={fill === 'none'} />
+                {:else if sh.kind === 'circle' && g.x1 != null && g.y1 != null && g.x2 != null}
+                  <circle cx={sx(g.x1)} cy={sy(g.y1)} r={Math.abs(g.x2) * ppu} class="stroke" style:fill={fill} class:hollow={fill === 'none'} />
+                {:else if sh.kind === 'polygon' && g.pts.length >= 2 && g.pts.every(([a, b]) => a != null && b != null)}
+                  <polygon points={g.pts.map(([a, b]) => `${sx(a!)},${sy(b!)}`).join(' ')} class="stroke" style:fill={fill} class:hollow={fill === 'none'} />
+                {:else if sh.kind === 'text' && g.x1 != null && g.y1 != null}
+                  <text x={sx(g.x1)} y={sy(g.y1)} class="label">{g.label || '（文字）'}</text>
+                {/if}
+              </g>
+            {/each}
           </g>
         {/each}
 
@@ -475,7 +484,7 @@
       <ol class="list">
         {#each shapes as sh, i}
           <li><button class="ghost" class:on={sel === i} onclick={() => { sel = i; tool = 'select'; }}>
-            {TOOLS.find((t) => t[0] === sh.kind)?.[1] ?? '?'} {sh.kind}{sh.label ? `「${sh.label}」` : ''}{lockedShape(sh) ? ' 🔒' : ''}
+            {TOOLS.find((t) => t[0] === sh.kind)?.[1] ?? '?'} {sh.kind}{sh.label ? `「${sh.label}」` : ''}{sh.nx || sh.ny ? ` ×${instances(sh).length}` : ''}{lockedShape(sh) ? ' 🔒' : ''}
           </button></li>
         {/each}
       </ol>
@@ -499,6 +508,16 @@
             {/if}
           </div>
         {/if}
+        <details class="repeat-box" open={!!(sh.nx || sh.ny)}>
+          <summary class="small">繰り返し{sh.nx || sh.ny ? `（横 ${sh.nx || 1} × 縦 ${sh.ny || 1}）` : ''}</summary>
+          <div class="coords">
+            <label>横の回数<input class="mono" value={sh.nx ?? ''} placeholder="1" onchange={(e) => setField(i, 'nx', e.currentTarget.value)} /></label>
+            <label>横の間隔<input class="mono" value={sh.dx ?? ''} placeholder="0" onchange={(e) => setField(i, 'dx', e.currentTarget.value)} /></label>
+            <label>縦の回数<input class="mono" value={sh.ny ?? ''} placeholder="1" onchange={(e) => setField(i, 'ny', e.currentTarget.value)} /></label>
+            <label>縦の間隔<input class="mono" value={sh.dy ?? ''} placeholder="0" onchange={(e) => setField(i, 'dy', e.currentTarget.value)} /></label>
+          </div>
+          <p class="small muted">回数・間隔に変数を使えます（例: n, s）。座標や文字の式では繰り返しの番号 ix・iy（0始まり）を使えます。文字は {'{{式:桁}}'} で値を表示します（例: {'{{1 - (a + ix * s) / L:3}}'}）。</p>
+        </details>
         {#if sh.kind === 'text' || sh.kind === 'dim'}
           <label>文字<input value={sh.label ?? ''} onchange={(e) => setField(i, 'label', e.currentTarget.value)} placeholder={'{{L_b}} で変数の値'} /></label>
         {/if}
@@ -564,5 +583,8 @@
   .coords { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 8px; }
   label { font-size: 11.5px; font-weight: 600; }
   .danger { color: var(--error); }
+  .repeat :global(.stroke) { opacity: 0.75; }
+  .repeat-box { border: 1px solid var(--line); border-radius: 4px; padding: 4px 6px; }
+  .repeat-box summary { cursor: pointer; font-weight: 600; }
   .foot { margin-right: auto; }
 </style>

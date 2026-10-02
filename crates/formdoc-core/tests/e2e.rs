@@ -164,6 +164,35 @@ fn builtin_snippets_compile_without_errors() {
         let errors: Vec<_> = r.issues.iter().filter(|i| format!("{:?}", i.severity) == "Error").collect();
         assert!(errors.is_empty(), "{}: {errors:?}", sn["name"]);
         let shapes = r.blocks.values().find(|b| !b.shapes.is_empty()).expect("図形の評価値");
-        assert!(shapes.shapes.iter().all(|v| v.x1.is_some() || !v.pts.is_empty()));
+        assert!(shapes.shapes.iter().flatten().all(|v| v.x1.is_some() || !v.pts.is_empty()));
     }
+}
+
+#[test]
+fn shape_repeat_and_influence_line() {
+    // 単純梁テンプレート：荷重 n 個を間隔 s で繰り返し、影響線縦距を自動計算する
+    let sn = formdoc_core::template::builtin_snippets().into_iter().find(|s| s["name"].as_str().unwrap().starts_with("単純梁")).unwrap();
+    let mut s = session();
+    let mut doc = s.new_document().unwrap();
+    doc.blocks = serde_json::from_value(sn["blocks"].clone()).unwrap();
+    let r = s.update_document(doc.clone(), &[]);
+    let fig = r.blocks.values().find(|b| !b.shapes.is_empty()).unwrap();
+    // 荷重の矢印は2回、間隔の寸法線は n-1 = 1回
+    assert_eq!(fig.shapes[3].len(), 2);
+    assert_eq!(fig.shapes[3][1].x1, Some(5.8));
+    assert_eq!(fig.shapes[7].len(), 1);
+    // 縦距の文字：サンプル（0.625, 0.275）と一致
+    let labels: Vec<_> = fig.shapes[12].iter().map(|v| v.label.clone().unwrap()).collect();
+    assert_eq!(labels, ["0.625", "0.275"]);
+    assert_eq!(fig.shapes[4][1].label.as_deref(), Some("P2"));
+    assert_eq!(r.vars.iter().find(|v| v.name == "eta_sum").unwrap().text, "0.900");
+    // 荷重を3個にすると図も縦距も変わる
+    doc.blocks.iter_mut().find(|b| b.str("name") == "n").unwrap().props.insert("value".into(), 3.into());
+    doc.blocks.iter_mut().find(|b| b.str("name") == "s").unwrap().props.insert("value".into(), 2.0.into());
+    let r = s.update_document(doc, &[]);
+    let fig = r.blocks.values().find(|b| !b.shapes.is_empty()).unwrap();
+    assert_eq!(fig.shapes[3].len(), 3);
+    let labels: Vec<_> = fig.shapes[12].iter().map(|v| v.label.clone().unwrap()).collect();
+    assert_eq!(labels, ["0.625", "0.375", "0.125"]);
+    assert!(r.exportable, "{:?}", r.issues);
 }

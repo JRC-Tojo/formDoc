@@ -137,23 +137,6 @@ fn opt_lit_arg(key: &str, v: Option<&str>) -> String {
     }
 }
 
-/// 数値・変数名・式の値を Typst 引数にする（変数ならその変数、式なら評価済みの値）。
-fn value_arg(src: &str, report: &Report, rounding: formdoc_expr::Rounding) -> String {
-    let s = src.trim();
-    if report.var(s).is_some() {
-        return ident(s);
-    }
-    let scope: formdoc_expr::Scope = report
-        .vars
-        .iter()
-        .map(|v| (v.name.clone(), formdoc_expr::VarValue { value: v.value, digits: v.digits, unit: v.unit.clone(), display: None, desc: String::new() }))
-        .collect();
-    match formdoc_expr::calc(&formdoc_expr::CalcRequest { expr: s.into(), scope, rounding, ..Default::default() }) {
-        Ok(o) => num(o.value),
-        Err(_) => "0.0".into(),
-    }
-}
-
 fn expr_vars(expr: &str) -> Vec<String> {
     formdoc_expr::parse(expr).map(|e| e.vars()).unwrap_or_default()
 }
@@ -344,69 +327,35 @@ fn block_code(b: &Block, t: &Template, report: &Report) -> String {
             format!("#where-list({})", vars.iter().map(|v| ident(v)).collect::<Vec<_>>().join(", "))
         }
         "table" => table_code(b),
-        "fig-beam" => {
-            let list = |key: &str| -> String {
-                let items: Vec<String> = b
-                    .str(key)
-                    .split([',', '、', '，'])
-                    .filter(|s| !s.trim().is_empty())
-                    .map(|s| value_arg(s, report, t.rounding))
-                    .collect();
-                if items.is_empty() { "()".into() } else { format!("({},)", items.join(", ")) }
-            };
-            let eta = if b.str("eta").trim().is_empty() { "none".into() } else { list("eta") };
-            format!(
-                "#fd-figure(fig-beam({}, loads: {}, eta: {}), caption: {})",
-                value_arg(b.str("span"), report, t.rounding),
-                list("loads"),
-                eta,
-                b.opt_str("caption").map(|c| text_content(c, true)).unwrap_or_else(|| "none".into())
-            )
-        }
-        "fig-isection" => {
-            let fig = format!(
-                "fig-isection({}, {}, {}, {})",
-                value_arg(b.str("H"), report, t.rounding),
-                value_arg(b.str("B"), report, t.rounding),
-                value_arg(b.str("tw"), report, t.rounding),
-                value_arg(b.str("tf"), report, t.rounding)
-            );
-            let body = match b.opt_str("note") {
-                Some(n) => format!("pad(left: 2em, grid(columns: (auto, 1fr), column-gutter: 2em, align: horizon, {fig}, {}))", text_content(n, false)),
-                None => fig,
-            };
-            match b.opt_str("caption") {
-                Some(c) => format!("#fd-figure({body}, caption: {})", text_content(c, true)),
-                None => format!("#{body}"),
-            }
-        }
         "fig-shapes" => {
+            // 座標・文字は評価済みの値（繰り返しを展開したもの）を使う。評価は evaluate に1か所
+            let vals = res.map(|r| r.shapes.as_slice()).unwrap_or(&[]);
+            let n = |v: Option<f64>| num(v.unwrap_or(0.0));
             let mut items = Vec::new();
-            for sh in b.arr("shapes") {
-                let g = |k: &str| sh.get(k).and_then(|v| v.as_str()).unwrap_or("0");
-                let kind = sh.get("kind").and_then(|v| v.as_str()).unwrap_or("line");
-                let p = |x: &str, y: &str| format!("({}, {})", value_arg(g(x), report, t.rounding), value_arg(g(y), report, t.rounding));
-                let label = sh.get("label").and_then(|v| v.as_str()).unwrap_or("");
+            for (sh, insts) in b.arr("shapes").iter().zip(vals) {
+                let kind = sh.get("kind").and_then(|v| v.as_str()).filter(|k| !k.is_empty()).unwrap_or("line");
                 let fill = match sh.get("fill").and_then(|v| v.as_str()).unwrap_or("") {
                     "gray" => ", fill: luma(210)",
                     "dark" => ", fill: luma(90)",
                     "black" => ", fill: black",
                     _ => "",
                 };
-                items.push(match kind {
-                    "circle" => format!("(kind: \"circle\", at: {}, r: {}{fill})", p("x1", "y1"), value_arg(g("x2"), report, t.rounding)),
-                    "rect" => format!("(kind: \"rect\", from: {}, to: {}{fill})", p("x1", "y1"), p("x2", "y2")),
-                    "polygon" => {
-                        let pts: Vec<String> = crate::evaluate::split_points(sh.get("pts").and_then(|v| v.as_str()).unwrap_or(""))
-                            .iter()
-                            .map(|(x, y)| format!("({}, {}),", value_arg(x, report, t.rounding), value_arg(y, report, t.rounding)))
-                            .collect();
-                        format!("(kind: \"polygon\", pts: ({}){fill})", pts.concat())
-                    }
-                    "text" => format!("(kind: \"text\", at: {}, body: {})", p("x1", "y1"), text_content(label, true)),
-                    "dim" => format!("(kind: \"dim\", from: {}, to: {}, label: {})", p("x1", "y1"), p("x2", "y2"), text_content(label, false)),
-                    k => format!("(kind: {}, from: {}, to: {})", lit(k), p("x1", "y1"), p("x2", "y2")),
-                });
+                for v in insts {
+                    let p1 = format!("({}, {})", n(v.x1), n(v.y1));
+                    let p2 = format!("({}, {})", n(v.x2), n(v.y2));
+                    let label = lit(v.label.as_deref().unwrap_or(""));
+                    items.push(match kind {
+                        "circle" => format!("(kind: \"circle\", at: {p1}, r: {}{fill})", n(v.x2)),
+                        "rect" => format!("(kind: \"rect\", from: {p1}, to: {p2}{fill})"),
+                        "polygon" => {
+                            let pts: String = v.pts.iter().map(|(x, y)| format!("({}, {}),", n(*x), n(*y))).collect();
+                            format!("(kind: \"polygon\", pts: ({pts}){fill})")
+                        }
+                        "text" => format!("(kind: \"text\", at: {p1}, body: [#{label}])"),
+                        "dim" => format!("(kind: \"dim\", from: {p1}, to: {p2}, label: {label})"),
+                        k => format!("(kind: {}, from: {p1}, to: {p2})", lit(k)),
+                    });
+                }
             }
             let fig = format!("fig-shapes(({}), scale: {})", items.iter().map(|i| format!("{i},")).collect::<String>(), num(b.num("scale").unwrap_or(1.0)));
             match b.opt_str("caption") {

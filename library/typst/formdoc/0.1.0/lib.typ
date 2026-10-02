@@ -6,7 +6,7 @@
 #import "src/text.typ": para, bullets
 #import "src/calc.typ": fmt, vdef, vcalc, val, sym, def-line, calc-line, check-line, where-list, sum-lines
 #import "src/refs.typ": kijun, kijun-list
-#import "src/figures.typ": fig-beam, fig-isection, fig-shapes, fd-figure
+#import "src/figures.typ": fig-shapes, fd-figure
 #import "src/tables.typ": vt, cellv, fd-table
 
 #let formdoc-version = "0.1.0"

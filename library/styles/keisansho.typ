@@ -33,8 +33,6 @@
   blocks: (
     "heading", "paragraph", "kijun", "vdef", "calc", "sum", "check", "where",
     "table", "fig-shapes", "image", "pagebreak", "typst",
-    // 旧部品（テンプレートに置き換え済み。既存の文書のために残す）
-    "fig-beam", "fig-isection",
   ),
 
   // 新規作成時の骨組み

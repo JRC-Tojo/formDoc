@@ -65,9 +65,10 @@ pub struct BlockResult {
     /// sum ブロックの内訳ごとの桁
     #[serde(skip_serializing_if = "Option::is_none")]
     pub value: Option<f64>,
-    /// 汎用図形の座標の評価値（描画エディタで、変数式の点を正しい位置に描くため）
+    /// 汎用図形の評価値。図形ごとに、繰り返しの各回（ix が先、iy が後）の座標と文字。
+    /// コード生成と描画エディタの両方がこれを使う（式の評価を1か所にするため）
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub shapes: Vec<ShapeValues>,
+    pub shapes: Vec<Vec<ShapeValues>>,
 }
 
 #[derive(Debug, Clone, Serialize, PartialEq, Default)]
@@ -79,7 +80,13 @@ pub struct ShapeValues {
     /// 多角形の頂点
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub pts: Vec<(Option<f64>, Option<f64>)>,
+    /// 文字（{{変数}}・{{式}}・{{式:桁}} を値にしたもの）
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub label: Option<String>,
 }
+
+/// 図形1つあたりの繰り返し回数の上限（縦横それぞれ）
+pub const MAX_REPEAT: usize = 200;
 
 /// 多角形の頂点リスト「x, y; x, y; …」を (x式, y式) に分ける。式の中のカンマ（関数の引数）は括弧の深さで区別する。
 pub fn split_points(s: &str) -> Vec<(String, String)> {
@@ -133,6 +140,9 @@ pub fn valid_var_name(name: &str) -> bool {
         && !name.contains("__")
         && !formdoc_expr::eval::is_function(name)
         && name != "pi"
+        // 図形の繰り返しの番号
+        && name != "ix"
+        && name != "iy"
 }
 
 /// 本文中の {{name}} 参照を取り出す。
@@ -210,6 +220,45 @@ impl Ctx<'_> {
                 None
             }
         }
+    }
+
+    /// value_of と同じだが、エラーを報告しない（繰り返しの2回目以降）。
+    fn value_quiet(&self, src: &str) -> Option<f64> {
+        if src.trim().is_empty() {
+            return None;
+        }
+        let req = CalcRequest { expr: src.into(), scope: self.scope.clone(), rounding: self.t.rounding, ..Default::default() };
+        formdoc_expr::calc(&req).ok().map(|o| o.value)
+    }
+
+    /// 図形の文字の {{…}} を値にする。変数名ならその変数の表示（桁は変数の設定）、
+    /// 式なら評価して {{式:桁}} の桁（省略時は 3 桁）で表示する。
+    fn shape_label(&mut self, b: &Block, i: usize, label: &str, report: bool) -> String {
+        let mut out = String::new();
+        let mut rest = label;
+        while let Some(s) = rest.find("{{") {
+            let after = &rest[s + 2..];
+            let Some(e) = after.find("}}") else { break };
+            out.push_str(&rest[..s]);
+            let inner = after[..e].trim();
+            let (expr, digits) = match inner.rsplit_once(':') {
+                Some((x, d)) if d.trim().parse::<u8>().is_ok() => (x.trim(), d.trim().parse::<u8>().ok()),
+                _ => (inner, None),
+            };
+            let is_var = valid_var_name(expr) && self.scope.contains_key(expr);
+            if is_var && digits.is_none() {
+                let text = self.r.vars.iter().rev().find(|v| v.name == expr).map(|v| v.text.clone());
+                out.push_str(&text.unwrap_or_default());
+            } else {
+                let v = if report { self.value_of(b, &format!("shapes.{i}.label"), expr) } else { self.value_quiet(expr) };
+                if let Some(v) = v {
+                    out.push_str(&formdoc_expr::format_number(v, formdoc_expr::NumFormat { digits: Some(digits.unwrap_or(3)), group: true }));
+                }
+            }
+            rest = &after[e + 2..];
+        }
+        out.push_str(rest);
+        out
     }
 
     fn calc(&mut self, b: &Block, field: &str, expr: &str, unit: &str, digits: Option<u8>) -> Option<formdoc_expr::CalcOutput> {
@@ -364,56 +413,76 @@ impl Ctx<'_> {
                     }
                 }
             }
-            "fig-beam" => {
-                self.value_of(b, "span", b.str("span"));
-                for key in ["loads", "eta"] {
-                    for part in b.str(key).split([',', '、', '，']).filter(|s| !s.trim().is_empty()) {
-                        self.value_of(b, key, part);
-                    }
-                }
-            }
-            "fig-isection" => {
-                for key in ["H", "B", "tw", "tf"] {
-                    if self.value_of(b, key, b.str(key)).is_none() && b.str(key).trim().is_empty() {
-                        self.r.issue(b, key, Severity::Error, "required", format!("{key} を入力してください"));
-                    }
-                }
-                let note = b.str("note").to_string();
-                self.check_refs(b, "note", &note);
-            }
             "fig-shapes" => {
                 for (i, sh) in b.arr("shapes").iter().enumerate() {
-                    let mut out = ShapeValues::default();
-                    let kind = sh.get("kind").and_then(|v| v.as_str()).unwrap_or("line");
-                    if kind == "polygon" {
-                        let pts = split_points(sh.get("pts").and_then(|v| v.as_str()).unwrap_or(""));
-                        if pts.len() < 2 {
-                            self.r.issue(b, &format!("shapes.{i}.pts"), Severity::Error, "required", "多角形の頂点を2点以上入力してください（x, y; x, y; …）");
+                    let get = |k: &str| sh.get(k).and_then(|v| v.as_str()).unwrap_or("").to_string();
+                    // 繰り返し（回数・間隔）。回数は 0〜200 に丸める
+                    let count = |cx: &mut Self, key: &str| -> usize {
+                        let src = get(key);
+                        if src.trim().is_empty() {
+                            return 1;
                         }
-                        for (x, y) in pts {
-                            let f = format!("shapes.{i}.pts");
-                            let xv = self.value_of(b, &f, &x);
-                            let yv = self.value_of(b, &f, &y);
-                            out.pts.push((xv, yv));
-                        }
-                    } else {
-                        let keys: &[&str] = match kind {
-                            "text" => &["x1", "y1"],
-                            "circle" => &["x1", "y1", "x2"],
-                            _ => &["x1", "y1", "x2", "y2"],
-                        };
-                        for k in keys {
-                            let src = sh.get(*k).and_then(|v| v.as_str()).unwrap_or("");
-                            let v = self.value_of(b, &format!("shapes.{i}.{k}"), src);
-                            match *k {
-                                "x1" => out.x1 = v,
-                                "y1" => out.y1 = v,
-                                "x2" => out.x2 = v,
-                                _ => out.y2 = v,
+                        match cx.value_of(b, &format!("shapes.{i}.{key}"), &src) {
+                            Some(v) if v >= 0.0 => (v.round() as usize).min(MAX_REPEAT),
+                            Some(_) => {
+                                cx.r.issue(b, &format!("shapes.{i}.{key}"), Severity::Error, "shape-repeat", "繰り返し回数は 0 以上にしてください");
+                                1
                             }
+                            None => 1,
+                        }
+                    };
+                    let nx = count(self, "nx");
+                    let ny = count(self, "ny");
+                    let dx = if get("dx").trim().is_empty() { 0.0 } else { self.value_of(b, &format!("shapes.{i}.dx"), &get("dx")).unwrap_or(0.0) };
+                    let dy = if get("dy").trim().is_empty() { 0.0 } else { self.value_of(b, &format!("shapes.{i}.dy"), &get("dy")).unwrap_or(0.0) };
+                    let kind = get("kind");
+                    let kind = if kind.is_empty() { "line".to_string() } else { kind };
+                    let pts = split_points(&get("pts"));
+                    if kind == "polygon" && pts.len() < 2 {
+                        self.r.issue(b, &format!("shapes.{i}.pts"), Severity::Error, "required", "多角形の頂点を2点以上入力してください（x, y; x, y; …）");
+                    }
+                    let mut instances = Vec::new();
+                    for iy in 0..ny {
+                        for ix in 0..nx {
+                            // 繰り返しの番号（0始まり）を ix, iy として式で使えるようにする
+                            self.scope.insert("ix".into(), VarValue { value: ix as f64, digits: Some(0), ..Default::default() });
+                            self.scope.insert("iy".into(), VarValue { value: iy as f64, digits: Some(0), ..Default::default() });
+                            // エラーは最初の1つだけ報告する（同じ式の誤りが繰り返しの数だけ並ばないように）
+                            let first = ix == 0 && iy == 0;
+                            let ev = |cx: &mut Self, key: &str, src: &str| -> Option<f64> {
+                                if first { cx.value_of(b, &format!("shapes.{i}.{key}"), src) } else { cx.value_quiet(src) }
+                            };
+                            let (ox, oy) = (ix as f64 * dx, iy as f64 * dy);
+                            let mut out = ShapeValues::default();
+                            if kind == "polygon" {
+                                for (x, y) in &pts {
+                                    let xv = ev(self, "pts", x).map(|v| v + ox);
+                                    let yv = ev(self, "pts", y).map(|v| v + oy);
+                                    out.pts.push((xv, yv));
+                                }
+                            } else {
+                                out.x1 = ev(self, "x1", &get("x1")).map(|v| v + ox);
+                                out.y1 = ev(self, "y1", &get("y1")).map(|v| v + oy);
+                                match kind.as_str() {
+                                    "text" => {}
+                                    // 半径は平行移動しない
+                                    "circle" => out.x2 = ev(self, "x2", &get("x2")),
+                                    _ => {
+                                        out.x2 = ev(self, "x2", &get("x2")).map(|v| v + ox);
+                                        out.y2 = ev(self, "y2", &get("y2")).map(|v| v + oy);
+                                    }
+                                }
+                            }
+                            let label = get("label");
+                            if !label.is_empty() {
+                                out.label = Some(self.shape_label(b, i, &label, first));
+                            }
+                            instances.push(out);
                         }
                     }
-                    res.shapes.push(out);
+                    self.scope.remove("ix");
+                    self.scope.remove("iy");
+                    res.shapes.push(instances);
                 }
             }
             "image" => {
