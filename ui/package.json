@@ -4,11 +4,10 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "setup": "node ../scripts/setup.mjs",
     "dev": "vite --mode web",
     "dev:desktop": "vite --mode desktop",
-    "build:wasm": "node scripts/build-wasm.mjs",
-    "build:web": "npm run build:wasm && vite build --mode web",
+    "build:wasm": "bun ../scripts/build-engine.ts",
+    "build:web": "bun ../scripts/build-engine.ts --release && vite build --mode web",
     "build:desktop": "vite build --mode desktop",
     "preview": "vite preview --mode web",
     "check": "svelte-check --tsconfig ./tsconfig.json",

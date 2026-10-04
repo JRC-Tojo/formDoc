@@ -39,8 +39,8 @@ library/
   styles/                同梱スタイル（keisansho.typ ＝ 計算書）
   snippets/              同梱テンプレート（.fdtpl：I形断面、単純梁と集中荷重）
   components/            部品定義（GUIの入力フォームはここから自動生成）
-  vendor/preview/        同梱 Typst パッケージ（CeTZ ほか）※setup で取得、Git 管理外
-  fonts/                 同梱フォント（Noto Serif JP / Noto Sans JP、OFL）※setup で取得、Git 管理外
+  vendor/preview/        同梱 Typst パッケージ（CeTZ ほか）※bun ready で取得、Git 管理外
+  fonts/                 同梱フォント（Noto Serif JP / Noto Sans JP、OFL）※bun ready で取得、Git 管理外
 ui/                      Vite + Svelte 5（--mode web / desktop）
   src/lib/platform/      能力フラグ（capabilities.ts）と Web / Tauri 実装
   src-tauri/             デスクトップ版（Tauri 2）
@@ -49,27 +49,27 @@ examples/                GUI文書（document.json）とコードモードの例
 
 ## ビルド
 
-前提: Rust（`wasm32-unknown-unknown` ターゲット）、`wasm-bindgen-cli 0.2.129`、Node.js 18 以上、`tar`。
+前提: [Rust](https://rustup.rs)（1.85 以上）と [Bun](https://bun.sh)。ツールチェーンは bun に統一している（Node.js・npm は不要）。
 
 ```bash
-# 初回（クローン直後）：フォント・Typstパッケージを library/ に取得し、式エンジンのTypstプラグインを生成
-node scripts/setup.mjs      # vendor.json の版と sha256 で検証。用意済みはスキップ（--force でやり直し）
+# 初回（クローン直後）・pull 後：これだけで起動できる状態になる。済んでいる手順はすぐ終わる
+bun ready                   # wasm32 ターゲット・wasm-bindgen-cli（Cargo.lock と同じ版）の導入、bun install、
+                            # フォント・Typstパッケージの取得（vendor.json の sha256 で検証）、Typstプラグイン・Web版エンジンのビルド
+                            # デスクトップ版だけなら bun ready --desktop（Web版エンジンを作らない）
 
-# 式エンジンを変更したら（Typstプラグインを再生成）
-bash scripts/build-plugin.sh
+bun run dev                 # Web版の開発サーバ http://localhost:5173
+bun run tauri dev           # デスクトップ版の開発起動
+
+# 式エンジンを変更したら（Typstプラグインを再生成）。bun ready でもよい
+bun scripts/build-plugin.ts
 
 # テスト（式エンジンのゴールデンテスト、評価〜PDFの結合テスト）
-cargo test -p formdoc-expr -p formdoc-core
+bun run test                # = cargo test -p formdoc-expr -p formdoc-core
+bun run check               # UI の型チェック（svelte-check）
 
-# Web版
-cd ui && npm install
-npm run build:wasm          # エンジン（wasm）を ui/src/lib/engine/pkg に生成（配布用は -- --release）
-npm run dev                 # 開発サーバ http://localhost:5173
-npm run build:web           # 静的ファイルを ui/dist-web に出力
-
-# デスクトップ版
-cd ui && npm run tauri dev       # 開発起動
-cd ui && npm run tauri build     # インストーラ作成
+# 配布用
+bun run build:web           # Web版の静的ファイルを ui/dist-web に出力（エンジンは配布用でビルドし直す）
+bun run tauri build         # デスクトップ版のインストーラ作成
 
 # CLI
 cargo run -p formdoc-cli -- gui examples/keisansho-gui/document.json out.pdf --typst out.typ

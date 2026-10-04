@@ -1,7 +1,7 @@
-// 試用レビュー（TODO 16）対応のブラウザ確認。Web版 dev サーバ（npm run dev）に対して実行する。
+// 試用レビュー（TODO 16）対応のブラウザ確認。Web版 dev サーバ（bun run dev）に対して実行する。
 // 準備: chrome --headless=new --remote-debugging-port=9222 --user-data-dir=<tmp> を起動し、playwright-core を入れた場所で
-//   node ui/tests/e2e/review-2026-10.mjs <スクリーンショットの出力先>
-// （TODO 13 で npm run test:e2e に組み込む予定）
+//   bun ui/tests/e2e/review-2026-10.mjs <スクリーンショットの出力先>
+// （TODO 13 で bun run test:e2e に組み込む予定）
 
 const out = process.argv[2] ?? '.';
 const browser = await chromium.connectOverCDP('http://127.0.0.1:9222');

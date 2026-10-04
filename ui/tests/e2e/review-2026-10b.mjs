@@ -1,6 +1,6 @@
-// 2回目の試用レビュー対応のブラウザ確認。Web版 dev サーバ（npm run dev）に対して実行する。
+// 2回目の試用レビュー対応のブラウザ確認。Web版 dev サーバ（bun run dev）に対して実行する。
 // 準備: chrome --headless=new --remote-debugging-port=9222 --user-data-dir=<tmp> を起動し、playwright-core を入れた場所で
-//   node ui/tests/e2e/review-2026-10b.mjs <スクリーンショットの出力先>
+//   bun ui/tests/e2e/review-2026-10b.mjs <スクリーンショットの出力先>
 import { chromium } from 'playwright-core';
 
 const out = process.argv[2] ?? '.';

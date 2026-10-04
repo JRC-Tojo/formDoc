@@ -28,7 +28,7 @@
 | 層 | 場所 | 役割 |
 |---|---|---|
 | 式エンジン | `crates/formdoc-expr` | 構文解析・評価・四捨五入（half-up）・Typst数式生成。**計算と数式表記はここだけで行う** |
-| Typstプラグイン | `crates/formdoc-typst-plugin` → `library/typst/formdoc/0.1.0/formdoc_expr.wasm` | 同じ式エンジンを Typst から使う。式エンジンを変更したら `bash scripts/build-plugin.sh` |
+| Typstプラグイン | `crates/formdoc-typst-plugin` → `library/typst/formdoc/0.1.0/formdoc_expr.wasm` | 同じ式エンジンを Typst から使う。式エンジンを変更したら `bun scripts/build-plugin.ts` |
 | 社内標準パッケージ | `library/typst/formdoc/0.1.0/` | `@local/formdoc`。部品の描画関数（計算行・照査・表・図形）。体裁はスタイルが持つ |
 | スタイル | `library/styles/*.typ` | `info`（入力欄・使える部品・骨組み・単位別の桁・Lint）と `style` 関数。`template.rs` が Typst で評価して `info` を読む |
 | 同梱テンプレート | `library/snippets/*.fdtpl` | I形断面、単純梁と集中荷重（影響線つき） |
@@ -46,18 +46,19 @@
 ### よく使うコマンド（ビルドはメモリに注意。下の「この環境での注意」）
 ```bash
 CARGO_BUILD_JOBS=1 cargo test -j 1 -p formdoc-core   # 結合テスト（現在 14件）＋単体
-bash scripts/build-plugin.sh                          # 式エンジン変更時
+bun scripts/build-plugin.ts                           # 式エンジン変更時
 cargo run -j 1 -p formdoc-cli -- gui examples/keisansho-gui/document.json out.pdf --typst out.typ
 cargo run -j 1 -p formdoc-cli -- compile examples/keisansho-code out.pdf
-cd ui && npm run build:wasm && npm run dev            # Web版（http://localhost:5173）
-cd ui && npx svelte-check --tsconfig ./tsconfig.json
-cd ui && npm run tauri dev                            # デスクトップ版
+CARGO_BUILD_JOBS=1 bun ready                          # 準備（クローン直後・pull 後。済んだ手順はすぐ終わる）
+bun run dev                                           # Web版（http://localhost:5173）
+bun run check                                         # svelte-check
+bun run tauri dev                                     # デスクトップ版
 ```
 
 ### この環境での注意
 - **ビルドでメモリを使いすぎるとPCが落ちる。** cargo は `-j 1`（軽いときでも `-j 2`）、ビルド・テストは**同時に1本だけ**。release / LTO ビルドは必要なときだけ。
 - **セッションが途中で切れることがある。** 長いビルドは PowerShell の `Start-Process cmd /C "...  > target\xxx.log"` で独立プロセスとして起動し、ログで結果を確認する。こまめにコミットする。
-- `npm run build:wasm`（`scripts/build-plugin.sh` を呼ぶ）を cmd から起動すると `bash` が WSL を指して失敗する。Git Bash（`C:\Program Files\Git\usr\bin\bash.exe -lc "..."`）から起動する。
+- Git Bash の PATH では古い Rust（`E:\Program Files\Programs\Rust stable MSVC 1.84`）が rustup より先に見つかる。`bun ready` が「1.85 以上が必要」で止まったら `PATH="$HOME/.cargo/bin:$PATH"` を付けて実行する。
 - ブラウザの自動テスト：Playwright の `launch` だと Chrome/Edge がすぐ落ちる。`chrome.exe --headless=new --remote-debugging-port=9222 --user-data-dir=<tmp>` で起動し、`chromium.connectOverCDP` で接続、`browser.newContext()` でまっさらな保存領域にする。スクリプトは `ui/tests/e2e/`。
 - デスクトップ版（WebView2）は CDP のデバッグポートが開かない（社内ポリシーと思われる）。操作確認は人手か画面キャプチャで行う。
 - 開発ビルドでは `globalThis.__formdoc` に状態（`app`）が公開されている（`state.svelte.ts` の末尾）。自動テスト専用。
@@ -79,7 +80,7 @@ cd ui && npm run tauri dev                            # デスクトップ版
 
 **目的**: デスクトップ専用機能と、Web版でしか確認していない機能を、デスクトップ版の画面で実際に操作して確認する。
 
-**確認手順**（`cd ui && npm run tauri dev`）
+**確認手順**（`bun run tauri dev`）
 1. 文書情報にスタイル「計算書」が出る → 選ぶと骨組み3章と表紙の欄が出る。
 2. 「開く…」で `examples/keisansho-gui/document.json` を開く → 3ページ、エラー0件。
 3. 「名前を付けて保存…」で `.fdoc` を保存し、開き直す → 内容・添付画像・スタイルが戻る。2回目以降の Ctrl+S はダイアログなしで上書き。
@@ -92,7 +93,7 @@ cd ui && npm run tauri dev                            # デスクトップ版
 10. 「コードで作成」→ 同じ文書が出る。値を書き換えると「部品で作成」に戻っても反映されている。
 11. 「VSCodeで開く」→ `%APPDATA%\formDoc\projects\<表題>_<日付>` が作られて VSCode が開く。VSCode で保存 → 文書に反映。VSCode が無い環境ではエクスプローラーが開いてメッセージが出る。
 12. 設定 → ダーク・文字の大きさ・最近使ったファイルの件数が効き、再起動後も残る。「開く▾」から最近使ったファイルを開ける。
-13. インストーラー（`npm run tauri build`、release ビルドで重い）でインストールし、.fdoc をダブルクリック → その文書で起動する。
+13. インストーラー（`bun run tauri build`、release ビルドで重い）でインストールし、.fdoc をダブルクリック → その文書で起動する。
 
 **直す可能性が高い箇所**
 - `watch_project`：保存1回で複数イベントが来る。VSCode の一時ファイルで無駄な再組版が起きないか。必要ならイベントのパスを `main.typ` に絞る。
@@ -114,14 +115,14 @@ cd ui && npm run tauri dev                            # デスクトップ版
    - **フォントは版ごとのハッシュを付けたファイル名で配信**し、違う版のフォントが混ざらないようにする（「同じ文書なら同じPDF」の前提を守るため）。`api::catalog()` が返すフォント一覧に SHA-256 を含め、起動時に照合して不一致なら警告する。
    - typst-assets の `fonts` feature も外し、数式用の New Computer Modern Math だけを `library/fonts/` に置く（Latin Modern ほかは不要）。
 2. **フォントのサブセット化**（任意）：JIS第1・第2水準＋記号に絞る。ただし外字・人名で欠字が出るリスクがあるので、欠字の検出（Typst の warning "unknown font" や tofu）を検証パネルに出す仕組みとセットで行う。
-3. `wasm-opt -Oz` を `scripts/build-wasm.mjs` の release 時に通す（binaryen が必要）。
+3. `wasm-opt -Oz` を `scripts/build-engine.ts` の release 時に通す（binaryen が必要）。
 4. 配布時は brotli 圧縮済みファイルを置く。
 
-**触るファイル**: `crates/formdoc-library/{Cargo.toml,src/lib.rs}`、`crates/formdoc-core/src/world.rs`、`crates/formdoc-core/src/api.rs`、`crates/formdoc-wasm/src/lib.rs`、`ui/src/lib/engine/worker.ts`、`ui/scripts/build-wasm.mjs`、`ui/vite.config.ts`（`library/fonts` を `public/fonts` にコピー）
+**触るファイル**: `crates/formdoc-library/{Cargo.toml,src/lib.rs}`、`crates/formdoc-core/src/world.rs`、`crates/formdoc-core/src/api.rs`、`crates/formdoc-wasm/src/lib.rs`、`ui/src/lib/engine/worker.ts`、`scripts/build-engine.ts`、`ui/vite.config.ts`（`library/fonts` を `public/fonts` にコピー）
 
 **完了条件**
 - wasm 本体が 20MB 以下（目標 15MB）。
-- 既存の結合テスト `pdf_is_deterministic` と、**Web版とネイティブのPDFのSHA-256一致**が引き続き成り立つ（`target/wasm-node` に Node 用バインディングを作って比較する手順は README に追記する）。
+- 既存の結合テスト `pdf_is_deterministic` と、**Web版とネイティブのPDFのSHA-256一致**が引き続き成り立つ（`target/wasm-node` に bun で読めるバインディングを作って比較する手順は README に追記する）。
 - 初回表示時間を計測して README に記載する。
 
 ---
@@ -322,7 +323,7 @@ cd ui && npm run tauri dev                            # デスクトップ版
 - `ui/tests/e2e/review-2026-10.mjs`（スタイル選択・テンプレート挿入・右クリック・図形エディタ・テーマ・印刷）を、`npm run test:e2e` で Chrome 起動 → `vite preview` → テスト → 片付けまで行う `ui/scripts/e2e.mjs` に組み込む。`playwright-core` を devDependencies に入れる。
 - 追加するテスト：サンプルを開く → 3ページ・エラー0件／計算式を壊す → PDF出力ボタンが無効／元に戻す → 復帰／句読点の一括修正／コードモードで書き換え → 部品で作成に反映／一覧のドラッグ並べ替え／変数の有効範囲（別の節の変数が使えない・グローバルなら使える）。
 - 起動は `chrome --headless=new --remote-debugging-port=9222` ＋ `connectOverCDP`（この環境の制約。上の「注意」参照）。
-- **Web版とネイティブのPDF一致テスト**を `scripts/check-determinism.mjs` として常設する（Node 用の wasm バインディングを生成 → 両方で出力 → SHA-256 比較）。
+- **Web版とネイティブのPDF一致テスト**を `scripts/check-determinism.ts` として常設する（bun で読める wasm バインディングを生成 → 両方で出力 → SHA-256 比較）。
 - **サンプル再現の回帰テスト**：`examples/*` のPDFを PNG 化し、前回の画像とピクセル差分で比較する（PyMuPDF を使用。差分しきい値を設定）。
 
 ---
