@@ -82,6 +82,12 @@
       {/if}
       <button class="small" onclick={async () => { await app.loadStyles(); await app.loadTemplates(); app.flash('文書テンプレートと部品テンプレートを読み込み直しました'); }}>文書テンプレート・部品テンプレートを再読み込み</button>
     </section>
+
+    <section>
+      <h4>この版について</h4>
+      <p class="small">formDoc {__APP_VERSION__}<span class="muted mono">（{__BUILD_ID__}）</span></p>
+      <p class="small muted">新しい版が公開されると画面の右下に通知が出ます。</p>
+    </section>
   </div>
   {#snippet footer()}
     <button class="primary" onclick={() => (app.dialog = null)}>閉じる</button>

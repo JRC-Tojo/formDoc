@@ -1,0 +1,43 @@
+# Web版を GitHub Pages に配信する。main へのマージ（push）のたびに実行する。
+# 利用中の画面は version.json の変化で新しい版を検知し、更新を通知する（ui/src/lib/platform/web.ts）。
+name: Web版の配信
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 配信は1つずつ。途中の配信は取り消さない
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./.github/actions/setup
+        with:
+          cache-key: web
+      # エンジンは配布用（release）で作る。続く build:web ではビルド済みのため作り直さない
+      - run: bun ready --release
+      - run: bun run build:web
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: ui/dist-web
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

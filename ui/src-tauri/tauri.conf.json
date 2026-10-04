@@ -1,7 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "formDoc",
-  "version": "0.1.0",
   "identifier": "jp.formdoc.desktop",
   "build": {
     "frontendDist": "../dist-desktop",
@@ -47,5 +46,16 @@
         "mimeType": "application/x-formdoc"
       }
     ]
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEJCNjA2RjYzRkE4NEFGRTQKUldUa3I0VDZZMjlndS9xeTRVSEJhRUNySm9kOGFDaUxCdEVZYlNvZlFXcVE1UTc0bkkrT3BianQK",
+      "endpoints": [
+        "https://github.com/JRC-Tojo/formDoc/releases/latest/download/latest.json"
+      ],
+      "windows": {
+        "installMode": "passive"
+      }
+    }
   }
 }

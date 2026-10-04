@@ -84,10 +84,36 @@ export interface SystemStore {
   startupFile?(): Promise<string | null>;
 }
 
+/** 公開された新しい版 */
+export interface UpdateInfo {
+  /** 更新の識別子（Web版：ビルド識別子、デスクトップ版：版）。「あとで」にした更新を再び出さないため */
+  id: string;
+  /** 版（Web版で版が同じまま中身だけ更新されたときは、今と同じ版） */
+  version: string;
+  /** 変更内容（デスクトップ版：リリースノート） */
+  notes?: string;
+}
+
+/**
+ * 新しい版の検知と更新。通知の画面は共通（UpdateNotice.svelte）で、検知と更新の仕組みだけが違う。
+ * Web版：main へのマージのたびに GitHub Pages に配信される。version.json のビルド識別子を比べ、更新は再読み込み。
+ * デスクトップ版：リリースを公開したときだけ。GitHub Releases の latest.json を見て、ダウンロード・インストールして再起動。
+ */
+export interface Updater {
+  /** 確認する間隔（ミリ秒） */
+  interval: number;
+  /** 新しい版があれば返す */
+  check(): Promise<UpdateInfo | null>;
+  /** 新しい版にする。progress はダウンロードの進み具合（0〜1、全体の大きさが分からなければ null） */
+  apply(progress?: (ratio: number | null) => void): Promise<void>;
+}
+
 export interface Platform {
   engine: Engine;
   files: Files;
   folder: Folder | null;
   drafts: Drafts | null;
   system: SystemStore;
+  /** 開発サーバでは null（更新を確認しない） */
+  updater: Updater | null;
 }

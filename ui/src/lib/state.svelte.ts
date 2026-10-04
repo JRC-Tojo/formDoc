@@ -75,7 +75,7 @@ export type Dialog =
   | { kind: 'shapes'; blockId: string };
 
 class AppState {
-  platform: Platform | null = null;
+  platform = $state.raw<Platform | null>(null);
   catalog = $state<Catalog | null>(null);
   loading = $state('エンジンを起動しています…');
   message = $state<{ kind: 'info' | 'error'; text: string } | null>(null);
@@ -627,6 +627,24 @@ class AppState {
     if (!has('browserStorage') || !this.platform?.drafts) return;
     if (this.draftTimer) clearTimeout(this.draftTimer);
     this.draftTimer = setTimeout(() => this.platform?.drafts?.save(DRAFT_KEY, JSON.stringify(this.saved())), 1000);
+  }
+
+  /** 新しい版への更新で閉じる最中（未保存の確認を出さない） */
+  updating = false;
+
+  /**
+   * 新しい版に更新する前の準備。Web版は下書きをすぐ保存する（再読み込み後に復元される）。
+   * デスクトップ版は未保存の変更があれば確認する。続けてよければ true
+   */
+  async prepareUpdate(): Promise<boolean> {
+    if (has('browserStorage') && this.platform?.drafts) {
+      if (this.draftTimer) clearTimeout(this.draftTimer);
+      if (this.doc) await this.platform.drafts.save(DRAFT_KEY, JSON.stringify(this.saved()));
+    } else if (this.dirty && !confirm('保存していない変更があります。更新すると失われます。続けますか？')) {
+      return false;
+    }
+    this.updating = true;
+    return true;
   }
 
   private async loadSaved(s: SavedDoc, path: string | null) {

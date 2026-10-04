@@ -1,0 +1,68 @@
+# バージョンアップの開始。Actions の画面で「今回上げるバージョン」を選んで実行する。
+#   1. 版を書き換えたブランチ release/v<版> を作り、main への PR を作る
+#   2. 実機確認用に、デスクトップ版のポータブル版（インストール不要の exe）をビルドする（desktop-portable.yml）
+#   3. PR が承認されると、インストーラー付きのリリースの下書きが作られる（release-draft.yml）
+#   4. 管理者が下書きを確認して公開すると、デスクトップ版に更新が届く
+# 事前設定：Settings → Actions → General → 「Allow GitHub Actions to create and approve pull requests」を有効にする。
+name: バージョンアップ
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: 今回上げるバージョン（major：互換性のない変更 / minor：機能追加 / patch：不具合修正）
+        type: choice
+        options: [patch, minor, major]
+        default: minor
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  bump:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.bump.outputs.version }}
+      branch: release/v${{ steps.bump.outputs.version }}
+      pr: ${{ steps.pr.outputs.number }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+      - id: bump
+        run: bun scripts/bump-version.ts ${{ inputs.bump }}
+      - id: pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.bump.outputs.version }}
+        run: |
+          branch="release/v$VERSION"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$branch"
+          git commit -am "バージョンを $VERSION に上げる"
+          git push origin "$branch"
+          body=$(cat <<EOF
+          アプリの版を **$VERSION** に上げます（${{ inputs.bump }}）。
+
+          ## 確認の手順
+          1. この PR に、デスクトップ版のポータブル版（インストール不要の exe）のビルド結果へのリンクがコメントされます。ダウンロードして実機で確認してください。
+          2. 問題なければ PR を **承認（Approve）** してください。インストーラー付きのリリースの下書き（v$VERSION）が自動で作られます。
+          3. PR をマージします（main のコミットにタグが付くよう、Squash ではなく通常のマージを推奨）。Web版はマージ時に配信されます。
+          4. Releases の下書きでリリースノートを確認・編集し、**公開（Publish release）** するとデスクトップ版に更新が届きます。
+          EOF
+          )
+          url=$(gh pr create --base main --head "$branch" --title "バージョンアップ v$VERSION" --body "$body")
+          echo "number=${url##*/}" >> "$GITHUB_OUTPUT"
+
+  # GITHUB_TOKEN で作った PR では pull_request のワークフローが動かないため、ここから直接呼ぶ
+  portable:
+    needs: bump
+    uses: ./.github/workflows/desktop-portable.yml
+    with:
+      ref: ${{ needs.bump.outputs.branch }}
+      pr: ${{ needs.bump.outputs.pr }}
+    permissions:
+      contents: read
+      pull-requests: write

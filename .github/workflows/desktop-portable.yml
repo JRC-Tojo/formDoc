@@ -1,0 +1,59 @@
+# デスクトップ版のポータブル版（インストール不要の exe 1つ）をビルドする。実機確認用。
+# バージョンアップの PR を作ったときに version-bump.yml から呼ばれる。Actions の画面から任意のブランチでも実行できる。
+# exe は Actions の実行結果（Artifacts）からダウンロードする。動かすには WebView2（Windows 11 は標準搭載）が必要。
+name: デスクトップ版（ポータブル）
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        type: string
+        required: true
+      pr:
+        description: ビルド結果へのリンクをコメントする PR の番号
+        type: string
+        default: ''
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: ビルドするブランチ
+        type: string
+        default: main
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.ref }}
+      - uses: ./.github/actions/setup
+        with:
+          cache-key: desktop
+      - run: bun ready --desktop
+      - run: bun run tauri build --no-bundle
+      - id: name
+        shell: bash
+        run: |
+          version=$(tr -d '\r' < Cargo.toml | sed -n 's/^version = "\(.*\)"/\1/p' | head -1)
+          echo "file=formDoc_${version}_portable" >> "$GITHUB_OUTPUT"
+          mkdir -p dist-portable
+          cp target/release/formdoc-desktop.exe "dist-portable/formDoc_${version}_portable.exe"
+      - id: upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.name.outputs.file }}
+          path: dist-portable/*.exe
+          retention-days: 30
+      - if: inputs.pr != ''
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh pr comment "${{ inputs.pr }}" --repo "${{ github.repository }}" --body "ポータブル版をビルドしました：[${{ steps.name.outputs.file }}.exe（zip）](${{ steps.upload.outputs.artifact-url }})
+
+          ダウンロードして展開し、exe を実行して確認してください（インストール不要）。"

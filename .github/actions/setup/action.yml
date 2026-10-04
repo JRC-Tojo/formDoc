@@ -1,0 +1,20 @@
+name: 開発環境の準備
+description: bun・Rust（wasm32 ターゲット）・cargo-binstall を入れ、Rust のビルド結果をキャッシュする。続けて bun ready などを実行する。
+inputs:
+  cache-key:
+    description: Rust のキャッシュを分ける名前（Web版・デスクトップ版でビルド内容が違うため）
+    required: true
+runs:
+  using: composite
+  steps:
+    - uses: oven-sh/setup-bun@v2
+    - uses: dtolnay/rust-toolchain@stable
+      with:
+        targets: wasm32-unknown-unknown
+    - uses: Swatinem/rust-cache@v2
+      with:
+        shared-key: ${{ inputs.cache-key }}
+    # bun ready が wasm-bindgen-cli（Cargo.lock と同じ版）をビルドせずに入れられるように
+    - uses: taiki-e/install-action@v2
+      with:
+        tool: cargo-binstall

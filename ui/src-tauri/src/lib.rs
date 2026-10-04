@@ -343,6 +343,9 @@ fn unwatch_project(state: State<'_, AppState>) {
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
+        // 自動更新：GitHub Releases の latest.json を見て、新しい版をダウンロード・インストールし、再起動する
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_process::init())
         .manage(AppState::default())
         .invoke_handler(tauri::generate_handler![
             catalog,

@@ -45,6 +45,8 @@ ui/                      Vite + Svelte 5（--mode web / desktop）
   src/lib/platform/      能力フラグ（capabilities.ts）と Web / Tauri 実装
   src-tauri/             デスクトップ版（Tauri 2）
 examples/                GUI文書（document.json）とコードモードの例
+scripts/                 開発用のスクリプト（bun で実行。ready.ts ＝ bun ready、版上げ、自動更新の latest.json 作成）
+.github/workflows/       Web版の配信（pages）、バージョンアップ・ポータブル版・リリースの下書き
 ```
 
 ## ビルド
@@ -76,6 +78,26 @@ cargo run -p formdoc-cli -- gui examples/keisansho-gui/document.json out.pdf --t
 cargo run -p formdoc-cli -- compile examples/keisansho-code out.pdf
 ```
 
+メモリの少ないPCでは `CARGO_BUILD_JOBS=1 bun ready` のように cargo の並列数を絞る。
+
+## 配信とバージョンアップ
+
+| 対象 | いつ | 仕組み |
+|---|---|---|
+| Web版 | main へのマージのたび | `.github/workflows/pages.yml` が GitHub Pages に配信。開いている画面は `version.json` の変化を検知し（10分ごと・画面に戻ったとき）、右下に通知する。「再読み込みして更新」で URL に `?v=<ビルド>` を付けて読み直すため、キャッシュの残りで古い画面のままになることはない。編集中の文書は下書きとして引き継ぐ |
+| デスクトップ版 | リリースを公開したとき | 起動時と6時間ごとに `releases/latest/download/latest.json` を確認し、同じ通知を出す。「更新して再起動」でインストーラーをダウンロード（署名を検証）して入れ直す |
+
+**バージョンアップの手順**（版は `Cargo.toml` の `[workspace.package] version` と `ui/package.json` で管理。手元では `bun run version:bump patch|minor|major`）
+1. Actions →「バージョンアップ」→ Run workflow で、今回上げるバージョン（major / minor / patch）を選ぶ。
+2. 版を書き換えたブランチ `release/v<版>` と PR が自動で作られ、デスクトップ版のポータブル版（インストール不要の exe）がビルドされる。PR にダウンロードのリンクがコメントされるので、実機で確認する。
+3. PR を承認すると、インストーラーと `latest.json` 付きのリリースの下書きが自動で作られる（`release-draft.yml`。リリースノートは GitHub の自動生成）。PR はマージする（タグが main のコミットに付くよう、Squash ではなく通常のマージを推奨）。
+4. 管理者が下書きを確認して「Publish release」を押すと、デスクトップ版に更新が届く。
+
+**最初に一度だけ行う設定**
+- Settings → Pages → Source を「GitHub Actions」にする。
+- Settings → Actions → General → 「Allow GitHub Actions to create and approve pull requests」を有効にする。
+- 自動更新の署名鍵：秘密鍵を Settings → Secrets → Actions の `TAURI_SIGNING_PRIVATE_KEY`（鍵にパスワードを付けた場合は `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` も）に登録する。公開鍵は `ui/src-tauri/tauri.conf.json` の `plugins.updater.pubkey`。鍵を作り直すときは `bun run tauri signer generate -w <保存先>` を実行し、公開鍵を差し替える（**秘密鍵を失うと、配布済みのデスクトップ版に更新を届けられなくなる**）。
+
 ## コードモードの書き方（例）
 
 ```typst
@@ -101,6 +123,7 @@ cargo run -p formdoc-cli -- compile examples/keisansho-code out.pdf
 | 機能 | Web | デスクトップ |
 |---|:-:|:-:|
 | 部品で作成・プレビュー・PDF出力・Typst変換 | ○ | ○ |
+| 新しい版の通知と更新 | ○（再読み込み） | ○（インストールして再起動） |
 | コードで作成（内蔵エディタ） | ○ | ○ |
 | フォルダを開く・VSCodeで開く・保存監視 | — | ○ |
 | 名前を付けて保存（保存先の選択） | —（ダウンロード） | ○ |

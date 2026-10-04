@@ -13,6 +13,7 @@
   import SaveTemplateDialog from './lib/components/SaveTemplateDialog.svelte';
   import SettingsDialog from './lib/components/SettingsDialog.svelte';
   import ShapeEditor from './lib/components/ShapeEditor.svelte';
+  import UpdateNotice from './lib/components/UpdateNotice.svelte';
 
   let recentMenu = $state(false);
   /** 印刷の用紙の大きさ（文書の1ページ目に合わせる） */
@@ -48,7 +49,7 @@
 
     // 未保存の変更があるときは閉じさせない（Web：タブ・ウィンドウを閉じる／再読み込み）
     const onUnload = (e: BeforeUnloadEvent) => {
-      if (app.dirty) {
+      if (app.dirty && !app.updating) {
         e.preventDefault();
         e.returnValue = '';
       }
@@ -157,6 +158,7 @@
   {#if app.message}
     <div class="toast {app.message.kind}" role="status">{app.message.text}</div>
   {/if}
+  <UpdateNotice />
 </div>
 
 {#if app.dialog?.kind === 'insert'}
