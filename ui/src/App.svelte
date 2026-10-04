@@ -103,7 +103,7 @@
 
     <!-- どちらのモードでも編集しているのは同じ文書 -->
     <div class="group">
-      <button onclick={() => app.newDocument()} title="新しい文書（文書情報でスタイルを選んで始めます）">新規</button>
+      <button onclick={() => app.newDocument()} title="新しい文書（文書情報で文書テンプレートを選んで始めます）">新規</button>
       <span class="open">
         <button onclick={() => app.open()}>開く…</button><Gate cap="recentFiles"><button class="drop" onclick={() => (recentMenu = !recentMenu)} title="最近使ったファイル">▾</button></Gate>
         {#if recentMenu}
@@ -130,7 +130,7 @@
 
     <span class="spacer"></span>
     {#if app.filePath}<span class="path small muted" title={app.filePath}>{app.filePath}</span>{/if}
-    <button onclick={() => (app.dialog = { kind: 'settings' })} title="設定（テーマ・文字の大きさ・最近使ったファイル・テンプレートのフォルダ）">⚙ 設定</button>
+    <button onclick={() => (app.dialog = { kind: 'settings' })} title="設定（テーマ・文字の大きさ・最近使ったファイル・部品テンプレートのフォルダ）">⚙ 設定</button>
     <button disabled={!app.result?.exportable} onclick={() => app.print()} title={app.result?.exportable ? '文書を印刷 (Ctrl+P)' : 'エラーを解消すると印刷できます'}>印刷</button>
     <button class="primary" disabled={!app.result?.exportable} onclick={() => app.exportPdf()}
       title={app.result?.exportable ? 'PDFを出力' : 'エラーを解消するとPDFを出力できます'}>PDF出力</button>

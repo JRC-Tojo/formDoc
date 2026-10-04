@@ -227,9 +227,9 @@ fn open_path(path: String) -> R<()> {
     r.map(|_| ()).map_err(|e| format!("{path} を開けません: {e}"))
 }
 
-// ---------- システムフォルダ（設定・スタイル・テンプレート） ----------
+// ---------- システムフォルダ（設定・文書テンプレート・部品テンプレート） ----------
 
-/// システムフォルダ（Windows: %APPDATA%\formDoc）。無ければ作り、同梱スタイルのうち
+/// システムフォルダ（Windows: %APPDATA%\formDoc）。無ければ作り、同梱文書テンプレートのうち
 /// まだ無いものをコピーする（利用者が編集したファイルは上書きしない）。
 fn system_root(app: &AppHandle) -> R<PathBuf> {
     let root = app.path().data_dir().map_err(|e| e.to_string())?.join("formDoc");
@@ -299,7 +299,7 @@ fn list_styles(app: AppHandle) -> R<Vec<TextFile>> {
     Ok(out)
 }
 
-/// テンプレート（.fdtpl）を、システムフォルダと指定フォルダから読む。
+/// 部品テンプレート（.fdtpl）を、システムフォルダと指定フォルダから読む。
 #[tauri::command]
 fn list_templates(app: AppHandle, folders: Vec<String>) -> R<Vec<TextFile>> {
     let mut out = Vec::new();

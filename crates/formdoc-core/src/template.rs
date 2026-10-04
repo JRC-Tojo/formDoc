@@ -1,6 +1,6 @@
-//! スタイル（文書の型）と部品定義の読み込み。
+//! 文書テンプレート（文書の型）と部品定義の読み込み。
 //!
-//! スタイルは1ファイルのTypst（library/styles/*.typ、またはシステムフォルダの styles/*.typ）。
+//! 文書テンプレートは1ファイルのTypst（library/styles/*.typ、またはシステムフォルダの styles/*.typ）。
 //! ファイル内の `info` 辞書が型の規則と文書情報の入力欄、`style` 関数が体裁を持つ。
 //! `info` は実際に Typst で評価して取り出す（定義元を1か所にするため、別のパーサーは持たない）。
 
@@ -11,7 +11,7 @@ use serde_json::Value;
 
 use crate::world::FormdocWorld;
 
-/// スタイルの規則（`info` の中身）。
+/// 文書テンプレートの規則（`info` の中身）。
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub struct Template {
@@ -99,7 +99,7 @@ impl Template {
     }
 }
 
-/// スタイルのTypstソースを評価し、`info` を取り出す。`style` 関数が無い場合もエラーにする。
+/// 文書テンプレートのTypstソースを評価し、`info` を取り出す。`style` 関数が無い場合もエラーにする。
 pub fn parse_style(source: &str) -> Result<Template, String> {
     let mut world = FormdocWorld::new();
     world.set_files([
@@ -114,21 +114,21 @@ pub fn parse_style(source: &str) -> Result<Template, String> {
             .filter(|d| d.severity == "error")
             .map(|d| format!("{}{}", d.line.map(|l| format!("{l}行目: ")).unwrap_or_default(), d.message))
             .collect();
-        format!("スタイルを読み込めません: {}", errs.join(" / "))
+        format!("文書テンプレートを読み込めません: {}", errs.join(" / "))
     })?;
     let label = typst::foundations::Label::new(typst::utils::PicoStr::intern("fd-style-info")).unwrap();
     use typst::introspection::Introspector;
     let content = doc.introspector().query_label(label).map_err(|e| e.to_string())?;
-    let value = content.get_by_name("value").map_err(|_| "スタイルの info を取り出せません".to_string())?;
+    let value = content.get_by_name("value").map_err(|_| "文書テンプレートの info を取り出せません".to_string())?;
     let json = serde_json::to_value(&value).map_err(|e| e.to_string())?;
-    let t: Template = serde_json::from_value(json).map_err(|e| format!("スタイルの info に誤りがあります: {e}"))?;
+    let t: Template = serde_json::from_value(json).map_err(|e| format!("文書テンプレートの info に誤りがあります: {e}"))?;
     if t.id.trim().is_empty() {
-        return Err("スタイルの info.id が空です".into());
+        return Err("文書テンプレートの info.id が空です".into());
     }
     Ok(t)
 }
 
-/// 同梱スタイル（library/styles/*.typ）。(ファイル名の拡張子なし, ソース)
+/// 同梱文書テンプレート（library/styles/*.typ）。(ファイル名の拡張子なし, ソース)
 pub fn builtin_styles() -> Vec<(String, String)> {
     let mut v: Vec<(String, String)> = formdoc_library::files()
         .filter_map(|(p, b)| {
@@ -140,12 +140,12 @@ pub fn builtin_styles() -> Vec<(String, String)> {
     v
 }
 
-/// 同梱スタイルを id で取得する（テスト・CLI用）。
+/// 同梱文書テンプレートを id で取得する（テスト・CLI用）。
 pub fn builtin_style(id: &str) -> Result<String, String> {
-    builtin_styles().into_iter().find(|(i, _)| i == id).map(|(_, s)| s).ok_or_else(|| format!("スタイル {id} が見つかりません"))
+    builtin_styles().into_iter().find(|(i, _)| i == id).map(|(_, s)| s).ok_or_else(|| format!("文書テンプレート {id} が見つかりません"))
 }
 
-/// 同梱テンプレート（library/snippets/*.fdtpl。JSON）。
+/// 同梱部品テンプレート（library/snippets/*.fdtpl。JSON）。
 pub fn builtin_snippets() -> Vec<Value> {
     let mut v: Vec<(String, Value)> = formdoc_library::files()
         .filter(|(p, _)| p.starts_with("snippets/") && p.ends_with(".fdtpl"))

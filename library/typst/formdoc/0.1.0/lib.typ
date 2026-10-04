@@ -1,6 +1,6 @@
 // formDoc 社内標準パッケージ
 //   #import "@local/formdoc:0.1.0": *
-//   #import "style.typ": style      （スタイルは styles/*.typ。プロジェクトに style.typ として置く）
+//   #import "style.typ": style      （文書テンプレートは styles/*.typ。プロジェクトに style.typ として置く）
 //   #show: style.with(title: "主桁の設計計算書")
 
 #import "src/text.typ": para, bullets

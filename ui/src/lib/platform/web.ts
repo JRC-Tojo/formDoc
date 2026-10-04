@@ -126,7 +126,7 @@ async function idbPut(store: string, key: string, value: string) {
 
 const SETTINGS_KEY = 'formdoc.settings';
 
-/** Web版のシステムフォルダ相当。設定は localStorage、スタイル・テンプレートは IndexedDB。 */
+/** Web版のシステムフォルダ相当。設定は localStorage、文書テンプレート・部品テンプレートは IndexedDB。 */
 const system: SystemStore = {
   info: async () => null,
   async loadSettings() {

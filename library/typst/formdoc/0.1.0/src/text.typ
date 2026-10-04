@@ -1,4 +1,4 @@
-// 本文の部品。文書全体の体裁（書体・余白・見出し・表紙）はスタイル（styles/*.typ）が持つ。
+// 本文の部品。文書全体の体裁（書体・余白・見出し・表紙）は文書テンプレート（styles/*.typ）が持つ。
 
 /// 本文段落（見出しに合わせて字下げ）。
 #let para(body) = pad(left: 2em, par(first-line-indent: (amount: 1em, all: true), body))

@@ -1,5 +1,5 @@
 <script lang="ts">
-  // 表の編集。セルを選んで結合（行・列）、縦書き、配置を設定する。罫線や文字サイズはテンプレートで固定。
+  // 表の編集。セルを選んで結合（行・列）、縦書き、配置を設定する。罫線や文字サイズは文書テンプレートで固定。
   import { track } from '../insert';
 
   type Cell = { text: string; rowspan?: number; colspan?: number; vertical?: boolean; align?: string };

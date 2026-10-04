@@ -6,17 +6,17 @@ export interface Block {
   id: string;
   kind: string;
   props: Props;
-  /** 子要素（"group" ＝ 挿入したテンプレートのまとまり） */
+  /** 子要素（"group" ＝ 挿入した部品テンプレートのまとまり） */
   children?: Block[];
 }
 
-/** 文書情報。キーはスタイルの info.fields の key */
+/** 文書情報。キーは文書テンプレートの info.fields の key */
 export type Meta = Record<string, any>;
 
 export interface Doc {
   schema_version: number;
   library: string;
-  /** スタイルの id */
+  /** 文書テンプレートの id */
   template: string;
   meta: Meta;
   blocks: Block[];
@@ -42,7 +42,7 @@ export interface VarInfo {
   unit: string;
   digits: number | null;
   desc: string;
-  /** 使える範囲の持ち主（見出し・テンプレートのまとまりのID）。null は文書全体 */
+  /** 使える範囲の持ち主（見出し・部品テンプレートのまとまりのID）。null は文書全体 */
   scope: string | null;
   /** グローバル変数として定義 */
   global: boolean;
@@ -106,7 +106,7 @@ export interface ComponentDef {
   fields: FieldDef[];
 }
 
-/** 文書情報の入力欄（スタイルの info.fields） */
+/** 文書情報の入力欄（文書テンプレートの info.fields） */
 export interface MetaField {
   key: string;
   label: string;
@@ -117,7 +117,7 @@ export interface MetaField {
   options?: string[];
 }
 
-/** スタイルの規則（スタイルファイルの info） */
+/** 文書テンプレートの規則（文書テンプレートファイルの info） */
 export interface StyleInfo {
   id: string;
   name: string;
@@ -129,7 +129,7 @@ export interface StyleInfo {
   digits: Record<string, number>;
 }
 
-/** 選べるスタイル（ファイル1つ） */
+/** 選べる文書テンプレート（ファイル1つ） */
 export interface StyleEntry {
   /** 読み込み元（デスクトップはファイルパス、同梱は builtin:<file>、Web は browser:<file>） */
   path: string;
@@ -138,12 +138,12 @@ export interface StyleEntry {
   error?: string;
 }
 
-/** テンプレート（.fdtpl）の変数インターフェース */
+/** 部品テンプレート（.fdtpl）の変数インターフェース */
 export interface TemplateInput {
   name: string;
   label: string;
   unit?: string;
-  /** 既定値（テンプレート内の変数定義を入力にしたもの）。無ければ挿入時に必須 */
+  /** 既定値（部品テンプレート内の変数定義を入力にしたもの）。無ければ挿入時に必須 */
   default?: number | null;
 }
 export interface TemplateExport {
@@ -156,14 +156,14 @@ export interface TemplateFile {
   name: string;
   description: string;
   category: string;
-  /** 想定するスタイル（空なら全スタイル） */
+  /** 想定する文書テンプレート（空なら全文書テンプレート） */
   styles: string[];
   created: string;
   blocks: Block[];
   interface: { inputs: TemplateInput[]; exports: TemplateExport[] };
   assets: Record<string, string>;
 }
-/** 一覧に並ぶテンプレート */
+/** 一覧に並ぶ部品テンプレート */
 export interface TemplateEntry {
   file: TemplateFile;
   /** 読み込み元（同梱 / このPC / フォルダのパス） */
@@ -177,9 +177,9 @@ export interface Settings {
   fontScale: number;
   recentMax: number;
   recent: string[];
-  /** テンプレートを読み込むフォルダ */
+  /** 部品テンプレートを読み込むフォルダ */
   templateFolders: string[];
-  /** テンプレートの公開先（既定） */
+  /** 部品テンプレートの公開先（既定） */
   publishFolder: string;
 }
 
@@ -204,6 +204,6 @@ export interface SavedDoc {
   version: 1 | 2;
   document: Doc;
   assets: Record<string, string>;
-  /** 保存時のスタイルのソース（同じ文書なら同じPDFにするため同梱する。version 2 以降） */
+  /** 保存時の文書テンプレートのソース（同じ文書なら同じPDFにするため同梱する。version 2 以降） */
   style?: { file: string; source: string };
 }

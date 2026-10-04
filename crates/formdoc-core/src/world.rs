@@ -33,7 +33,7 @@ fn font_store() -> &'static FontStore {
     })
 }
 
-/// 同梱フォントのファミリー名一覧（テンプレート開発時の確認用）。
+/// 同梱フォントのファミリー名一覧（文書テンプレート開発時の確認用）。
 pub fn font_families() -> Vec<String> {
     let mut v: Vec<String> = font_store().fonts.iter().map(|f| f.info().family.clone()).collect();
     v.sort();

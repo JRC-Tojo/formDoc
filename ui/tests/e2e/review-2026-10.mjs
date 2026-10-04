@@ -19,8 +19,8 @@ await page.goto('http://localhost:5173/');
 await page.waitForFunction(() => globalThis.__formdoc && globalThis.__formdoc.loading === '', null, { timeout: 120000 });
 const errs = () => st(() => (__formdoc.result?.issues ?? []).filter((i) => i.severity === 'error').map((i) => i.message));
 
-// 1. スタイルを選ぶと執筆開始
-ok(await page.locator('button.style').count() >= 1, 'スタイル一覧が出る');
+// 1. 文書テンプレートを選ぶと執筆開始
+ok(await page.locator('button.style').count() >= 1, '文書テンプレート一覧が出る');
 await page.locator('button.style', { hasText: '計算書' }).click();
 await page.waitForFunction(() => __formdoc.pageHashes.length > 0, null, { timeout: 60000 });
 ok((await st(() => __formdoc.doc.blocks.length)) === 3, '骨組み3章が入る');
@@ -28,7 +28,7 @@ ok((await page.locator('.inspector label', { hasText: '表題' }).count()) > 0, 
 ok((await errs()).length === 0, 'エラー0件: ' + (await errs()).join(' / '));
 await page.screenshot({ path: `${out}/1-style.png` });
 
-// 2. 部品を追加ダイアログ → テンプレート「I形断面」を挿入（2回：内部変数の衝突回避）
+// 2. 部品を追加ダイアログ → 部品テンプレート「I形断面」を挿入（2回：内部変数の衝突回避）
 for (let n = 1; n <= 2; n++) {
   await page.getByRole('button', { name: '＋ 部品を追加…' }).click();
   await page.locator('.modal .item', { hasText: 'I形断面' }).click();
@@ -41,19 +41,19 @@ for (let n = 1; n <= 2; n++) {
 const names = await st(() => __formdoc.result.vars.map((v) => v.name));
 ok(names.includes('A') && names.includes('A_2'), '2回目の公開変数は A_2: ' + names.join(','));
 ok(!names.some((v) => /^(H|B|t_w|t_f)_[0-9]/.test(v)), '2回目は入力が既存の変数（H, B, t_w, t_f）につながる: ' + names.join(','));
-ok((await errs()).length === 0, 'テンプレート挿入後エラー0件: ' + (await errs()).join(' / '));
+ok((await errs()).length === 0, '部品テンプレート挿入後エラー0件: ' + (await errs()).join(' / '));
 await page.screenshot({ path: `${out}/4-inserted.png` });
 
 // 3. 右クリックメニュー
 await page.locator('.outline .row').first().click({ button: 'right' });
-ok(await page.locator('.ctx', { hasText: 'テンプレートとして保存' }).isVisible(), '右クリックにテンプレートとして保存');
+ok(await page.locator('.ctx', { hasText: '部品テンプレートとして保存' }).isVisible(), '右クリックに部品テンプレートとして保存');
 await page.screenshot({ path: `${out}/5-context.png` });
-await page.locator('.ctx button', { hasText: 'テンプレートとして保存' }).click();
+await page.locator('.ctx button', { hasText: '部品テンプレートとして保存' }).click();
 await page.waitForTimeout(300);
 await page.screenshot({ path: `${out}/6-save-template.png` });
 await page.locator('.modal footer button.primary', { hasText: '保存' }).click();
 await page.waitForTimeout(800);
-ok((await st(() => __formdoc.templates.filter((t) => t.source === 'このPC').length)) === 1, '「このPC」にテンプレートが保存される');
+ok((await st(() => __formdoc.templates.filter((t) => t.source === 'このPC').length)) === 1, '「このPC」に部品テンプレートが保存される');
 
 // 4. 汎用図形を描く
 await st(() => __formdoc.addBlock('fig-shapes'));

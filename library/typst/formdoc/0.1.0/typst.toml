@@ -4,4 +4,4 @@ version = "0.1.0"
 entrypoint = "lib.typ"
 authors = ["formDoc"]
 license = "UNLICENSED"
-description = "formDoc 社内標準：文書スタイルと部品の描画関数。GUIの出力とコードモードの両方がこのパッケージを使う。"
+description = "formDoc 社内標準：文書テンプレートと部品の描画関数。GUIの出力とコードモードの両方がこのパッケージを使う。"

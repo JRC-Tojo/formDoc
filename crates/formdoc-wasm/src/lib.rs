@@ -23,13 +23,13 @@ pub fn catalog() -> Result<String, JsError> {
     serde_json::to_string(&api::catalog().map_err(err)?).map_err(err)
 }
 
-/// スタイルの info を読む（一覧表示用。セッションは変えない）。
+/// 文書テンプレートの info を読む（一覧表示用。セッションは変えない）。
 #[wasm_bindgen]
 pub fn style_info(source: &str) -> Result<String, JsError> {
     serde_json::to_string(&api::style_info(source).map_err(err)?).map_err(err)
 }
 
-/// GUIモードのスタイルを設定し、その info を返す。
+/// GUIモードの文書テンプレートを設定し、その info を返す。
 #[wasm_bindgen]
 pub fn set_style(source: &str) -> Result<String, JsError> {
     let t = SESSION.with(|s| s.borrow_mut().set_style(source)).map_err(err)?;

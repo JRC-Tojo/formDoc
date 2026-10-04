@@ -48,7 +48,7 @@ fields = [
   { key = "display", label = "表示記号", type = "text", help = "数式表記を変える場合のみ（Typst数式。例: (b/t)_0）" },
   { key = "label", label = "左の見出し", type = "text" },
   { key = "show", label = "本文に表示", type = "bool", default = true },
-  { key = "global", label = "グローバル変数として定義", type = "bool", default = false, help = "チェックしないと、同じ見出し（節）・テンプレートの中だけで使えるローカル変数になる" },
+  { key = "global", label = "グローバル変数として定義", type = "bool", default = false, help = "チェックしないと、同じ見出し（節）・部品テンプレートの中だけで使えるローカル変数になる" },
 ]
 
 [calc]
@@ -68,7 +68,7 @@ fields = [
   { key = "units_in_sub", label = "代入式に単位を表示", type = "bool", default = false },
   { key = "show_symbolic", label = "記号式を表示", type = "bool", default = true },
   { key = "show", label = "本文に表示", type = "bool", default = true },
-  { key = "global", label = "グローバル変数として定義", type = "bool", default = false, help = "チェックしないと、同じ見出し（節）・テンプレートの中だけで使えるローカル変数になる" },
+  { key = "global", label = "グローバル変数として定義", type = "bool", default = false, help = "チェックしないと、同じ見出し（節）・部品テンプレートの中だけで使えるローカル変数になる" },
 ]
 
 [sum]
@@ -86,7 +86,7 @@ fields = [
   { key = "unit", label = "単位", type = "text" },
   { key = "digits", label = "小数桁数", type = "int" },
   { key = "desc", label = "合計の説明", type = "text" },
-  { key = "global", label = "グローバル変数として定義（内訳と合計）", type = "bool", default = false, help = "チェックしないと、同じ見出し（節）・テンプレートの中だけで使えるローカル変数になる" },
+  { key = "global", label = "グローバル変数として定義（内訳と合計）", type = "bool", default = false, help = "チェックしないと、同じ見出し（節）・部品テンプレートの中だけで使えるローカル変数になる" },
 ]
 
 [check]
@@ -158,13 +158,13 @@ fields = [
 ]
 
 [group]
-label = "テンプレート"
+label = "部品テンプレート"
 icon = "❖"
 category = "その他"
-help = "挿入したテンプレートのまとまり。中の変数はこの中だけで使え、「公開する変数」だけが後ろの部品から使える。"
+help = "挿入した部品テンプレートのまとまり。中の変数はこの中だけで使え、「公開する変数」だけが後ろの部品から使える。"
 fields = [
   { key = "title", label = "名前", type = "text" },
-  { key = "exports", label = "公開する変数", type = "varlist", help = "テンプレートの中で定義した変数のうち、外から使えるもの" },
+  { key = "exports", label = "公開する変数", type = "varlist", help = "部品テンプレートの中で定義した変数のうち、外から使えるもの" },
 ]
 
 [pagebreak]

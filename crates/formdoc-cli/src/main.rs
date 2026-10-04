@@ -36,10 +36,10 @@ fn main() -> ExitCode {
             // GUI文書（document.json）を評価・組版する。--typst <file> で生成ソースも書き出す
             let text = std::fs::read_to_string(&args[1]).expect("document.json を読めません");
             let doc: formdoc_core::Document = serde_json::from_str(&text).expect("document.json の形式が不正です");
-            // スタイルは --style <file.typ>。省略時は文書の template と同じ id の同梱スタイル
+            // 文書テンプレートは --style <file.typ>。省略時は文書の template と同じ id の同梱文書テンプレート
             let style = match args.iter().position(|a| a == "--style") {
-                Some(i) => std::fs::read_to_string(&args[i + 1]).expect("スタイルを読めません"),
-                None => formdoc_core::template::builtin_style(&doc.template).expect("同梱スタイルがありません"),
+                Some(i) => std::fs::read_to_string(&args[i + 1]).expect("文書テンプレートを読めません"),
+                None => formdoc_core::template::builtin_style(&doc.template).expect("同梱文書テンプレートがありません"),
             };
             let mut s = formdoc_core::Session::new();
             if let Err(e) = s.set_style(&style) {

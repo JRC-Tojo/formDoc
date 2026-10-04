@@ -1,5 +1,5 @@
 <script lang="ts">
-  // 「テンプレートとして保存」。見出しなら配下の節ごと、それ以外はその部品を保存する。
+  // 「部品テンプレートとして保存」。見出しなら配下の節ごと、それ以外はその部品を保存する。
   // 変数ごとに「入力（受け取る）／公開（外から使える）／内部」を決めておくと、挿入する側は入力をつなぐだけで済む。
   import { app, b64encode } from '../state.svelte';
   import { analyze } from '../vars';
@@ -11,7 +11,7 @@
 
   const comps = $derived(app.catalog?.components ?? {});
   const picked = $derived<Block[]>(JSON.parse(JSON.stringify(app.fragmentOf(blockId))));
-  /** まとまり（挿入したテンプレート）を選んだときは、その中身を保存する */
+  /** まとまり（挿入した部品テンプレート）を選んだときは、その中身を保存する */
   const group = $derived(picked.length === 1 && picked[0].kind === 'group' ? picked[0] : null);
   const fragment = $derived<Block[]>(group ? (group.children ?? []) : picked);
   const usage = $derived(analyze(fragment, comps));
@@ -94,14 +94,14 @@
   const canSave = $derived(!!name.trim() && !saving && (dest === 'local' || !!publishFolder));
 </script>
 
-<Modal title="テンプレートとして保存" onclose={() => (app.dialog = null)} width="760px">
+<Modal title="部品テンプレートとして保存" onclose={() => (app.dialog = null)} width="760px">
   <div class="form">
     <div class="row2">
       <label>名前<input type="text" bind:value={name} /></label>
       <label>分類<input type="text" bind:value={category} placeholder="例: 断面、荷重、照査" /></label>
     </div>
     <label>説明<textarea rows="2" bind:value={description}></textarea></label>
-    <div class="small muted">保存する部品：{fragment.length} 個（{group ? `テンプレート「${group.props.title}」の中身` : head?.kind === 'heading' ? '見出しと配下の節' : comps[head?.kind ?? '']?.label}）</div>
+    <div class="small muted">保存する部品：{fragment.length} 個（{group ? `部品テンプレート「${group.props.title}」の中身` : head?.kind === 'heading' ? '見出しと配下の節' : comps[head?.kind ?? '']?.label}）</div>
 
     <h4>変数</h4>
     <p class="small muted">
@@ -148,7 +148,7 @@
         {/if}
       </div>
     {/if}
-    <label class="radio"><input type="checkbox" bind:checked={styleOnly} />このスタイル（{app.template?.name}）でだけ使う</label>
+    <label class="radio"><input type="checkbox" bind:checked={styleOnly} />この文書テンプレート（{app.template?.name}）でだけ使う</label>
   </div>
 
   {#snippet footer()}

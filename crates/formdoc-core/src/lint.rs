@@ -1,4 +1,4 @@
-//! 表記Lint。スタイルの規則（info.lint）に従い、文章の表記ぶれを検出する。
+//! 表記Lint。文書テンプレートの規則（info.lint）に従い、文章の表記ぶれを検出する。
 //! 検出結果には置換内容（fix）を付け、GUIからワンクリックで直せるようにする。
 
 use crate::evaluate::{Fix, Issue, Severity};

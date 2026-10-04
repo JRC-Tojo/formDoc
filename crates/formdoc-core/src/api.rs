@@ -44,7 +44,7 @@ struct Last {
 
 pub struct Session {
     world: FormdocWorld,
-    /// GUIモードのスタイル（ソースと、評価した info）
+    /// GUIモードの文書テンプレート（ソースと、評価した info）
     style: Option<(String, Template)>,
     assets: BTreeMap<String, Vec<u8>>,
     last: Option<PagedDocument>,
@@ -102,7 +102,7 @@ impl Session {
         files
     }
 
-    /// GUIモードのスタイルを設定する（Typstソース）。同じソースなら評価し直さない。
+    /// GUIモードの文書テンプレートを設定する（Typstソース）。同じソースなら評価し直さない。
     pub fn set_style(&mut self, source: &str) -> Result<Template, String> {
         if let Some((src, t)) = &self.style {
             if src == source {
@@ -114,9 +114,9 @@ impl Session {
         Ok(t)
     }
 
-    /// 現在のスタイルで新規文書を作る（文書情報の既定値と骨組み）。
+    /// 現在の文書テンプレートで新規文書を作る（文書情報の既定値と骨組み）。
     pub fn new_document(&self) -> Result<Document, String> {
-        let (_, t) = self.style.as_ref().ok_or("スタイルが選ばれていません")?;
+        let (_, t) = self.style.as_ref().ok_or("文書テンプレートが選ばれていません")?;
         Ok(new_document(t))
     }
 
@@ -154,7 +154,7 @@ impl Session {
     pub fn update_document(&mut self, doc: Document, known: &[String]) -> UpdateResult {
         let Some((_, t)) = self.style.clone() else {
             return UpdateResult {
-                issues: vec![Issue { block_id: None, field: None, severity: Severity::Error, code: "style".into(), message: "スタイルを選んでください（文書情報）".into(), fix: None }],
+                issues: vec![Issue { block_id: None, field: None, severity: Severity::Error, code: "style".into(), message: "文書テンプレートを選んでください（文書情報）".into(), fix: None }],
                 ..Default::default()
             };
         };
@@ -225,12 +225,12 @@ impl Session {
     /// コードモードの編集を、直前に組版した文書に戻す（変わった部品は Typstコード部品になる）。
     pub fn apply_code(&self, code: &str) -> Result<crate::code::Applied, String> {
         let m = self.mode.as_ref().ok_or("文書がまだ組版されていません")?;
-        let (_, t) = self.style.as_ref().ok_or("スタイルが選ばれていません")?;
+        let (_, t) = self.style.as_ref().ok_or("文書テンプレートが選ばれていません")?;
         Ok(crate::code::apply(&m.doc, &m.view.codes, &codegen::header(&m.doc, t), code))
     }
 }
 
-/// スタイルの既定値と骨組みから新規文書を作る（ブロックIDは b1, b2 …。GUIは付け直す）。
+/// 文書テンプレートの既定値と骨組みから新規文書を作る（ブロックIDは b1, b2 …。GUIは付け直す）。
 pub fn new_document(t: &Template) -> Document {
     let blocks = t
         .skeleton
@@ -258,7 +258,7 @@ pub fn new_document(t: &Template) -> Document {
     }
 }
 
-/// 同梱スタイル（ファイル名とソース）。
+/// 同梱文書テンプレート（ファイル名とソース）。
 #[derive(Serialize)]
 pub struct StyleSource {
     pub file: String,
@@ -269,9 +269,9 @@ pub struct StyleSource {
 #[derive(Serialize)]
 pub struct Catalog {
     pub library_version: String,
-    /// 同梱スタイル。デスクトップ版は起動時にシステムフォルダへ（無いものだけ）コピーする
+    /// 同梱文書テンプレート。デスクトップ版は起動時にシステムフォルダへ（無いものだけ）コピーする
     pub styles: Vec<StyleSource>,
-    /// 同梱テンプレート（.fdtpl の中身）
+    /// 同梱部品テンプレート（.fdtpl の中身）
     pub snippets: Vec<serde_json::Value>,
     pub components: serde_json::Value,
     pub references: serde_json::Value,
@@ -289,7 +289,7 @@ pub fn catalog() -> Result<Catalog, String> {
     })
 }
 
-/// スタイルの info だけを読む（スタイル一覧の表示用。セッションの状態は変えない）。
+/// 文書テンプレートの info だけを読む（文書テンプレート一覧の表示用。セッションの状態は変えない）。
 pub fn style_info(source: &str) -> Result<Template, String> {
     template::parse_style(source)
 }

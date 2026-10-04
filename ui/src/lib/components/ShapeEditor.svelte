@@ -17,7 +17,7 @@
   type Tool = 'select' | 'line' | 'arrow' | 'rect' | 'circle' | 'polygon' | 'dim' | 'text';
   type Pt = { x: number; y: number };
 
-  // テンプレートのまとまりの中の図形もあるため、木全体から探す
+  // 部品テンプレートのまとまりの中の図形もあるため、木全体から探す
   const block = $derived(findBlock(app.doc?.blocks ?? [], blockId));
   const original: Shape[] = JSON.parse(JSON.stringify(findBlock(app.doc?.blocks ?? [], blockId)?.props.shapes ?? []));
 

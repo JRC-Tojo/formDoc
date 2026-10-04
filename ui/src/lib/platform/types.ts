@@ -9,11 +9,11 @@ export interface CodeApplied {
 /** 組版エンジン。Web版は Web Worker 内の wasm、デスクトップ版は Tauri コマンド（ネイティブ）。中身は同じ formdoc-core。 */
 export interface Engine {
   catalog(): Promise<Catalog>;
-  /** スタイルの info を読む（一覧表示用。現在のスタイルは変えない） */
+  /** 文書テンプレートの info を読む（一覧表示用。現在の文書テンプレートは変えない） */
   styleInfo(source: string): Promise<StyleInfo>;
-  /** GUIモードのスタイルを設定する */
+  /** GUIモードの文書テンプレートを設定する */
   setStyle(source: string): Promise<StyleInfo>;
-  /** 現在のスタイルで新規文書を作る */
+  /** 現在の文書テンプレートで新規文書を作る */
   newDocument(): Promise<Doc>;
   updateDocument(doc: Doc, known: string[]): Promise<UpdateResult>;
   /** コードモードで見せるコード（直前に組版した文書を、部品ごとの目印つきの Typst にしたもの） */
@@ -60,7 +60,7 @@ export interface TextFile {
 }
 
 /**
- * システムフォルダ（ユーザーごとの設定・スタイル・テンプレート）。
+ * システムフォルダ（ユーザーごとの設定・文書テンプレート・部品テンプレート）。
  * デスクトップ版は %APPDATA%\formDoc、Web版はブラウザ内（localStorage / IndexedDB）。
  */
 export interface SystemStore {
@@ -68,13 +68,13 @@ export interface SystemStore {
   info(): Promise<{ root: string; styles: string; templates: string; projects: string } | null>;
   loadSettings(): Promise<string | null>;
   saveSettings(text: string): Promise<void>;
-  /** 利用者のスタイル（同梱スタイルは Catalog から別に得る） */
+  /** 利用者の文書テンプレート（同梱文書テンプレートは Catalog から別に得る） */
   listStyles(): Promise<TextFile[]>;
-  /** スタイルを追加する（Web版のみ。デスクトップ版は styles フォルダに置く） */
+  /** 文書テンプレートを追加する（Web版のみ。デスクトップ版は styles フォルダに置く） */
   addStyle?(name: string, text: string): Promise<void>;
-  /** テンプレート：このPC（システムフォルダ）と、指定フォルダから読む */
+  /** 部品テンプレート：このPC（システムフォルダ）と、指定フォルダから読む */
   listTemplates(folders: string[]): Promise<TextFile[]>;
-  /** テンプレートを保存する。folder が null ならこのPC（システムフォルダ） */
+  /** 部品テンプレートを保存する。folder が null ならこのPC（システムフォルダ） */
   saveTemplate(folder: string | null, name: string, text: string): Promise<string>;
   /** フォルダを選ぶ（デスクトップ：パスを返す。Web：中の .fdtpl を読み込んで返す） */
   pickTemplateFolder(): Promise<{ folder: string; files: TextFile[] } | null>;

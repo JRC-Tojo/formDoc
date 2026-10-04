@@ -53,7 +53,7 @@
     </section>
 
     <section>
-      <h4>テンプレート</h4>
+      <h4>部品テンプレート</h4>
       <div class="small muted">読み込むフォルダ（このPCのシステムフォルダの分は常に読み込みます）</div>
       <ul>
         {#each s.templateFolders as f}
@@ -73,14 +73,14 @@
     <section>
       <h4>システムフォルダ</h4>
       {#if app.systemPath}
-        <p class="small">設定・スタイル（styles）・テンプレート（templates）・VSCode用の作業フォルダ（projects）を置く場所です。</p>
+        <p class="small">設定・文書テンプレート（styles）・部品テンプレート（templates）・VSCode用の作業フォルダ（projects）を置く場所です。</p>
         <div class="row"><span class="mono small path">{app.systemPath.root}</span><button class="small" onclick={() => open(app.systemPath!.root)}>開く</button></div>
-        <div class="row"><span class="k">スタイル</span><span class="mono small path">{app.systemPath.styles}</span><button class="small" onclick={() => open(app.systemPath!.styles)}>開く</button></div>
-        <p class="small muted">styles に Typst ファイル（1スタイル＝1ファイル）を置くと、文書情報のスタイルに並びます（再読み込みで反映）。</p>
+        <div class="row"><span class="k">文書テンプレート</span><span class="mono small path">{app.systemPath.styles}</span><button class="small" onclick={() => open(app.systemPath!.styles)}>開く</button></div>
+        <p class="small muted">styles に Typst ファイル（1文書テンプレート＝1ファイル）を置くと、文書情報の文書テンプレートに並びます（再読み込みで反映）。</p>
       {:else}
-        <p class="small muted">Web版では設定・スタイル・テンプレートをブラウザ内に保存します。</p>
+        <p class="small muted">Web版では設定・文書テンプレート・部品テンプレートをブラウザ内に保存します。</p>
       {/if}
-      <button class="small" onclick={async () => { await app.loadStyles(); await app.loadTemplates(); app.flash('スタイルとテンプレートを読み込み直しました'); }}>スタイル・テンプレートを再読み込み</button>
+      <button class="small" onclick={async () => { await app.loadStyles(); await app.loadTemplates(); app.flash('文書テンプレートと部品テンプレートを読み込み直しました'); }}>文書テンプレート・部品テンプレートを再読み込み</button>
     </section>
   </div>
   {#snippet footer()}
