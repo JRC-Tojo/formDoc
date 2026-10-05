@@ -2,7 +2,7 @@ import { defineConfig, type Plugin } from 'vite';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
-import { fontPath } from './src/lib/engine/fonts';
+import { fontPath } from './src/lib/engine/fonts.ts';
 
 // アプリの版（ui/package.json。scripts/bump-version.ts が Cargo.toml と一緒に書き換える）と、ビルドの識別子。
 // Web版は配信中の version.json の build と比べて、新しい版が公開されたことを知る。

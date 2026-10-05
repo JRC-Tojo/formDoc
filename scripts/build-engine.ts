@@ -17,7 +17,7 @@ export async function buildEngine(release = false) {
   step('式エンジンのTypstプラグイン');
   buildPlugin();
   step(`Web版エンジン（${release ? '配布用' : '開発用'}）`);
-  const profile = release ? 'release' : 'wasm-dev';
+  const profile = release ? 'wasm-release' : 'wasm-dev';
   run(['cargo', 'build', '-p', 'formdoc-wasm', '--profile', profile, '--target', 'wasm32-unknown-unknown']);
   const wasm = path.join(root, `target/wasm32-unknown-unknown/${profile}/formdoc_wasm.wasm`);
   // wasm-bindgen は数秒かかるため、前回と同じ入力（版の種類と更新日時）なら省く

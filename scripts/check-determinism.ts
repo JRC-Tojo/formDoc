@@ -31,8 +31,17 @@ const bodies = list.map((f) => {
   return b;
 });
 m.init_fonts(Buffer.concat(bodies), Uint32Array.from(bodies, (b) => b.length));
-const r = JSON.parse(m.update_document(readFileSync(doc, 'utf8'), '[]'));
-if (!r.exportable) throw new Error('Web版で出力できない文書です');
+const docJson = readFileSync(doc, 'utf8');
+// CLI と同じく、文書の template に対応する同梱の文書テンプレートを使う
+const template: string = JSON.parse(docJson).template;
+const style = JSON.parse(m.catalog()).styles.find((s: { file: string }) => s.file === `${template}.typ`);
+if (!style) throw new Error(`同梱の文書テンプレート ${template} がありません`);
+m.set_style(style.source);
+const r = JSON.parse(m.update_document(docJson, '[]'));
+if (!r.exportable) {
+  const errors = r.issues.filter((i: { severity: string }) => i.severity === 'error').map((i: { message: string }) => i.message);
+  throw new Error(`Web版で出力できない文書です: ${errors.join(' / ')}`);
+}
 const webPdf: Uint8Array = m.pdf();
 
 const a = sha(readFileSync(nativePdf));
