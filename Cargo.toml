@@ -11,7 +11,6 @@ license = "UNLICENSED"
 typst = "=0.15.1"
 typst-pdf = "=0.15.1"
 typst-svg = "=0.15.1"
-typst-assets = "*"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 
@@ -22,6 +21,11 @@ codegen-units = 1
 
 [profile.dev.package."*"]
 opt-level = 2
+
+# Web版エンジンの配布用ビルド。ダウンロード量を減らすため、速度より大きさを優先する
+[profile.wasm-release]
+inherits = "release"
+opt-level = "z"
 
 # Web版エンジンの開発用ビルド（LTOなしで高速）
 [profile.wasm-dev]

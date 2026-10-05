@@ -1,5 +1,5 @@
 {
-  "$comment": "外部から取得する同梱物。node scripts/setup.mjs で library/ 配下に配置する。出力PDFの再現性のため、版と sha256 を固定する。",
+  "$comment": "外部から取得する同梱物。bun ready（scripts/vendor.ts）で library/ 配下に配置する。出力PDFの再現性のため、版と sha256 を固定する。数式用フォント（New Computer Modern Math）は typst-assets と同じ版のものを使う。",
   "files": [
     {
       "path": "library/fonts/NotoSerifJP-Regular.otf",
@@ -25,6 +25,26 @@
       "path": "library/fonts/OFL.txt",
       "url": "https://raw.githubusercontent.com/notofonts/noto-cjk/f8d157532fbfaeda587e826d4cd5b21a49186f7c/Serif/LICENSE",
       "sha256": "6a73f9541c2de74158c0e7cf6b0a58ef774f5a780bf191f2d7ec9cc53efe2bf2"
+    },
+    {
+      "path": "library/fonts/NewCMMath-Regular.otf",
+      "url": "https://raw.githubusercontent.com/typst/typst-assets/v0.15.1/files/fonts/NewCMMath-Regular.otf",
+      "sha256": "d66ac1cc91c55c24d3636ae2df1238076debdff51841f9893fc5419cc2df3df7"
+    },
+    {
+      "path": "library/fonts/NewCMMath-Bold.otf",
+      "url": "https://raw.githubusercontent.com/typst/typst-assets/v0.15.1/files/fonts/NewCMMath-Bold.otf",
+      "sha256": "c6c0e060da57d4f44274705afb956013047231dc62be5a4b02a351ab0dc43f2f"
+    },
+    {
+      "path": "library/fonts/NewCMMath-Book.otf",
+      "url": "https://raw.githubusercontent.com/typst/typst-assets/v0.15.1/files/fonts/NewCMMath-Book.otf",
+      "sha256": "2ea09ebc9167b1e1a66f31390dc917f2d4004ecfca72d51b28010e4ad6becd95"
+    },
+    {
+      "path": "library/fonts/NOTICE-typst-assets.txt",
+      "url": "https://raw.githubusercontent.com/typst/typst-assets/v0.15.1/NOTICE",
+      "sha256": "80ac46fb7d70f1c30bf0c14d3408e6a6f0f9cc9997a00b592aa0d2c8a5243a9d"
     }
   ],
   "packages": [

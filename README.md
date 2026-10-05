@@ -40,7 +40,8 @@ library/
   snippets/              同梱部品テンプレート（.fdtpl：I形断面、単純梁と集中荷重）
   components/            部品定義（GUIの入力フォームはここから自動生成）
   vendor/preview/        同梱 Typst パッケージ（CeTZ ほか）※bun ready で取得、Git 管理外
-  fonts/                 同梱フォント（Noto Serif JP / Noto Sans JP、OFL）※bun ready で取得、Git 管理外
+  fonts/                 同梱フォント（Noto Serif JP / Noto Sans JP、数式用 New Computer Modern Math）※bun ready で取得、Git 管理外
+                         デスクトップ版・CLI はバイナリに埋め込み、Web版は別ファイルで配信する（下記「Web版のフォント」）
 ui/                      Vite + Svelte 5（--mode web / desktop）
   src/lib/platform/      能力フラグ（capabilities.ts）と Web / Tauri 実装
   src-tauri/             デスクトップ版（Tauri 2）
@@ -66,8 +67,9 @@ bun run tauri dev           # デスクトップ版の開発起動
 bun scripts/build-plugin.ts
 
 # テスト（式エンジンのゴールデンテスト、評価〜PDFの結合テスト）
-bun run test                # = cargo test -p formdoc-expr -p formdoc-core
+bun run test                # = cargo test -p formdoc-expr -p formdoc-core（＋フォントを実行時に渡す構成のテスト）
 bun run check               # UI の型チェック（svelte-check）
+bun scripts/check-determinism.ts   # Web版（wasm）とネイティブ（CLI）で同じPDFになるかを確認
 
 # 配布用
 bun run build:web           # Web版の静的ファイルを ui/dist-web に出力（エンジンは配布用でビルドし直す）
@@ -77,6 +79,25 @@ bun run tauri build         # デスクトップ版のインストーラ作成
 cargo run -p formdoc-cli -- gui examples/keisansho-gui/document.json out.pdf --typst out.typ
 cargo run -p formdoc-cli -- compile examples/keisansho-code out.pdf
 ```
+
+### Web版のフォント
+
+Web版の wasm にはフォントを埋め込まない（`formdoc-wasm` は `formdoc-core` の `embed-fonts` 機能を無効にしてビルドする）。
+`library/fonts` のフォントは、ビルド時に `fonts/<名前>.<SHA-256の先頭16桁>.otf` として配信物に出力され（`ui/vite.config.ts`）、
+Worker が起動時に取得して SHA-256 を照合してから wasm に渡す（`ui/src/lib/engine/worker.ts`）。版が違えば画面に警告を出す。
+フォントの並び順・中身はデスクトップ版と同じなので、同じ文書なら同じPDFになる（`bun scripts/check-determinism.ts` で確認できる。
+フォントを埋め込まない wasm を Bun から読み込み、Web版と同じ手順で組版して CLI の出力と SHA-256 を比べる）。
+
+配布用ビルド（`bun run build:web`）は大きさ優先（`[profile.wasm-release]`、opt-level "z"・LTO）でビルドし、`wasm-opt -Oz`（binaryen。初回に `target/tools` へ自動取得）で小さくする。
+
+| 計測（2026-10-05） | 変更前 | 変更後 |
+|---|---|---|
+| wasm 本体 | 72.0MB（gzip 37MB） | 21.0MB（gzip 8.4MB） |
+| フォント（別ファイル） | （wasm に含む） | 26.0MB（初回のみ。版ごとの名前なので更新時は再取得しない） |
+| 版を上げたときの再ダウンロード | 約37MB | 約8.4MB |
+| 起動時間（ローカル配信、Chrome） | — | エンジン起動 2.3秒、最初のプレビュー 3.4秒 |
+
+wasm に残っている約21MB は Typst 本体（コード 約13MB）と、Typst が内蔵するデータ（参考文献スタイル・ハイフネーション辞書など 約8MB）で、Typst を改変しない限り外せない。
 
 メモリの少ないPCでは `CARGO_BUILD_JOBS=1 bun ready` のように cargo の並列数を絞る。
 
@@ -140,7 +161,7 @@ cargo run -p formdoc-cli -- compile examples/keisansho-code out.pdf
 
 詳細な残作業（設計・手順・完了条件）は [TODO.md](TODO.md) を参照。
 
-- Web版の wasm が大きい（約60MB。うち同梱フォント約30MB）。フォントの別配信・サブセット化が必要
+- Web版の初回表示はフォント（約26MB）の取得に時間がかかる。必要なフォントだけを遅延取得する・サブセット化する余地がある（TODO 2）
 - 部品の計算ロジックを文書テンプレート側で追加する仕組み（Rhai）は未実装
 - 要領書・作業計画書の型は未作成（部品の追加で対応予定：脚注・箇条書き・組織図など）
 - 単位の次元チェック（kN と kN·m の取り違え検出）は未実装

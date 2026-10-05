@@ -105,25 +105,14 @@ bun run tauri dev                                     # デスクトップ版
 
 ## 2. Web版 wasm の軽量化【高】
 
-**現状**: `formdoc_wasm_bg.wasm` が約72MB（gzip後 約37MB）。主な内訳は、同梱フォント約22MB（Noto Serif/Sans JP の Regular/Bold）、typst-assets のフォント（New Computer Modern ほか）、Typst 本体。
+**現状**（フォントの別配信・wasm-opt・大きさ優先のビルドは実装済み。README「Web版のフォント」）: wasm 本体 21.0MB（gzip 8.4MB）。目標の 20MB 以下にわずかに届いていない。残りは Typst 本体のコード（約13MB）と、Typst が内蔵するデータ（参考文献スタイル・ハイフネーション辞書など 約8MB）。フォントは別ファイルで 26MB を初回に取得する。
 
-**設計**
-1. **フォントを wasm から外す**
-   - `formdoc-library` に Cargo feature `embed-fonts`（既定で有効）を追加する。`fonts()` は feature が無効なら空を返す。
-   - `world.rs` の `font_store()` を「埋め込みフォント＋実行時に渡されたフォント」に変える。`FormdocWorld` に `add_fonts(Vec<Vec<u8>>)` を追加する。OnceLock の作り直しになるため、`Session::new_with_fonts(fonts)` を用意する。
-   - `formdoc-wasm` は `embed-fonts` を無効にしてビルドし、`init_fonts(bytes: Vec<u8>)` を公開する。Worker が起動時に `fetch('fonts/NotoSerifJP-Regular.otf')` などで取得して渡す。ブラウザのキャッシュが効く。
-   - **フォントは版ごとのハッシュを付けたファイル名で配信**し、違う版のフォントが混ざらないようにする（「同じ文書なら同じPDF」の前提を守るため）。`api::catalog()` が返すフォント一覧に SHA-256 を含め、起動時に照合して不一致なら警告する。
-   - typst-assets の `fonts` feature も外し、数式用の New Computer Modern Math だけを `library/fonts/` に置く（Latin Modern ほかは不要）。
+**残作業**
+1. **フォントの遅延取得**：フォントの情報（`FontInfo`）だけをビルド時に作って `FontBook` を組み、中身は `World::font(index)` で初めて使うときに取得する。Worker 内なら同期 XHR が使えるので、wasm から JS の取得関数を呼ぶ。使わない書体（本文が明朝なら Noto Sans JP、数式の Bold/Book など）を取得しなくなり、初回の取得は 26MB → 約14MB になる見込み。並び順・中身は今と同じなのでPDFは変わらない。
 2. **フォントのサブセット化**（任意）：JIS第1・第2水準＋記号に絞る。ただし外字・人名で欠字が出るリスクがあるので、欠字の検出（Typst の warning "unknown font" や tofu）を検証パネルに出す仕組みとセットで行う。
-3. `wasm-opt -Oz` を `scripts/build-engine.ts` の release 時に通す（binaryen が必要）。
-4. 配布時は brotli 圧縮済みファイルを置く。
+3. 20MB 以下にするには Typst 側のデータを外す必要がある（typst-library のフォークが必要になるため、必要性を見て判断する）。
 
-**触るファイル**: `crates/formdoc-library/{Cargo.toml,src/lib.rs}`、`crates/formdoc-core/src/world.rs`、`crates/formdoc-core/src/api.rs`、`crates/formdoc-wasm/src/lib.rs`、`ui/src/lib/engine/worker.ts`、`scripts/build-engine.ts`、`ui/vite.config.ts`（`library/fonts` を `public/fonts` にコピー）
-
-**完了条件**
-- wasm 本体が 20MB 以下（目標 15MB）。
-- 既存の結合テスト `pdf_is_deterministic` と、**Web版とネイティブのPDFのSHA-256一致**が引き続き成り立つ（`target/wasm-node` に bun で読めるバインディングを作って比較する手順は README に追記する）。
-- 初回表示時間を計測して README に記載する。
+**完了条件**: wasm 本体 20MB 以下、または上の 3 を見送ると決めること。`bun scripts/check-determinism.ts` で Web版とネイティブのPDFが一致し続けること。
 
 ---
 
@@ -323,7 +312,7 @@ bun run tauri dev                                     # デスクトップ版
 - `ui/tests/e2e/review-2026-10.mjs`（文書テンプレート選択・部品テンプレート挿入・右クリック・図形エディタ・テーマ・印刷）を、`bun run test:e2e` で Chrome 起動 → `vite preview` → テスト → 片付けまで行う `scripts/e2e.ts` に組み込む。`playwright-core` を devDependencies に入れる。
 - 追加するテスト：サンプルを開く → 3ページ・エラー0件／計算式を壊す → PDF出力ボタンが無効／元に戻す → 復帰／句読点の一括修正／コードモードで書き換え → 部品で作成に反映／一覧のドラッグ並べ替え／変数の有効範囲（別の節の変数が使えない・グローバルなら使える）。
 - 起動は `chrome --headless=new --remote-debugging-port=9222` ＋ `connectOverCDP`（この環境の制約。上の「注意」参照）。
-- **Web版とネイティブのPDF一致テスト**を `scripts/check-determinism.ts` として常設する（bun で読める wasm バインディングを生成 → 両方で出力 → SHA-256 比較）。
+- **Web版とネイティブのPDF一致テスト**（`scripts/check-determinism.ts`、作成済み）を CI で実行する。
 - **サンプル再現の回帰テスト**：`examples/*` のPDFを PNG 化し、前回の画像とピクセル差分で比較する（PyMuPDF を使用。差分しきい値を設定）。
 
 ---
@@ -338,7 +327,6 @@ bun run tauri dev                                     # デスクトップ版
 | `check-line` | 右辺が式のとき、代入式が長いと1行に収まらない | 長い場合は記号式・代入式・判定の3行に分ける |
 | 保存形式 `.fdoc` | JSON に base64 で画像を埋め込んでいるため、大きいCAD画像で重くなる | ZIP（`document.json` ＋ `assets/`）に変える |
 | Tauri の `read_project` | バイナリを JSON の数値配列で返していて遅い | `tauri::ipc::Response` か、ファイルごとの `read_file` に分ける |
-| `world.rs` `font_store()` | `OnceLock` のため、フォントを差し替えられない | TODO 2 で作り直す |
 | `styles/keisansho.typ` | `show "、": "，"` で本文の句読点を強制置換しているため、コード内の文字列（基準書名など）も置換される | Lint で統一し、組版時の置換はやめるか、`para` 内だけに限定する |
 | 見出し 1 の改ページ | `pagebreak(weak: true)` で必ず改ページする | 文書テンプレートの `info` で切り替えられるようにする（サンプルは章ごとに改ページ） |
 | 表紙 | ページ番号の扱い（表紙を数えない）が固定 | 文書テンプレートの `info` に `page-number-start` を追加 |

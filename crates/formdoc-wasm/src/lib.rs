@@ -8,6 +8,8 @@ use wasm_bindgen::prelude::*;
 
 thread_local! {
     static SESSION: RefCell<Session> = RefCell::new(Session::new());
+    /// init_fonts までに add_font で受け取ったフォント
+    static PENDING_FONTS: RefCell<Vec<Vec<u8>>> = const { RefCell::new(Vec::new()) };
 }
 
 fn err(e: impl ToString) -> JsError {
@@ -16,6 +18,25 @@ fn err(e: impl ToString) -> JsError {
 
 fn known(json: &str) -> Vec<String> {
     serde_json::from_str(json).unwrap_or_default()
+}
+
+/// 同梱フォントのファイル一覧（JSON 配列。[{file, sha256, size}]）。フォントを読み込む前に呼べる。
+#[wasm_bindgen]
+pub fn font_files() -> Result<String, JsError> {
+    serde_json::to_string(&api::font_files()).map_err(err)
+}
+
+/// 取得した同梱フォントを1つ渡す。`font_files` と同じ順に呼ぶ（まとめて渡すとメモリを一時的に倍使うため1つずつ）。
+#[wasm_bindgen]
+pub fn add_font(data: Vec<u8>) {
+    PENDING_FONTS.with(|f| f.borrow_mut().push(data));
+}
+
+/// add_font で渡したフォントを確定する。ほかの関数（組版）より前に1回だけ呼ぶ。
+#[wasm_bindgen]
+pub fn init_fonts() -> Result<(), JsError> {
+    let fonts = PENDING_FONTS.with(|f| std::mem::take(&mut *f.borrow_mut()));
+    formdoc_core::world::install_fonts(fonts).map_err(err)
 }
 
 #[wasm_bindgen]

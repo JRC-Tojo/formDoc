@@ -18,6 +18,9 @@ function workerEngine(): Engine {
       pending.set(id, { resolve, reject });
       worker.postMessage({ id, method, args });
     });
+  // 最初にサイトの基準 URL を渡す（同梱フォントの取得先。GitHub Pages のサブパス配信でも届くように）。
+  // Worker は届いた順に処理するので、続く要求は初期化の後に処理される
+  call('init', new URL('./', document.baseURI).href).catch(() => {});
   return {
     catalog: () => call('catalog'),
     styleInfo: (src) => call('styleInfo', src),

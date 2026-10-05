@@ -1,14 +1,16 @@
 {
   "name": "formdoc",
   "private": true,
-  "workspaces": ["ui"],
+  "workspaces": [
+    "ui"
+  ],
   "scripts": {
     "ready": "bun scripts/ready.ts",
     "dev": "bun run --cwd ui dev",
     "tauri": "bun run --cwd ui tauri",
     "build:web": "bun run --cwd ui build:web",
     "check": "bun run --cwd ui check",
-    "test": "cargo test -p formdoc-expr -p formdoc-core",
+    "test": "cargo test -p formdoc-expr -p formdoc-core && cargo test -p formdoc-core --no-default-features --test runtime_fonts",
     "version:bump": "bun scripts/bump-version.ts"
   },
   "devDependencies": {
