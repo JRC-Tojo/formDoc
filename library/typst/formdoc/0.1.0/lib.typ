@@ -4,7 +4,7 @@
 //   #show: style.with(title: "主桁の設計計算書")
 
 #import "src/text.typ": para, bullets
-#import "src/calc.typ": fmt, vdef, vcalc, val, sym, def-line, calc-line, check-line, where-list, sum-lines
+#import "src/calc.typ": fmt, vdef, vcalc, val, sym, def-line, calc-line, check-line, where-list, sum-lines, fd-config
 #import "src/refs.typ": kijun, kijun-list
 #import "src/figures.typ": fig-shapes, fd-figure
 #import "src/tables.typ": vt, cellv, fd-table

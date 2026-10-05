@@ -41,11 +41,12 @@ pub fn unit_math(input: &[u8]) -> Result<Vec<u8>, String> {
     Ok(formdoc_expr::unit_to_math(unit).into_bytes())
 }
 
-/// 数値の書式化。入力: {"value": f64, "digits": u8|null}
+/// 数値の書式化。入力: {"value": f64, "digits": u8|null, "group": u8|null}（group は3桁区切りを入れる整数部の桁数）
 #[wasm_func]
 pub fn format(input: &[u8]) -> Result<Vec<u8>, String> {
     let v: serde_json::Value = serde_json::from_slice(input).map_err(|e| e.to_string())?;
     let value = v["value"].as_f64().ok_or("value が数値ではありません")?;
     let digits = v["digits"].as_u64().map(|d| d as u8);
-    Ok(formdoc_expr::format_number(value, formdoc_expr::NumFormat { digits, group: true }).into_bytes())
+    let group = v["group"].as_u64().map(|g| g as u8).unwrap_or(formdoc_expr::DEFAULT_GROUP);
+    Ok(formdoc_expr::format_number(value, formdoc_expr::NumFormat { digits, group }).into_bytes())
 }

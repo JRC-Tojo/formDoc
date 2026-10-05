@@ -3,7 +3,7 @@
 
 use crate::ast::{BinOp, Expr};
 use crate::eval::{Rounding, Scope};
-use crate::format::{NumFormat, format_number, unit_to_math};
+use crate::format::{DEFAULT_GROUP, NumFormat, format_number, group_literal, unit_to_math};
 
 const GREEK: &[&str] = &[
     "alpha", "beta", "gamma", "delta", "epsilon", "zeta", "eta", "theta", "iota", "kappa", "lambda",
@@ -18,11 +18,13 @@ pub struct RenderOptions {
     /// 代入式で変数値の後ろに単位を付ける（例: 4.50 kN/m / 2）。
     pub units_in_sub: bool,
     pub rounding: Rounding,
+    /// 3桁区切りを入れる整数部の桁数（format::NumFormat::group と同じ）
+    pub group: u8,
 }
 
 impl Default for RenderOptions {
     fn default() -> Self {
-        Self { frac: true, units_in_sub: false, rounding: Rounding::Display }
+        Self { frac: true, units_in_sub: false, rounding: Rounding::Display, group: DEFAULT_GROUP }
     }
 }
 
@@ -96,14 +98,14 @@ struct Ctx<'a> {
 impl Ctx<'_> {
     fn go(&self, e: &Expr) -> String {
         match e {
-            Expr::Num(_, text) => number_math(text),
+            Expr::Num(_, text) => number_math(&group_literal(text, self.opts.group)),
             Expr::Var(n) if n == "pi" || n == "π" => "pi".into(),
             Expr::Var(n) => {
                 if !self.substituted {
                     return var_math(n, self.scope);
                 }
                 let Some(v) = self.scope.get(n) else { return var_math(n, self.scope) };
-                let text = format_number(v.effective(self.opts.rounding), NumFormat { digits: v.digits, group: true });
+                let text = format_number(v.effective(self.opts.rounding), NumFormat { digits: v.digits, group: self.opts.group });
                 let mut s = number_math(&text);
                 if self.opts.units_in_sub && !v.unit.is_empty() {
                     s = format!("{s} thin {}", unit_to_math(&v.unit));

@@ -12,7 +12,8 @@
 #let _math(s) = if s == none or s == "" { [] } else { eval(s, mode: "math") }
 
 /// 数値を社内標準の書式（四捨五入・桁区切り）で文字列にする。
-#let fmt(x, digits: none) = str(_p.format(bytes(json.encode((value: float(x), digits: digits)))))
+/// - group: 3桁区切りを入れる整数部の桁数（既定 5。文書テンプレートの設定は fd-config で渡す）
+#let fmt(x, digits: none, group: 5) = str(_p.format(bytes(json.encode((value: float(x), digits: digits, group: group)))))
 
 // 変数辞書の配列から、式エンジンに渡す scope を作る。
 #let _scope(vars) = {
@@ -31,22 +32,22 @@
 /// - digits: 表示する小数桁数
 /// - desc: 記号説明（「ここに，」に表示）
 /// - display: 数式表記を明示する場合（例 "(b/t)_0"）
-#let vdef(name, value, unit: "", digits: none, desc: "", display: none) = {
+#let vdef(name, value, unit: "", digits: none, desc: "", display: none, group: 5) = {
   assert(type(value) in (int, float), message: "formdoc: " + name + " の値は数値で指定してください")
   (
     name: name, value: float(value), unit: unit, digits: digits, desc: desc, display: display,
     sym: if display != none { display } else { str(_p.name_math(bytes(name))) },
-    text: str(_p.format(bytes(json.encode((value: float(value), digits: digits))))),
+    text: str(_p.format(bytes(json.encode((value: float(value), digits: digits, group: group))))),
     calc: none,
   )
 }
 
 /// 式から変数を計算する。参照する変数を位置引数で渡す。
 ///   #let M = vcalc("M", "w * L^2 / 8", w, L, unit: "kN*m", digits: 2)
-#let vcalc(name, expr, ..vars, unit: "", digits: none, desc: "", display: none, frac: true, units-in-sub: false, rounding: "display") = {
+#let vcalc(name, expr, ..vars, unit: "", digits: none, desc: "", display: none, frac: true, units-in-sub: false, rounding: "display", group: 5) = {
   let out = _call(_p.calc, (
     expr: expr, scope: _scope(vars.pos()), digits: digits, unit: unit,
-    frac: frac, units_in_sub: units-in-sub, rounding: rounding,
+    frac: frac, units_in_sub: units-in-sub, rounding: rounding, group: group,
   ))
   (
     name: name, value: out.value, unit: unit, digits: digits, desc: desc, display: display,
@@ -93,8 +94,8 @@
 
 /// 照査行: 「(b/t) = 7.7 ≦ 12.7 ――― OK」
 /// 判定は紙面に表示される値どうしで行う。
-#let check-line(expr, ..vars, label: none, digits: none, unit: "", lhs: none, rhs: none, rounding: "display") = {
-  let r = _call(_p.check, (expr: expr, scope: _scope(vars.pos()), digits: digits, unit: unit, rounding: rounding))
+#let check-line(expr, ..vars, label: none, digits: none, unit: "", lhs: none, rhs: none, rounding: "display", group: 5) = {
+  let r = _call(_p.check, (expr: expr, scope: _scope(vars.pos()), digits: digits, unit: unit, rounding: rounding, group: group))
   let side(s, override) = {
     let parts = (if override != none { override } else { s.symbolic },)
     if s.substituted != "" { parts.push(s.substituted) }
@@ -150,3 +151,13 @@
     }
   })
 }
+
+/// 文書テンプレートの表記の設定を反映した関数の組。生成コードの先頭で同じ名前に上書きして使う。
+///   #let (vdef, vcalc, check-line, fmt) = fd-config(group: 4)
+/// - group: 3桁区切りを入れる整数部の桁数（4 なら 1,234。文書テンプレートの lint.digit-grouping）
+#let fd-config(group: 5) = (
+  vdef: vdef.with(group: group),
+  vcalc: vcalc.with(group: group),
+  check-line: check-line.with(group: group),
+  fmt: fmt.with(group: group),
+)

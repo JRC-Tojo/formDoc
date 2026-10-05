@@ -9,18 +9,54 @@ pub fn round_half_up(v: f64, digits: u8) -> f64 {
     if v < 0.0 { -r } else { r }
 }
 
+/// 3桁区切りを入れる整数部の桁数の既定値（5桁以上：12,345。4桁の 1234 は区切らない）。
+/// 文書テンプレートの Lint で桁区切りを有効にすると 4 になる（1,234）。
+pub const DEFAULT_GROUP: u8 = 5;
+
 /// 数値の表示書式。
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct NumFormat {
     /// 小数桁数。None なら有効数字4桁相当で自動決定。
     pub digits: Option<u8>,
-    /// 整数部が5桁以上のとき3桁区切りを入れる（例: 2,080,000,000）。
-    pub group: bool,
+    /// 整数部がこの桁数以上のとき3桁区切りを入れる（例: 2,080,000,000）。0 なら区切らない。
+    pub group: u8,
 }
 
 impl Default for NumFormat {
     fn default() -> Self {
-        Self { digits: None, group: true }
+        Self { digits: None, group: DEFAULT_GROUP }
+    }
+}
+
+/// 整数部の文字列に3桁区切りを入れる（`group` 桁以上のとき。0 なら入れない）。
+fn group_int(int: &str, group: u8) -> String {
+    if group == 0 || int.len() < group as usize {
+        return int.to_string();
+    }
+    let mut out = String::new();
+    for (i, c) in int.chars().enumerate() {
+        if i > 0 && (int.len() - i) % 3 == 0 {
+            out.push(',');
+        }
+        out.push(c);
+    }
+    out
+}
+
+/// 式に書かれた数値（"1000000"、"8000.5"）に、書式と同じ規則で3桁区切りを入れる。
+/// 指数表記など数字と小数点以外を含むものはそのまま返す。
+pub fn group_literal(text: &str, group: u8) -> String {
+    let (int, frac) = match text.split_once('.') {
+        Some((i, f)) => (i, Some(f)),
+        None => (text, None),
+    };
+    if int.is_empty() || !int.chars().all(|c| c.is_ascii_digit()) || frac.is_some_and(|f| !f.chars().all(|c| c.is_ascii_digit())) {
+        return text.to_string();
+    }
+    let g = group_int(int, group);
+    match frac {
+        Some(f) => format!("{g}.{f}"),
+        None => g,
     }
 }
 
@@ -49,18 +85,7 @@ pub fn format_number(v: f64, f: NumFormat) -> String {
         Some((i, fr)) => (i.to_string(), Some(fr.to_string())),
         None => (s.clone(), None),
     };
-    let int = if f.group && int.len() >= 5 {
-        let mut out = String::new();
-        for (i, c) in int.chars().enumerate() {
-            if i > 0 && (int.len() - i) % 3 == 0 {
-                out.push(',');
-            }
-            out.push(c);
-        }
-        out
-    } else {
-        int
-    };
+    let int = group_int(&int, f.group);
     let mut out = String::new();
     if r < 0.0 {
         out.push('-');
@@ -132,7 +157,7 @@ mod tests {
 
     #[test]
     fn numbers() {
-        let f = |d| NumFormat { digits: Some(d), group: true };
+        let f = |d| NumFormat { digits: Some(d), group: DEFAULT_GROUP };
         assert_eq!(format_number(8.0, f(3)), "8.000");
         assert_eq!(format_number(2_080_000_000.0, f(0)), "2,080,000,000");
         assert_eq!(format_number(7872.0, f(0)), "7872");

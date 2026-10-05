@@ -132,11 +132,62 @@ pub fn lint_text(b: &Block, field: &str, text: &str, rules: &LintRules, out: &mu
     }
 }
 
+/// 3桁区切りの無い4桁以上の整数を取り出す（1234、12345）。年（2026年）・日付や番号（2026-10-02、03-5435-7630）・
+/// 記号の一部（SM400、G1234）・小数部（0.12345）・既に区切りのある数（1,234）は対象にしない。
+fn ungrouped_numbers(text: &str) -> Vec<String> {
+    let chars: Vec<char> = text.chars().collect();
+    let mut out = Vec::new();
+    let mut i = 0;
+    while i < chars.len() {
+        if !chars[i].is_ascii_digit() {
+            i += 1;
+            continue;
+        }
+        let start = i;
+        while i < chars.len() && chars[i].is_ascii_digit() {
+            i += 1;
+        }
+        let prev = start.checked_sub(1).map(|k| chars[k]);
+        let next = chars.get(i).copied();
+        let joined = |c: Option<char>| c.is_some_and(|c| c.is_ascii_alphabetic() || matches!(c, '-' | '/' | ':' | '_' | ',' | '.'));
+        // 小数点の後ろ（小数部）は除くが、小数点の前（整数部）は対象にする
+        let next_ok = next == Some('.') || !joined(next);
+        if i - start >= 4 && !joined(prev) && next_ok && next != Some('年') {
+            out.push(chars[start..i].iter().collect());
+        }
+    }
+    out
+}
+
+/// 数値の3桁区切りの検出（Lint の digit-grouping）。修正は、その数字の並びが文中の別の数の一部に現れないときだけ付ける。
+fn lint_digit_grouping(b: &Block, field: &str, text: &str, out: &mut Vec<Issue>) {
+    let text = strip_refs(text);
+    let mut seen = std::collections::BTreeSet::new();
+    let found = ungrouped_numbers(&text);
+    for n in &found {
+        if !seen.insert(n.clone()) {
+            continue;
+        }
+        let to = formdoc_expr::group_literal(n, 4);
+        let msg = format!("4桁以上の数値には3桁区切りを入れます（「{n}」→「{to}」）");
+        let safe = text.matches(n.as_str()).count() == found.iter().filter(|x| *x == n).count();
+        let mut issue = mk(b, field, "lint-digit-grouping", msg, n, &to);
+        if !safe {
+            issue.fix = None;
+        }
+        out.push(issue);
+    }
+}
+
 pub fn lint(doc: &Document, t: &Template) -> Vec<Issue> {
     let mut out = Vec::new();
     for b in doc.all_blocks() {
         for (field, text) in text_fields(b) {
             lint_text(b, &field, &text, &t.lint, &mut out);
+            // 数値の桁区切りは文章だけを見る（コードモードのソースは数値の引数が多いため対象にしない）
+            if t.lint.digit_grouping {
+                lint_digit_grouping(b, &field, &text, &mut out);
+            }
         }
         for (field, unit) in unit_fields(b) {
             for r in &t.lint.unit {
@@ -211,5 +262,25 @@ mod tests {
         assert!(codes.contains(&"lint-wording"));
         let ok = lint(&para("設計を行う，荷重は10 kNとする．"), &t);
         assert!(ok.is_empty(), "{ok:?}");
+    }
+
+    #[test]
+    fn digit_grouping_in_text() {
+        // 計算書は桁区切りを有効にしている
+        let t = parse_style(&builtin_style("keisansho").unwrap()).unwrap();
+        assert!(t.lint.digit_grouping);
+        let fixes = |text: &str| -> Vec<(String, String)> {
+            lint(&para(text), &t)
+                .into_iter()
+                .filter(|i| i.code == "lint-digit-grouping")
+                .map(|i| i.fix.map(|f| (f.from, f.to)).unwrap_or_default())
+                .collect()
+        };
+        assert_eq!(fixes("支間長は 8000 mm，断面積は 23550.5 mm2 とする．"), [
+            ("8000".to_string(), "8,000".to_string()),
+            ("23550".to_string(), "23,550".to_string()),
+        ]);
+        // 区切り済み・3桁以下・年・日付・番号・記号の一部・小数部・変数参照は対象外
+        assert!(fixes("1,234 と 999，2026年，2026-10-02，03-5435-7630，SM4000，0.12345，{{L_b}}．").is_empty());
     }
 }
