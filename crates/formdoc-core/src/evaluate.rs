@@ -72,6 +72,9 @@ pub struct BlockResult {
     /// 章構成の情報（GUI が削除・移動・追加を止めるため。structure.rs）
     #[serde(skip_serializing_if = "Option::is_none")]
     pub chapter: Option<crate::structure::ChapterInfo>,
+    /// 計算ロジックを持つ部品（logic.rs）がスクリプトから受け取った、描画関数に渡す値
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub values: Option<serde_json::Map<String, serde_json::Value>>,
     /// 汎用図形の評価値。図形ごとに、繰り返しの各回（ix が先、iy が後）の座標と文字。
     /// コード生成と描画エディタの両方がこれを使う（式の評価を1か所にするため）
     #[serde(skip_serializing_if = "Vec::is_empty")]
@@ -324,6 +327,38 @@ impl Ctx<'_> {
                 info.scope = owner;
             }
         }
+    }
+
+    /// 計算ロジック（Rhai）を持つ部品：スクリプトを実行し、返した変数を定義する。
+    fn logic(&mut self, b: &Block, logic: &crate::logic::ComponentLogic, res: &mut BlockResult) {
+        let out = match crate::logic::run(&logic.script, &b.props, &self.scope) {
+            Ok(o) => o,
+            Err(e) => return self.r.issue(b, "", Severity::Error, "logic", e),
+        };
+        for i in &out.issues {
+            let severity = match i.severity.as_str() {
+                "warning" => Severity::Warning,
+                "info" => Severity::Info,
+                _ => Severity::Error,
+            };
+            self.r.issue(b, &i.field, severity, "logic", i.message.clone());
+        }
+        let mut names = Vec::new();
+        for v in &out.vars {
+            let digits = v.digits.map(|d| d.clamp(0.0, 10.0) as u8).or_else(|| self.t.default_digits(&v.unit));
+            let value = VarValue { value: v.value, digits, unit: v.unit.clone(), display: v.display.clone(), desc: v.desc.clone() };
+            if self.define(b, "", &v.name, value) {
+                names.push(v.name.clone());
+            }
+        }
+        if let Some(first) = names.first().and_then(|n| self.r.vars.iter().rev().find(|v| &v.name == n)) {
+            res.summary = format!("{} = {} {}{}", first.name, first.text, first.unit,
+                if names.len() > 1 { format!(" ほか {} 個", names.len() - 1) } else { String::new() });
+        }
+        // 直後の記号説明（「ここに，」）で説明する変数
+        self.last_vars = names.clone();
+        res.vars = names;
+        res.values = Some(out.values);
     }
 
     /// value_of と同じだが、エラーを報告しない（繰り返しの2回目以降）。
@@ -619,7 +654,10 @@ impl Ctx<'_> {
                     }
                 }
             }
-            other => self.r.issue(b, "", Severity::Error, "block-kind", format!("不明な部品です: {other}")),
+            kind => match crate::logic::component_logic(kind) {
+                Some(logic) => self.logic(b, logic, &mut res),
+                None => self.r.issue(b, "", Severity::Error, "block-kind", format!("不明な部品です: {kind}")),
+            },
         }
         let errors_after = self.r.issues.iter().filter(|i| i.severity == Severity::Error && i.block_id.as_deref() == Some(&b.id)).count();
         if errors_after > 0 && self.r.issues.iter().filter(|i| i.severity == Severity::Error).count() > errors_before {
