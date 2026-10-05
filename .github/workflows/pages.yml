@@ -29,7 +29,7 @@ jobs:
       - run: bun ready --release
       - run: bun run build:web
       # 配信物の確認（タブのアイコンが出力に含まれることなど）
-      - run: bun run --cwd ui test
+      - run: bun run test:ui
       - uses: actions/upload-pages-artifact@v4
         with:
           path: ui/dist-web
