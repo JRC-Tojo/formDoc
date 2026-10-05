@@ -25,7 +25,7 @@ async function download(url: string, expected: string): Promise<Uint8Array> {
 }
 
 /** tar（ustar / pax）を dest に展開する。外部の tar コマンドに頼らない（Windows で挙動が違うため） */
-function untar(tar: Uint8Array, dest: string) {
+export function untar(tar: Uint8Array, dest: string) {
   const text = (b: Uint8Array) => new TextDecoder().decode(b).replace(/\0.*$/s, '');
   let pos = 0;
   let paxPath: string | null = null;

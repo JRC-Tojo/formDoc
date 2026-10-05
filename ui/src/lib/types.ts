@@ -190,6 +190,10 @@ export interface Catalog {
   components: Record<string, ComponentDef>;
   references: Record<string, { title: string; label?: string }>;
   fonts: string[];
+  /** 同梱フォントのファイル一覧（Web版が取得・照合に使う） */
+  font_files: { file: string; sha256: string; size: number }[];
+  /** 起動時に利用者に知らせる警告（Web版のフォントの版の不一致など） */
+  warnings?: string[];
 }
 
 export interface ProjectFile {

@@ -5,13 +5,17 @@ edition.workspace = true
 
 [dependencies]
 formdoc-expr = { path = "../formdoc-expr" }
-formdoc-library = { path = "../formdoc-library" }
+formdoc-library = { path = "../formdoc-library", default-features = false }
 typst.workspace = true
 typst-layout = "=0.15.1"
 typst-pdf.workspace = true
 typst-svg.workspace = true
-typst-assets = { version = "=0.15.1", features = ["fonts"] }
 serde.workspace = true
 serde_json.workspace = true
 toml = "0.9"
 sha2 = "0.10"
+
+[features]
+default = ["embed-fonts"]
+# 同梱フォントをバイナリに埋め込む（デスクトップ版・CLI）。Web版は無効にして実行時に渡す（world::install_fonts）
+embed-fonts = ["formdoc-library/embed-fonts"]

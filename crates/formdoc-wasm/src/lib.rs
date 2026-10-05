@@ -18,6 +18,26 @@ fn known(json: &str) -> Vec<String> {
     serde_json::from_str(json).unwrap_or_default()
 }
 
+/// 同梱フォントのファイル一覧（JSON 配列。[{file, sha256, size}]）。フォントを読み込む前に呼べる。
+#[wasm_bindgen]
+pub fn font_files() -> Result<String, JsError> {
+    serde_json::to_string(&api::font_files()).map_err(err)
+}
+
+/// 取得した同梱フォントを渡す。`font_files` と同じ順に中身をつなげたものと、それぞれの大きさ。
+/// ほかの関数（組版）より前に1回だけ呼ぶ。
+#[wasm_bindgen]
+pub fn init_fonts(data: Vec<u8>, sizes: Vec<u32>) -> Result<(), JsError> {
+    let mut fonts = Vec::with_capacity(sizes.len());
+    let mut pos = 0usize;
+    for n in sizes {
+        let end = pos + n as usize;
+        fonts.push(data.get(pos..end).ok_or_else(|| err("フォントの大きさの指定が中身と合いません"))?.to_vec());
+        pos = end;
+    }
+    formdoc_core::world::install_fonts(fonts).map_err(err)
+}
+
 #[wasm_bindgen]
 pub fn catalog() -> Result<String, JsError> {
     serde_json::to_string(&api::catalog().map_err(err)?).map_err(err)

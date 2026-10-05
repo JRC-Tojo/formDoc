@@ -137,6 +137,7 @@ class AppState {
       this.platform = await getPlatform();
       await this.loadSettings();
       this.catalog = await this.platform.engine.catalog();
+      for (const w of this.catalog.warnings ?? []) this.flash(w, 'error');
       this.systemPath = await this.platform.system.info().catch(() => null);
       await this.loadStyles();
       this.loadTemplates();

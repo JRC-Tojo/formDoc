@@ -276,6 +276,27 @@ pub struct Catalog {
     pub components: serde_json::Value,
     pub references: serde_json::Value,
     pub fonts: Vec<String>,
+    /// 同梱フォントのファイル一覧（Web版はこれを取得して照合する）
+    pub font_files: Vec<FontFileInfo>,
+}
+
+/// 同梱フォントのファイル1つ（中身は含まない）。
+#[derive(Debug, Clone, Serialize)]
+pub struct FontFileInfo {
+    /// library/fonts/ からのファイル名
+    pub file: String,
+    /// 中身の SHA-256（16進小文字）
+    pub sha256: String,
+    pub size: usize,
+}
+
+/// 同梱フォントのファイル一覧（ファイル名順）。フォントを読み込まずに返すので、
+/// Web版はこれを見てフォントを取得し、[`crate::world::install_fonts`] に同じ順で渡す。
+pub fn font_files() -> Vec<FontFileInfo> {
+    formdoc_library::font_files()
+        .iter()
+        .map(|f| FontFileInfo { file: f.file.into(), sha256: f.sha256.into(), size: f.size })
+        .collect()
 }
 
 pub fn catalog() -> Result<Catalog, String> {
@@ -286,6 +307,7 @@ pub fn catalog() -> Result<Catalog, String> {
         components: template::components_json()?,
         references: template::references_json()?,
         fonts: crate::world::font_families(),
+        font_files: font_files(),
     })
 }
 

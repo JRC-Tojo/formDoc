@@ -8,6 +8,7 @@ description = "Web版のための wasm-bindgen ラッパー。Web Worker 内で 
 crate-type = ["cdylib"]
 
 [dependencies]
-formdoc-core = { path = "../formdoc-core" }
+# フォントは埋め込まず、Worker が取得して init_fonts で渡す（wasm の軽量化）
+formdoc-core = { path = "../formdoc-core", default-features = false }
 serde_json.workspace = true
 wasm-bindgen = "=0.2.129"

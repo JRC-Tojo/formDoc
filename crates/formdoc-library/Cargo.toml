@@ -5,5 +5,11 @@ version = "0.1.0"
 edition.workspace = true
 description = "library/（社内標準Typstパッケージ・同梱パッケージ・フォント・部品テンプレート定義）をバイナリに埋め込む"
 
-[dependencies]
-include_dir = "0.7.4"
+[features]
+default = ["embed-fonts"]
+# フォント（library/fonts）もバイナリに埋め込む。Web版は無効にし、実行時にフォントを取得して渡す（wasm の軽量化）。
+# 無効でもフォントの一覧（ファイル名・SHA-256）は持つので、渡されたフォントが同じ版かを照合できる。
+embed-fonts = []
+
+[build-dependencies]
+sha2 = "0.10"

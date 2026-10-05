@@ -2,7 +2,7 @@
 //!
 //! - プロジェクトのファイルはメモリ上（GUIの生成結果、またはコードモードのフォルダ内容）
 //! - パッケージは埋め込みライブラリのみ（@local/formdoc, @preview/cetz など同梱分）。ネットワークは使わない
-//! - フォントは同梱分のみ（システムフォントは使わない）
+//! - フォントは同梱分のみ（システムフォントは使わない）。Web版は同梱フォントを実行時に受け取る（[`install_fonts`]）
 //! これにより Web版・デスクトップ版・誰のPCでも同じPDFになる。
 
 use std::collections::HashMap;
@@ -21,16 +21,40 @@ struct FontStore {
     fonts: Vec<Font>,
 }
 
-fn font_store() -> &'static FontStore {
-    static STORE: OnceLock<FontStore> = OnceLock::new();
-    STORE.get_or_init(|| {
+static FONT_STORE: OnceLock<FontStore> = OnceLock::new();
+
+impl FontStore {
+    /// 埋め込みフォントのあとに、実行時に渡されたフォントを並べる。
+    /// 並び順はフォントの番号になるため、どちらも library/fonts のファイル名順にする。
+    fn new(extra: Vec<Vec<u8>>) -> Self {
         let mut fonts = Vec::new();
-        for data in typst_assets::fonts().chain(formdoc_library::fonts()) {
+        for data in formdoc_library::fonts() {
+            fonts.extend(Font::iter(Bytes::new(data)));
+        }
+        for data in extra {
             fonts.extend(Font::iter(Bytes::new(data)));
         }
         let book = FontBook::from_fonts(&fonts);
         FontStore { book: LazyHash::new(book), fonts }
-    })
+    }
+}
+
+fn font_store() -> &'static FontStore {
+    FONT_STORE.get_or_init(|| FontStore::new(Vec::new()))
+}
+
+/// フォントを埋め込んでいない版（Web版）で、実行時に取得した同梱フォントを渡す。
+///
+/// `fonts` は [`formdoc_library::font_files`] と同じ順に並べた中身。最初の組版より前に1回だけ呼ぶ
+/// （組版で一度使われたフォントの一覧は差し替えられない。同じ文書が同じPDFになることを守るため）。
+/// 既にフォントを使い始めていればエラーを返す。
+pub fn install_fonts(fonts: Vec<Vec<u8>>) -> Result<(), String> {
+    let mut store = Some(FontStore::new(fonts));
+    FONT_STORE.get_or_init(|| store.take().unwrap());
+    match store {
+        None => Ok(()),
+        Some(_) => Err("フォントは既に読み込まれています（最初の組版より前に渡してください）".into()),
+    }
 }
 
 /// 同梱フォントのファミリー名一覧（文書テンプレート開発時の確認用）。
