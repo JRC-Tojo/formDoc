@@ -95,6 +95,8 @@ export interface FieldDef {
   options?: string[];
   default?: any;
   columns?: FieldDef[];
+  /** 入力できない（文書テンプレートで決められた値。例：見出し文の変更が禁止された章） */
+  readonly?: boolean;
 }
 
 export interface ComponentDef {
@@ -126,9 +128,33 @@ export interface StyleInfo {
   description: string;
   blocks: string[];
   fields: MetaField[];
-  skeleton: Record<string, any>[];
+  /** 章構成の拘束（文書全体の既定） */
+  structure: { level: Strictness; rules: Record<string, RuleLevel> };
+  /** 章の定義（並び順が文書での順序） */
+  chapters: Chapter[];
   'max-heading-level': number;
   digits: Record<string, number>;
+}
+
+/** 章構成の拘束の強さ：locked（中身まで固定）/ chapters（章立てを固定）/ basic（体裁だけ） */
+export type Strictness = 'locked' | 'chapters' | 'basic';
+/** 検出の重さ */
+export type RuleLevel = 'error' | 'warning' | 'info' | 'off';
+
+/** 文書テンプレートの章（節）の定義。level・rules・allowed-blocks は親から引き継いだ値で埋まっている */
+export interface Chapter {
+  id: string;
+  title: string;
+  required: boolean;
+  'fixed-title': boolean;
+  repeatable: boolean;
+  variants: string[];
+  guide: string;
+  'allowed-blocks': string[];
+  level: Strictness;
+  rules: Record<string, RuleLevel>;
+  content: Record<string, any>[];
+  sections: Chapter[];
 }
 
 /** 選べる文書テンプレート（ファイル1つ） */

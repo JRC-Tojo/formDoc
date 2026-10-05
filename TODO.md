@@ -69,7 +69,7 @@ bun run tauri dev                                     # デスクトップ版
 
 | 優先 | 項目 |
 |---|---|
-| 高 | 1 デスクトップ版の実機確認 / 2 wasm の軽量化 / 3 章構成の必須チェック |
+| 高 | 1 デスクトップ版の実機確認 / 2 wasm の軽量化 |
 | 中 | 5 部品の計算ロジック（Rhai） / 6 単位の次元チェック / 7 要領書の文書テンプレート / 8 作業計画書の文書テンプレート / 9 定型文ライブラリ |
 | 中 | 10 表・荷重組合せの計算部品 / 11 ライブラリ版管理と共有フォルダ参照 / 12 UIの改善 / 13 自動テストの常設化 |
 | 低 | 15 細かな既知の不具合・整理 |
@@ -81,11 +81,12 @@ bun run tauri dev                                     # デスクトップ版
 **目的**: デスクトップ専用機能と、Web版でしか確認していない機能を、デスクトップ版の画面で実際に操作して確認する。
 
 **確認手順**（`bun run tauri dev`）
-1. 文書情報に文書テンプレート「計算書」が出る → 選ぶと骨組み3章と表紙の欄が出る。
-2. 「開く…」で `examples/keisansho-gui/document.json` を開く → 3ページ、エラー0件。
+1. 文書情報に文書テンプレート「計算書」が出る → 選ぶと構造形式（上路桁）の必須の章と表紙の欄が出る。
+2. 「開く…」で `examples/keisansho-gui/document.json` を開く → エラー0件。
 3. 「名前を付けて保存…」で `.fdoc` を保存し、開き直す → 内容・添付画像・文書テンプレートが戻る。2回目以降の Ctrl+S はダイアログなしで上書き。
 4. 「PDF出力」→ CLI `formdoc gui` の出力と SHA-256 が一致する。
-5. 一覧でドラッグして並べ替えられる（見出しは節ごと動く。部品テンプレートのまとまりの中・外へも動かせる）。見出し・まとまりを折りたためる。
+5. 一覧でドラッグして並べ替えられる（見出しは節ごと動く。部品テンプレートのまとまりの中・外へも動かせる）。見出し・まとまりを折りたためる。🔒 の付いた章（文書テンプレートで決められた章）はドラッグ・削除できない。
+5b. 文書情報の「構造形式」を変える → 足りない章が決められた位置に入り、不要になった章は検証パネルに出る。章の見出しを選ぶと執筆ガイドが出て、見出し文は変更できない。
 6. 「＋部品を追加…」→「I形断面」を挿入 → 一覧に1つのまとまりとして出る。2回挿入してもエラーにならない。
 7. 部品を右クリック →「部品テンプレートとして保存…」→ このPC に保存 → 追加ダイアログの「部品テンプレート：このPC」に出る。
 8. 汎用図形の図形エディタ：描く・点を動かす・繰り返し（横の回数・間隔）が画面に出る。
@@ -113,39 +114,6 @@ bun run tauri dev                                     # デスクトップ版
 3. 20MB 以下にするには Typst 側のデータを外す必要がある（typst-library のフォークが必要になるため、必要性を見て判断する）。
 
 **完了条件**: wasm 本体 20MB 以下、または上の 3 を見送ると決めること。`bun scripts/check-determinism.ts` で Web版とネイティブのPDFが一致し続けること。
-
----
-
-## 3. 章構成の必須チェック【高】
-
-**背景**: ユーザーの「要件整理メモ.md」に、構造形式ごとに章の有無・順序・書き方がばらつき、一目で違いが分からないという指摘がある（設計概要／設計条件／検討箇所／作用の種類／荷重の組合せ／材料特性値／共通仕様／グルーピング／モデル化／施工計画）。現状の `[[skeleton]]` は新規作成時の骨組みにすぎず、後から消したり順番を入れ替えたりできてしまう。
-
-**設計**
-- 文書テンプレートの `info` に章定義（`chapters`）を追加する（下は TOML 風に書いた中身。実際は Typst の辞書）。
-  ```toml
-  [[chapters]]
-  id = "gaiyou"            # 章の識別子（見出しブロックの props.chapter に保存）
-  title = "設計概要"        # 既定の見出し文
-  required = true          # 必須
-  fixed-title = true       # 見出し文の変更を禁止
-  variants = ["上路桁", "工事桁", "トラス", "こ線橋"]   # 対象の構造形式（空なら全形式）
-  guide = "業務の目的、対象構造物、設計範囲を記載する"   # 執筆ガイド（GUIに表示）
-  allowed-blocks = ["paragraph", "table", "image"]     # 省略時は文書テンプレート全体の blocks
-  ```
-- 文書メタに `variant`（構造形式）を追加し、新規作成時に選ばせる。`info.skeleton` は `chapters` から生成する（`skeleton` は廃止）。
-- `evaluate.rs` に章チェックを追加する。
-  - 必須章がない → エラー（`code = "chapter-missing"`）
-  - 章の順序が文書テンプレートと違う → エラー（`chapter-order`）
-  - `fixed-title` の見出し文が変更されている → 警告と修正（fix）
-  - 章ごとの `allowed-blocks` 以外の部品 → エラー
-- GUI
-  - アウトラインで章見出しに 🔒 を付け、削除・移動を禁止（`state.svelte.ts` の `removeBlock` / `moveBlock` で章見出しを判定）。
-  - 章見出しを選ぶと、Inspector に `guide`（執筆ガイド）を表示する。
-- コードモード：`#chapter("gaiyou")` 関数を `@local/formdoc` に追加し、Typst 側でも順序をチェックする（`state` で直前の章を記録し、`assert` で順序違反を検出）。
-
-**触るファイル**: `library/styles/keisansho.typ`、`crates/formdoc-core/src/{template.rs,evaluate.rs,api.rs,model.rs}`、`ui/src/lib/components/{Outline.svelte,Inspector.svelte}`、`ui/src/lib/state.svelte.ts`、`library/styles/keisansho.typ`
-
-**完了条件**: 必須章を消す・入れ替える・見出し文を変えるとそれぞれ検出されること（`tests/e2e.rs` に追加）。構造形式を切り替えると章構成が変わること。
 
 ---
 
@@ -205,7 +173,7 @@ bun run tauri dev                                     # デスクトップ版
 - ページ番号：下部中央（計算書は上部中央）
 
 **作業**
-1. `library/styles/youryousho.typ`（1ファイル）を作る。`info`（入力欄・部品・Lint・章構成は TODO 3 の形式）と `style`（書体・見出し・図表番号・数式番号・脚注・ページ番号）を書く。`keisansho.typ` を複製して始める。
+1. `library/styles/youryousho.typ`（1ファイル）を作る。`info`（入力欄・部品・Lint・章構成は `chapters`／`structure`。`keisansho.typ` のコメント参照）と `style`（書体・見出し・図表番号・数式番号・脚注・ページ番号）を書く。`keisansho.typ` を複製して始める。
 3. 部品を追加する（`components.toml`、`codegen.rs`、`evaluate.rs` の3か所）。
    - `list`（箇条書き。番号付き／なしを選べる）
    - `footnote` は独立した部品ではなく、本文の記法 `[[脚注:…]]` で書けるようにする（`text_content()` で `footnote[...]` に変換）
@@ -252,7 +220,7 @@ bun run tauri dev                                     # デスクトップ版
   [[phrase]]
   id = "shousa-houhou"
   title = "照査方法（社内チェックリスト）"
-  chapter = "shousa"                       # 使える章（TODO 3）
+  chapter = "shousa"                       # 使える章（文書テンプレートの chapters の id）
   text = "当社作成の「{{checklist}}」により照査を行う．"
   params = [{ key = "checklist", label = "チェックリスト名", default = "土木構造物設計チェックリスト" }]
   editable = false                         # 本文の編集を禁止（パラメータのみ入力）
@@ -303,7 +271,6 @@ bun run tauri dev                                     # デスクトップ版
 - **数式のライブプレビュー**：計算部品の Inspector に、生成した Typst 数式を SVG で小さく表示する（`api` に `render_snippet(typst) -> svg` を追加）。
 - **一覧**：複数選択での移動・削除、キーボード操作（↑↓で選択、Alt+↑↓で移動）。
 - **コードから部品に戻す**：コードモードで書き換えて Typstコード部品になった部品を、元の種類（変数定義・計算など）として読み直せるなら戻す（`code.rs`。`vdef`/`vcalc` だけの部品から始める）。
-- 「部品を追加」ダイアログを、章の `allowed-blocks`（TODO 3）で絞り込む。
 
 ---
 

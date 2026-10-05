@@ -60,6 +60,9 @@ self.onmessage = async (ev: MessageEvent<Req>) => {
       case 'updateDocument':
         result = JSON.parse(wasm.update_document(JSON.stringify(args[0]), JSON.stringify(args[1])));
         break;
+      case 'completeChapters':
+        result = JSON.parse(wasm.complete_chapters(JSON.stringify(args[0])));
+        break;
       case 'code':
         result = wasm.code() ?? null;
         break;

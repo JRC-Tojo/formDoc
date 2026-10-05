@@ -26,7 +26,8 @@
     const out: Item[] = [];
     for (const kind of app.template?.blocks ?? []) {
       const c = comps[kind];
-      if (!c || c.deprecated) continue;
+      // 選択中の位置の章で使えない部品は出さない（文書テンプレートの章の allowed-blocks）
+      if (!c || c.deprecated || app.cannotInsert(kind, app.selectedId)) continue;
       out.push({ type: 'component', kind, label: c.label, icon: c.icon ?? '•', help: c.help ?? '', group: `部品：${c.category ?? 'その他'}` });
     }
     for (const entry of app.templates) {

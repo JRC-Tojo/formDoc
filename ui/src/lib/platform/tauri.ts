@@ -12,6 +12,7 @@ const engine: Engine = {
   setStyle: (source) => invoke('set_style', { source }),
   newDocument: () => invoke('new_document'),
   updateDocument: (doc, known) => invoke('update_document', { doc, known }),
+  completeChapters: (doc) => invoke('complete_chapters', { doc }),
   code: () => invoke('code'),
   applyCode: (code) => invoke('apply_code', { code }),
   setAsset: (path, bytes) => invoke('set_asset', bytes, { headers: { 'x-path': encodeURIComponent(path) } }),

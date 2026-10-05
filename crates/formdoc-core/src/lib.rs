@@ -7,6 +7,7 @@ pub mod compile;
 pub mod evaluate;
 pub mod lint;
 pub mod model;
+pub mod structure;
 pub mod template;
 pub mod world;
 

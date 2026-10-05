@@ -642,6 +642,7 @@ pub fn evaluate(doc: &Document, t: &Template) -> Report {
         }
     }
     cx.walk(&doc.blocks);
+    cx.r.issues.extend(crate::structure::check(doc, t));
     if doc.library != formdoc_library::version() && !doc.library.is_empty() {
         cx.r.issues.push(Issue {
             block_id: None,

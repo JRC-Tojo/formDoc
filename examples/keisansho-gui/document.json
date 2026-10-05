@@ -7,16 +7,171 @@
   "project": "〇〇駅ホーム改良設計",
   "author": "設計8U",
   "date": "2026-10-02",
-  "chapter_start": 4,
-  "cover": true
+  "cover": true,
+  "chapter-start": 1,
+  "variant": "上路桁"
  },
  "blocks": [
+  {
+   "id": "c1",
+   "kind": "heading",
+   "props": {
+    "level": 1,
+    "text": "設計概要",
+    "chapter": "gaiyou"
+   }
+  },
+  {
+   "id": "c1p",
+   "kind": "paragraph",
+   "props": {
+    "text": "本計算書は，〇〇駅ホーム改良に伴い新設する上路プレートガーダーの主桁の設計計算を示すものである．"
+   }
+  },
+  {
+   "id": "c2",
+   "kind": "heading",
+   "props": {
+    "level": 1,
+    "text": "設計条件",
+    "chapter": "jouken"
+   }
+  },
+  {
+   "id": "c20",
+   "kind": "heading",
+   "props": {
+    "level": 2,
+    "text": "一般条件",
+    "chapter": "jouken-ippan"
+   }
+  },
+  {
+   "id": "c20p",
+   "kind": "paragraph",
+   "props": {
+    "text": "線区：在来線（最高速度 110 km/h）．適用基準：鉄道構造物等設計標準・同解説（鋼・合成構造物）．"
+   }
+  },
+  {
+   "id": "c21",
+   "kind": "heading",
+   "props": {
+    "level": 2,
+    "text": "検討箇所",
+    "chapter": "kentou"
+   }
+  },
+  {
+   "id": "c21p",
+   "kind": "paragraph",
+   "props": {
+    "text": "主桁の支間中央および支点部について，耐荷性・耐疲労性・走行安全性・使用性の照査を行う．"
+   }
+  },
+  {
+   "id": "c22",
+   "kind": "heading",
+   "props": {
+    "level": 2,
+    "text": "作用の種類",
+    "chapter": "sayou"
+   }
+  },
+  {
+   "id": "c22p",
+   "kind": "paragraph",
+   "props": {
+    "text": "死荷重，列車荷重（EA-17），衝撃荷重，車両横荷重，制動・始動荷重，ロングレール縦荷重，風荷重，地震の影響を考慮する．"
+   }
+  },
+  {
+   "id": "c23",
+   "kind": "heading",
+   "props": {
+    "level": 2,
+    "text": "荷重の組合せ",
+    "chapter": "kumiawase"
+   }
+  },
+  {
+   "id": "c23p",
+   "kind": "paragraph",
+   "props": {
+    "text": "作用の組合せは【鋼標準】第Ⅰ編 4.5 による．"
+   }
+  },
+  {
+   "id": "c24",
+   "kind": "heading",
+   "props": {
+    "level": 2,
+    "text": "材料特性値",
+    "chapter": "zairyou"
+   }
+  },
+  {
+   "id": "c24p",
+   "kind": "paragraph",
+   "props": {
+    "text": "主桁は SM400 とし，材料特性値は【鋼標準】による．"
+   }
+  },
+  {
+   "id": "c25",
+   "kind": "heading",
+   "props": {
+    "level": 2,
+    "text": "共通仕様",
+    "chapter": "kyoutsuu"
+   }
+  },
+  {
+   "id": "c25p",
+   "kind": "paragraph",
+   "props": {
+    "text": "軌道構造は直結軌道とし，橋まくらぎは使用しない．"
+   }
+  },
+  {
+   "id": "c26",
+   "kind": "heading",
+   "props": {
+    "level": 2,
+    "text": "施工計画",
+    "chapter": "sekou"
+   }
+  },
+  {
+   "id": "c26p",
+   "kind": "paragraph",
+   "props": {
+    "text": "架設は線路閉鎖間合いにおける一括架設とし，架設時の照査は完成時に包含される．"
+   }
+  },
+  {
+   "id": "c3",
+   "kind": "heading",
+   "props": {
+    "level": 1,
+    "text": "設計結果",
+    "chapter": "kekka"
+   }
+  },
+  {
+   "id": "c3p",
+   "kind": "paragraph",
+   "props": {
+    "text": "照査結果の一覧は §4 の各照査に示す．"
+   }
+  },
   {
    "id": "b1",
    "kind": "heading",
    "props": {
     "level": 1,
-    "text": "主桁の設計"
+    "text": "主桁の設計",
+    "chapter": "buzai"
    }
   },
   {

@@ -33,7 +33,7 @@
   {/if}
 
   {#if def.type === 'text' || def.type === 'var'}
-    <input id={def.key} type="text" value={value ?? ''} use:track data-insert={def.type === 'var' ? 'name' : 'ref'}
+    <input id={def.key} type="text" value={value ?? ''} use:track data-insert={def.type === 'var' ? 'name' : 'ref'} readonly={def.readonly}
       class:mono={def.type === 'var'} oninput={(e) => onchange(e.currentTarget.value)} spellcheck="false" />
   {:else if def.type === 'expr'}
     <input id={def.key} type="text" class="mono" value={value ?? ''} use:track data-insert="name"

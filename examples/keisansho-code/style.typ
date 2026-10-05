@@ -27,6 +27,9 @@
       help: "2026-10-02 の形式。PDFの作成日時にも使われます（同じ文書なら同じPDFになるよう、出力した日時は使いません）"),
     (key: "chapter-start", label: "最初の章番号（§）", type: "int", default: 1, help: "分冊で章番号を続ける場合に指定"),
     (key: "cover", label: "表紙を付ける", type: "bool", default: true),
+    // 構造形式。章の構成（chapters の variants）がこれで変わる
+    (key: "variant", label: "構造形式", type: "select", required: true, default: "上路桁",
+      options: ("上路桁", "工事桁", "トラス", "こ線橋"), help: "構造形式によって必要な章が変わります"),
   ),
 
   // 執筆者が使える部品（並び順が「部品を追加」の順）
@@ -35,11 +38,46 @@
     "table", "fig-shapes", "image", "pagebreak", "typst",
   ),
 
-  // 新規作成時の骨組み
-  skeleton: (
-    (kind: "heading", level: 1, text: "設計条件"),
-    (kind: "heading", level: 1, text: "設計計算"),
-    (kind: "heading", level: 1, text: "設計結果一覧"),
+  // 章構成の拘束（Issue #7）
+  //   level : 文書全体の既定の強さ。locked（章の中身まで固定）/ chapters（章立てを固定）/ basic（体裁だけ固定）
+  //   rules : 検出ごとの重さ（error / warning / info / off）。章ごとに rules で上書きできる
+  //     chapter-missing（必須の章がない）/ chapter-order（順序違い）/ chapter-title（見出し文の変更）
+  //     chapter-extra（決められていない章）/ chapter-duplicate（章の重複）/ chapter-block（章で使えない部品）
+  //     chapter-locked（中身を固定した章の部品の並び違い）
+  structure: (
+    level: "chapters",
+    rules: (chapter-title: "warning"),
+  ),
+
+  // 章の定義（並び順が文書での順序）。新規作成時は、構造形式に合う必須の章がこの順で入る。
+  //   id: 識別子（見出しに保存。文書テンプレート内で一意） / title: 見出し文 / required: 必須（既定 true）
+  //   fixed-title: 見出し文の変更を禁止（既定 true） / repeatable: 同じ章を繰り返し置ける（既定 false）
+  //   variants: 対象の構造形式（fields の variant 欄の選択肢。省略で全形式） / guide: 執筆ガイド
+  //   allowed-blocks: 章で使える部品（省略で親と同じ） / level・rules: 拘束の上書き
+  //   content: 見出しの直後に置く部品 / sections: 1つ下の階層の見出しの定義
+  chapters: (
+    (id: "gaiyou", title: "設計概要",
+      guide: "業務の目的、対象構造物、設計の範囲を記載する。"),
+    (id: "jouken", title: "設計条件",
+      guide: "線区情報・適用基準類と、構造形式ごとに決められた設計条件の各項目を、この順で記載する。",
+      sections: (
+        (id: "jouken-ippan", title: "一般条件", guide: "線区情報（線名・軌道構造・列車速度）と適用基準類を記載する。"),
+        (id: "kentou", title: "検討箇所", variants: ("上路桁", "トラス"), guide: "検討する部材と、部材ごとの照査項目を記載する。"),
+        (id: "sayou", title: "作用の種類", guide: "死荷重などの作用の種類と、その算出方法を記載する。"),
+        (id: "kumiawase", title: "荷重の組合せ", guide: "照査ごとの荷重の組合せを記載する。"),
+        (id: "zairyou", title: "材料特性値", guide: "使用材料と許容応力度（特性値）を記載する。"),
+        (id: "kyoutsuu", title: "共通仕様", guide: "軌道構造や取り合い、最大部材寸法などの細かい条件を記載する。設計条件の各項目に当たるものはそちらに書く。"),
+        (id: "grouping", title: "グルーピング", variants: ("工事桁",), guide: "部材のグルーピングの考え方を記載する。"),
+        (id: "model", title: "モデル化", variants: ("トラス", "こ線橋"), guide: "解析モデル（骨組・支点条件・剛域）を記載する。"),
+        (id: "sekou", title: "施工計画", variants: ("上路桁", "工事桁", "トラス"),
+          guide: "架設時と完成時で条件が異なる場合は、その違いと内容を記載する。"),
+      )),
+    (id: "kekka", title: "設計結果",
+      guide: "照査結果の一覧を記載する（部材ごとの設計の章で計算した値をまとめる）。"),
+    // 部材ごとの設計（主桁・横桁・支承…）。同じ形の章を部材の数だけ置く
+    (id: "buzai", title: "（部材名）の設計", fixed-title: false, repeatable: true,
+      guide: "部材ごとに、作用・断面力の算出・照査の順で記載する。見出し文は「主桁の設計」のように部材名を入れる。",
+      rules: (chapter-extra: "warning")),
   ),
 
   // 単位ごとの既定の表示桁（部品側で桁数を空欄にしたときに使う）
@@ -88,7 +126,7 @@
 
 #let _date-text(d) = if type(d) == datetime { d.display("[year]年[month padding:none]月") } else { d }
 
-#let style(title: "計算書", project: none, author: none, date: none, chapter-start: 1, cover: true, doc) = {
+#let style(title: "計算書", project: none, author: none, date: none, chapter-start: 1, cover: true, variant: none, doc) = {
   set document(title: title, author: if author != none { author } else { () })
   set page(
     paper: "a4",
