@@ -58,6 +58,26 @@ export interface BlockResult {
   value?: number;
   /** 汎用図形の評価値（図形ごとに、繰り返しの各回） */
   shapes?: { x1: number | null; y1: number | null; x2: number | null; y2: number | null; pts?: [number | null, number | null][]; label?: string }[][];
+  /** 章構成の情報（文書テンプレートに章の定義があるとき） */
+  chapter?: ChapterInfo;
+}
+
+/** 部品ごとの章構成の情報（formdoc-core の structure::ChapterInfo）。GUI はこれを見て操作を止める */
+export interface ChapterInfo {
+  /** 見出しならその見出しが指す章、それ以外は入っている章（定義の id） */
+  chapter?: string;
+  /** 執筆ガイド */
+  guide?: string;
+  /** 削除・複製できない */
+  no_remove: boolean;
+  /** 移動・階層の変更ができない */
+  no_move: boolean;
+  /** 見出し文を変えられない */
+  fixed_title: boolean;
+  /** 直後に置ける部品の種類（無ければ制限なし） */
+  insertable?: string[];
+  /** 見出しに割り当てられる章 */
+  choices?: { id: string; title: string; repeatable: boolean }[];
 }
 
 export interface PageOut {
@@ -129,7 +149,7 @@ export interface StyleInfo {
   blocks: string[];
   fields: MetaField[];
   /** 章構成の拘束（文書全体の既定） */
-  structure: { level: Strictness; rules: Record<string, RuleLevel> };
+  structure: { level: Strictness; rules: Record<string, RuleLevel>; 'variant-field': string };
   /** 章の定義（並び順が文書での順序） */
   chapters: Chapter[];
   'max-heading-level': number;

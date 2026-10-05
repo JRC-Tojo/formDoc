@@ -56,6 +56,18 @@ pub enum Strictness {
     Basic,
 }
 
+impl Strictness {
+    /// 章立て（章が有るか・順序・見出し文・使える部品）を調べるか。
+    pub fn checks_chapters(self) -> bool {
+        self != Strictness::Basic
+    }
+
+    /// 章の中身（部品の並び）を文書テンプレートの content に固定するか。
+    pub fn fixes_content(self) -> bool {
+        self == Strictness::Locked
+    }
+}
+
 /// 検出の重さ。`off` は検出しない。
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
@@ -78,13 +90,27 @@ pub const CHAPTER_RULES: &[(&str, RuleLevel)] = &[
 ];
 
 /// 文書全体の章構成の拘束。
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
 pub struct Structure {
     #[serde(default)]
     pub level: Strictness,
     /// 検出の種類（`CHAPTER_RULES` の名前）→ 重さ。書かなかった種類は既定の重さ
     #[serde(default)]
     pub rules: BTreeMap<String, RuleLevel>,
+    /// 構造形式（章の `variants` と比べる値）を入力する文書情報の欄の key
+    #[serde(default = "variant_field")]
+    pub variant_field: String,
+}
+
+impl Default for Structure {
+    fn default() -> Self {
+        Self { level: Strictness::default(), rules: BTreeMap::new(), variant_field: variant_field() }
+    }
+}
+
+fn variant_field() -> String {
+    "variant".into()
 }
 
 /// 章（または節）の定義。`sections` に1つ下の階層の見出しを入れ子で定義する。
@@ -128,6 +154,7 @@ pub struct Chapter {
     pub sections: Vec<Chapter>,
 }
 
+/// 既定値が true の項目用。
 fn yes() -> bool {
     true
 }
@@ -157,9 +184,6 @@ pub fn rule_of(rules: &BTreeMap<String, RuleLevel>, code: &str) -> RuleLevel {
         .or_else(|| CHAPTER_RULES.iter().find(|(c, _)| *c == code).map(|(_, l)| *l))
         .unwrap_or(RuleLevel::Error)
 }
-
-/// 構造形式を入力する文書情報の欄の key。章の `variants` はこの欄の値と比べる。
-pub const VARIANT_KEY: &str = "variant";
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MetaField {
@@ -230,48 +254,51 @@ impl Template {
 
     /// 章の定義を読み込んだあとの整え：親から拘束の強さ・検出の重さ・使える部品を引き継ぎ、定義の誤りを調べる。
     fn resolve_chapters(&mut self) -> Result<(), String> {
-        let mut seen = std::collections::HashSet::new();
-        let variants: Vec<String> = self.field(VARIANT_KEY).map(|f| f.options.clone()).unwrap_or_default();
-        fn walk(
-            cs: &mut [Chapter],
-            level: Strictness,
-            rules: &BTreeMap<String, RuleLevel>,
-            allowed: &[String],
-            all_blocks: &[String],
-            variants: &[String],
-            seen: &mut std::collections::HashSet<String>,
-        ) -> Result<(), String> {
+        /// 検出の名前が既知か
+        fn known_rules(rules: &BTreeMap<String, RuleLevel>, whose: &str) -> Result<(), String> {
+            match rules.keys().find(|k| !CHAPTER_RULES.iter().any(|(r, _)| r == k)) {
+                Some(k) => Err(format!("{whose}の rules に未知の検出「{k}」があります")),
+                None => Ok(()),
+            }
+        }
+        struct Ctx<'a> {
+            all_blocks: &'a [String],
+            variants: &'a [String],
+            variant_field: &'a str,
+            seen: std::collections::HashSet<String>,
+        }
+        fn walk(cs: &mut [Chapter], level: Strictness, rules: &BTreeMap<String, RuleLevel>, allowed: &[String], cx: &mut Ctx) -> Result<(), String> {
             for c in cs {
-                if c.id.trim().is_empty() || !seen.insert(c.id.clone()) {
+                if c.id.trim().is_empty() || !cx.seen.insert(c.id.clone()) {
                     return Err(format!("文書テンプレートの章の id「{}」が空か重複しています", c.id));
                 }
-                for k in c.rules.keys() {
-                    if !CHAPTER_RULES.iter().any(|(r, _)| r == k) {
-                        return Err(format!("章「{}」の rules に未知の検出「{k}」があります", c.title));
-                    }
-                }
-                if let Some(v) = c.variants.iter().find(|v| !variants.contains(v)) {
-                    return Err(format!("章「{}」の構造形式「{v}」が、文書情報の欄「{VARIANT_KEY}」の選択肢にありません", c.title));
+                known_rules(&c.rules, &format!("章「{}」", c.title))?;
+                if let Some(v) = c.variants.iter().find(|v| !cx.variants.contains(v)) {
+                    return Err(format!("章「{}」の構造形式「{v}」が、文書情報の欄「{}」の選択肢にありません", c.title, cx.variant_field));
                 }
                 let lv = *c.level.get_or_insert(level);
                 let mut merged = rules.clone();
                 merged.extend(std::mem::take(&mut c.rules));
                 c.rules = merged;
                 let al = c.allowed_blocks.get_or_insert_with(|| allowed.to_vec()).clone();
-                if let Some(k) = al.iter().find(|k| !all_blocks.contains(k)) {
+                if let Some(k) = al.iter().find(|k| !cx.all_blocks.contains(k)) {
                     return Err(format!("章「{}」の allowed-blocks の部品「{k}」は文書テンプレートの blocks にありません", c.title));
                 }
-                walk(&mut c.sections, lv, &c.rules.clone(), &al, all_blocks, variants, seen)?;
+                for m in &c.content {
+                    let kind = m.get("kind").and_then(Value::as_str).unwrap_or("paragraph");
+                    if !al.iter().any(|k| k == kind) {
+                        return Err(format!("章「{}」の content の部品「{kind}」は、この章で使えない部品です", c.title));
+                    }
+                }
+                walk(&mut c.sections, lv, &c.rules.clone(), &al, cx)?;
             }
             Ok(())
         }
-        for k in self.structure.rules.keys() {
-            if !CHAPTER_RULES.iter().any(|(r, _)| r == k) {
-                return Err(format!("structure.rules に未知の検出「{k}」があります"));
-            }
-        }
+        known_rules(&self.structure.rules, "structure")?;
+        let variants: Vec<String> = self.field(&self.structure.variant_field).map(|f| f.options.clone()).unwrap_or_default();
         let blocks = self.blocks.clone();
-        walk(&mut self.chapters, self.structure.level, &self.structure.rules, &blocks, &blocks, &variants, &mut seen)
+        let mut cx = Ctx { all_blocks: &blocks, variants: &variants, variant_field: &self.structure.variant_field.clone(), seen: Default::default() };
+        walk(&mut self.chapters, self.structure.level, &self.structure.rules.clone(), &blocks, &mut cx)
     }
 }
 

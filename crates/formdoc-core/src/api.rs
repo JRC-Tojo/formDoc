@@ -246,7 +246,7 @@ pub fn new_document(t: &Template) -> Document {
         }
     }
     let mut n = 0;
-    let blocks = crate::structure::skeleton(t, meta.str(template::VARIANT_KEY), &mut || {
+    let blocks = crate::structure::skeleton(t, meta.str(&t.structure.variant_field), &mut || {
         n += 1;
         format!("b{n}")
     });

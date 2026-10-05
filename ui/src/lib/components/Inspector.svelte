@@ -2,8 +2,7 @@
   // 中央ペイン：選択中の部品の入力フォーム、または文書情報。
   import { app } from '../state.svelte';
   import Field from '../fields/Field.svelte';
-  import { applies, chapterDef } from '../chapters';
-  import type { Chapter, FieldDef } from '../types';
+  import type { FieldDef } from '../types';
 
   const block = $derived(app.selected);
   const def = $derived(block ? app.catalog?.components[block.kind] : null);
@@ -11,31 +10,29 @@
   const result = $derived(block ? app.result?.blocks[block.id] : null);
   const general = $derived(issues.filter((i) => !i.field));
 
-  // 章の見出し：文書テンプレートの章の定義（執筆ガイド・見出し文の固定）
-  const chapter = $derived(block?.kind === 'heading' ? chapterDef(app.template, block.props.chapter) : null);
-  /** この見出しの階層に置ける章（入れ子の深さ＝見出しの階層）。章の割り当ての選択肢 */
-  const choices = $derived.by(() => {
-    if (block?.kind !== 'heading' || !app.template?.chapters?.length) return [];
-    const out: Chapter[] = [];
-    const walk = (cs: Chapter[], depth: number) => {
-      for (const c of cs) {
-        if (depth === Number(block.props.level ?? 2) && applies(c, app.variant)) out.push(c);
-        walk(c.sections ?? [], depth + 1);
-      }
-    };
-    walk(app.template.chapters, 1);
-    return out;
-  });
-  /** 章を割り当てる（見出し文の変更が禁止された章なら見出し文も合わせる） */
+  // 章構成の情報（エンジンが判定した、執筆ガイド・操作の可否・割り当てられる章）
+  const chapter = $derived(block ? app.chapterOf(block.id) : null);
+  const choices = $derived(block?.kind === 'heading' ? (chapter?.choices ?? []) : []);
+  /** 章を割り当てる（見出し文の変更が禁止された章なら見出し文も合わせる）。取り消しは1回 */
   function assign(id: string) {
     if (!block) return;
-    const c = chapterDef(app.template, id);
-    app.setProp(block.id, 'chapter', id || null);
-    if (c?.['fixed-title']) app.setProp(block.id, 'text', c.title);
+    const def = app.template?.chapters && findChapter(app.template.chapters, id);
+    app.setProps(block.id, { chapter: id || null, ...(def && def['fixed-title'] ? { text: def.title } : {}) });
   }
-  /** 見出し文の変更が禁止された章では、見出し文の欄を読み取り専用にする */
+  function findChapter(cs: NonNullable<typeof app.template>['chapters'], id: string): (typeof cs)[number] | null {
+    for (const c of cs) {
+      if (c.id === id) return c;
+      const s = findChapter(c.sections ?? [], id);
+      if (s) return s;
+    }
+    return null;
+  }
+  /** 決められた章の見出しでは、見出し文・階層の欄を読み取り専用にする */
   function fieldDef(f: FieldDef): FieldDef {
-    return chapter?.['fixed-title'] && f.key === 'text' ? { ...f, readonly: true, help: '文書テンプレートで決められた見出し文です' } : f;
+    if (block?.kind !== 'heading' || !chapter) return f;
+    if (f.key === 'text' && chapter.fixed_title) return { ...f, readonly: true, help: '文書テンプレートで決められた見出し文です' };
+    if (f.key === 'level' && chapter.no_move) return { ...f, readonly: true, help: '文書テンプレートで決められた章のため変更できません' };
+    return f;
   }
 
   const metaIssues = $derived(
@@ -68,7 +65,7 @@
           章の種類
           <select value={block.props.chapter ?? ''} disabled={app.isLocked(block)} onchange={(e) => assign((e.currentTarget as HTMLSelectElement).value)}>
             <option value="">（決められた章ではない）</option>
-            {#each choices as c}<option value={c.id}>{c.title}{c.repeatable ? '（繰り返し可）' : ''}</option>{/each}
+            {#each choices as c (c.id)}<option value={c.id}>{c.title}{c.repeatable ? '（繰り返し可）' : ''}</option>{/each}
           </select>
         </label>
       {/if}

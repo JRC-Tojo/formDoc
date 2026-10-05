@@ -44,6 +44,9 @@
   //     chapter-missing（必須の章がない）/ chapter-order（順序違い）/ chapter-title（見出し文の変更）
   //     chapter-extra（決められていない章）/ chapter-duplicate（章の重複）/ chapter-block（章で使えない部品）
   //     chapter-locked（中身を固定した章の部品の並び違い）
+  //   variant-field : 構造形式を入力する文書情報の欄（章の variants と比べる。既定 "variant"）
+  //   拘束の強さは「その範囲の中」に効く：章が有るか・順序・見出し文は親の強さ、章の中身はその章の強さで調べる
+  //   GUI は重さが error の検出につながる操作（必須の章の削除・移動など）を止め、warning 以下は検証パネルで知らせる
   structure: (
     level: "chapters",
     rules: (chapter-title: "warning"),
@@ -76,8 +79,7 @@
       guide: "照査結果の一覧を記載する（部材ごとの設計の章で計算した値をまとめる）。"),
     // 部材ごとの設計（主桁・横桁・支承…）。同じ形の章を部材の数だけ置く
     (id: "buzai", title: "（部材名）の設計", fixed-title: false, repeatable: true,
-      guide: "部材ごとに、作用・断面力の算出・照査の順で記載する。見出し文は「主桁の設計」のように部材名を入れる。",
-      rules: (chapter-extra: "warning")),
+      guide: "部材ごとに、作用・断面力の算出・照査の順で記載する。見出し文は「主桁の設計」のように部材名を入れる。"),
   ),
 
   // 単位ごとの既定の表示桁（部品側で桁数を空欄にしたときに使う）
