@@ -2,6 +2,12 @@
 # category: 「部品を追加」ダイアログの分類
 # field.type: text / multiline / date / number / int / expr / var / varlist / select / bool / kijun / table / json / file
 # 描画は library/typst/formdoc の関数で行い、Typstコード生成は formdoc-core::codegen が担う。
+#
+# 計算ロジックを持つ部品（TODO 5）：
+#   logic  = "<file>.rhai"   … このフォルダの Rhai スクリプト。入力（props）とその位置で使える変数（vars）から変数を定義する
+#   render = "<Typst関数名>"  … 描画関数。定義した変数の配列と、スクリプトが返した values（名前付き引数）を受け取る
+#   計算はスクリプト（Rust 側）だけで行い、コードには結果の値を vdef として出力する（Typst 側では計算し直さない。
+#   コードモードで寸法を書き換えたいときは部品の入力を変える）。式エンジンにある計算（calc 部品）で足りるものはそちらを使う。
 
 [heading]
 label = "見出し"
@@ -109,6 +115,25 @@ icon = "ここに"
 help = "「ここに，」の記号説明。変数を空にすると、直前の計算で使った変数を自動で並べる。"
 fields = [
   { key = "vars", label = "変数", type = "varlist" },
+]
+
+[section-props]
+label = "断面諸量（I形）"
+category = "計算"
+icon = "Ⅰ"
+help = "I形断面（圧延H形・溶接I形）の寸法から、断面積・断面二次モーメント・断面二次半径などを計算して変数として定義する。"
+logic = "section-props.rhai"
+render = "section-props"
+fields = [
+  { key = "kind", label = "断面", type = "select", options = ["圧延H形", "溶接I形"], default = "圧延H形" },
+  { key = "label", label = "断面の名前", type = "text", help = "例: H-700×350×12×22（SM400）" },
+  { key = "H", label = "高さ H（mm）", type = "number", required = true },
+  { key = "B", label = "フランジ幅 B（mm）", type = "number", required = true },
+  { key = "tw", label = "腹板厚 tw（mm）", type = "number", required = true },
+  { key = "tf", label = "フランジ厚 tf（mm）", type = "number", required = true },
+  { key = "r", label = "フィレット半径 r（mm）", type = "number", help = "圧延H形のみ。溶接I形では使わない" },
+  { key = "suffix", label = "変数名の添字", type = "text", help = "同じ範囲に2つ置くとき（例: 2 → A_2, I_y_2）" },
+  { key = "global", label = "グローバル変数として定義", type = "bool", default = false, help = "チェックしないと、同じ見出し（節）・部品テンプレートの中だけで使えるローカル変数になる" },
 ]
 
 [table]

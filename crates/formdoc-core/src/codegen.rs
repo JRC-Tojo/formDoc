@@ -382,8 +382,48 @@ fn block_code(b: &Block, t: &Template, report: &Report) -> String {
         }
         "pagebreak" => "#pagebreak()".into(),
         "typst" => b.str("code").to_string(),
-        _ => String::new(),
+        kind => match crate::logic::component_logic(kind) {
+            Some(logic) => logic_code(b, &logic.render, report),
+            None => String::new(),
+        },
     }
+}
+
+/// JSON の値を Typst の値の書き方にする（計算ロジックの values を描画関数に渡すため）。
+fn typst_value(v: &Value) -> String {
+    match v {
+        Value::Null => "none".into(),
+        Value::Bool(b) => b.to_string(),
+        Value::Number(n) => n.as_f64().map(num).unwrap_or_else(|| "none".into()),
+        Value::String(s) => lit(s),
+        Value::Array(a) => format!("({}{})", a.iter().map(typst_value).collect::<Vec<_>>().join(", "), if a.len() == 1 { "," } else { "" }),
+        Value::Object(m) if m.is_empty() => "(:)".into(),
+        Value::Object(m) => format!("({})", m.iter().map(|(k, v)| format!("{}: {}", lit(k), typst_value(v))).collect::<Vec<_>>().join(", ")),
+    }
+}
+
+/// 計算ロジックを持つ部品：評価で求めた変数を vdef として定義し（コードモードでも後ろの計算が続くように）、
+/// 描画関数に「変数の配列」と values（名前付き引数）を渡す。
+fn logic_code(b: &Block, render: &str, report: &Report) -> String {
+    let Some(res) = report.blocks.get(&b.id) else { return String::new() };
+    let mut lines = Vec::new();
+    for name in &res.vars {
+        let Some(v) = report.vars.iter().rev().find(|v| &v.name == name && v.block_id == b.id) else { continue };
+        lines.push(format!(
+            "#let {} = vdef({}, {}, unit: {}, digits: {}, desc: {}{})",
+            ident(name), lit(name), num(v.value), lit(&v.unit), opt_digits(v.digits), lit(&v.desc), opt_lit_arg("display", v.display.as_deref())
+        ));
+    }
+    // 入力に誤りがあり値を計算できなかったときは描画しない（コードモードでも Typst のエラーにしないため）
+    if res.status == "error" || res.values.is_none() {
+        lines.push(format!("// {}：入力に誤りがあるため表示しません", b.kind));
+    } else if !render.is_empty() {
+        let vars: Vec<String> = res.vars.iter().map(|n| ident(n)).collect();
+        // キーは logic.rs で検査済み（英字で始まる英数字・_・-）
+        let args: Vec<String> = res.values.iter().flatten().map(|(k, v)| format!(", {k}: {}", typst_value(v))).collect();
+        lines.push(format!("#{render}(({}{}){})", vars.join(", "), if vars.len() == 1 { "," } else { "" }, args.concat()));
+    }
+    lines.join("\n")
 }
 
 fn error_box(b: &Block, report: &Report) -> String {

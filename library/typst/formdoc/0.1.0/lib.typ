@@ -8,5 +8,6 @@
 #import "src/refs.typ": kijun, kijun-list
 #import "src/figures.typ": fig-shapes, fd-figure
 #import "src/tables.typ": vt, cellv, fd-table
+#import "src/props.typ": props-list, i-section-fig, section-props
 
 #let formdoc-version = "0.1.0"
