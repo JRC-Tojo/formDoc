@@ -67,9 +67,8 @@ bun run tauri dev           # デスクトップ版の開発起動
 bun scripts/build-plugin.ts
 
 # テスト（式エンジンのゴールデンテスト、評価〜PDFの結合テスト）
-bun run test                # = cargo test -p formdoc-expr -p formdoc-core
+bun run test                # = cargo test -p formdoc-expr -p formdoc-core（＋フォントを実行時に渡す構成のテスト）
 bun run check               # UI の型チェック（svelte-check）
-bun run test:ui             # Web版の配信物の確認（先に build:web）
 bun scripts/check-determinism.ts   # Web版（wasm）とネイティブ（CLI）で同じPDFになるかを確認
 
 # 配布用

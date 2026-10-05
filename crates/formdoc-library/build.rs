@@ -8,6 +8,7 @@ use std::path::{Path, PathBuf};
 
 use sha2::{Digest, Sha256};
 
+/// dir の下のファイルをすべて（サブフォルダも）パス順に集める。
 fn walk(dir: &Path, out: &mut Vec<PathBuf>) {
     let mut entries: Vec<_> = std::fs::read_dir(dir).unwrap().map(|e| e.unwrap().path()).collect();
     entries.sort();
@@ -20,8 +21,15 @@ fn walk(dir: &Path, out: &mut Vec<PathBuf>) {
     }
 }
 
+/// フォントか（library/fonts 直下の otf / ttf / ttc）。
+/// Web版の配信（ui/vite.config.ts の bundledFonts）も同じ規則でファイルを選ぶので、変えるときは両方を直す。
 fn is_font(rel: &str) -> bool {
-    rel.starts_with("fonts/") && [".otf", ".ttf", ".ttc"].iter().any(|e| rel.ends_with(e))
+    let Some(name) = rel.strip_prefix("fonts/") else { return false };
+    let font = [".otf", ".ttf", ".ttc"].iter().any(|e| name.to_ascii_lowercase().ends_with(e));
+    if font && name.contains('/') {
+        panic!("library/fonts のフォントはサブフォルダに置けません（Web版の配信と数え方がずれるため）: {rel}");
+    }
+    font
 }
 
 fn main() {

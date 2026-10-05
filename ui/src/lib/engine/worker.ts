@@ -15,23 +15,20 @@ async function start(base: string): Promise<string[]> {
   await init();
   const list: FontFile[] = JSON.parse(wasm.font_files());
   const warnings: string[] = [];
+  // 安全な接続（https・localhost）でないと crypto.subtle が使えず、照合できない
+  if (!crypto.subtle) warnings.push('安全な接続（https）で開いていないため、フォントの版を照合できません。');
   const bodies = await Promise.all(
     list.map(async (f) => {
       const res = await fetch(new URL(fontPath(f), base));
-      if (!res.ok) throw new Error(`フォント ${f.file} を取得できません（HTTP ${res.status}）`);
+      if (!res.ok) throw new Error(`フォント ${f.file} を取得できません（HTTP ${res.status}）。ページを再読み込みしてください`);
       const body = new Uint8Array(await res.arrayBuffer());
       const actual = crypto.subtle ? hex(await crypto.subtle.digest('SHA-256', body)) : f.sha256;
       if (actual !== f.sha256) warnings.push(`フォント ${f.file} の版がエンジンと一致しません。ページを再読み込みしてください（出力PDFが他の環境と変わる可能性があります）。`);
       return body;
     }),
   );
-  const all = new Uint8Array(bodies.reduce((n, b) => n + b.length, 0));
-  let pos = 0;
-  for (const b of bodies) {
-    all.set(b, pos);
-    pos += b.length;
-  }
-  wasm.init_fonts(all, Uint32Array.from(bodies, (b) => b.length));
+  for (const b of bodies) wasm.add_font(b);
+  wasm.init_fonts();
   return warnings;
 }
 

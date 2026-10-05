@@ -47,14 +47,19 @@ fn font_store() -> &'static FontStore {
 ///
 /// `fonts` は [`formdoc_library::font_files`] と同じ順に並べた中身。最初の組版より前に1回だけ呼ぶ
 /// （組版で一度使われたフォントの一覧は差し替えられない。同じ文書が同じPDFになることを守るため）。
-/// 既にフォントを使い始めていればエラーを返す。
+/// 既にフォントを使い始めていた場合や、渡されたフォントが同梱フォントの一覧（数・大きさ）と合わない場合はエラーを返す
+/// （フォントの番号がずれると、同じ文書でもPDFが変わるため）。
 pub fn install_fonts(fonts: Vec<Vec<u8>>) -> Result<(), String> {
-    let mut store = Some(FontStore::new(fonts));
-    FONT_STORE.get_or_init(|| store.take().unwrap());
-    match store {
-        None => Ok(()),
-        Some(_) => Err("フォントは既に読み込まれています（最初の組版より前に渡してください）".into()),
+    if FONT_STORE.get().is_some() {
+        return Err("フォントは既に読み込まれています（最初の組版より前に渡してください）".into());
     }
+    let list: Vec<_> = formdoc_library::font_files().iter().filter(|f| f.data.is_none()).collect();
+    if fonts.len() != list.len() || fonts.iter().zip(&list).any(|(d, f)| d.len() != f.size) {
+        return Err(format!("渡されたフォント（{} 個）が同梱フォントの一覧（{} 個）と合いません", fonts.len(), list.len()));
+    }
+    FONT_STORE
+        .set(FontStore::new(fonts))
+        .map_err(|_| "フォントは既に読み込まれています（最初の組版より前に渡してください）".to_string())
 }
 
 /// 同梱フォントのファミリー名一覧（文書テンプレート開発時の確認用）。

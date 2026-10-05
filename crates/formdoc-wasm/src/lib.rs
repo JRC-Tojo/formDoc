@@ -8,6 +8,8 @@ use wasm_bindgen::prelude::*;
 
 thread_local! {
     static SESSION: RefCell<Session> = RefCell::new(Session::new());
+    /// init_fonts までに add_font で受け取ったフォント
+    static PENDING_FONTS: RefCell<Vec<Vec<u8>>> = const { RefCell::new(Vec::new()) };
 }
 
 fn err(e: impl ToString) -> JsError {
@@ -24,17 +26,16 @@ pub fn font_files() -> Result<String, JsError> {
     serde_json::to_string(&api::font_files()).map_err(err)
 }
 
-/// 取得した同梱フォントを渡す。`font_files` と同じ順に中身をつなげたものと、それぞれの大きさ。
-/// ほかの関数（組版）より前に1回だけ呼ぶ。
+/// 取得した同梱フォントを1つ渡す。`font_files` と同じ順に呼ぶ（まとめて渡すとメモリを一時的に倍使うため1つずつ）。
 #[wasm_bindgen]
-pub fn init_fonts(data: Vec<u8>, sizes: Vec<u32>) -> Result<(), JsError> {
-    let mut fonts = Vec::with_capacity(sizes.len());
-    let mut pos = 0usize;
-    for n in sizes {
-        let end = pos + n as usize;
-        fonts.push(data.get(pos..end).ok_or_else(|| err("フォントの大きさの指定が中身と合いません"))?.to_vec());
-        pos = end;
-    }
+pub fn add_font(data: Vec<u8>) {
+    PENDING_FONTS.with(|f| f.borrow_mut().push(data));
+}
+
+/// add_font で渡したフォントを確定する。ほかの関数（組版）より前に1回だけ呼ぶ。
+#[wasm_bindgen]
+pub fn init_fonts() -> Result<(), JsError> {
+    let fonts = PENDING_FONTS.with(|f| std::mem::take(&mut *f.borrow_mut()));
     formdoc_core::world::install_fonts(fonts).map_err(err)
 }
 

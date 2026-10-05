@@ -30,7 +30,8 @@ const bodies = list.map((f) => {
   if (sha(b) !== f.sha256) throw new Error(`フォント ${f.file} の版がエンジンと一致しません`);
   return b;
 });
-m.init_fonts(Buffer.concat(bodies), Uint32Array.from(bodies, (b) => b.length));
+for (const b of bodies) m.add_font(b);
+m.init_fonts();
 const docJson = readFileSync(doc, 'utf8');
 // CLI と同じく、文書の template に対応する同梱の文書テンプレートを使う
 const template: string = JSON.parse(docJson).template;

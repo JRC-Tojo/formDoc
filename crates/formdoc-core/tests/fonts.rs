@@ -8,6 +8,16 @@ fn font_list_matches_bundled_files() {
     // 一覧の SHA-256 は library/fonts の中身と一致する（Web版はこれで取得したフォントを照合する）
     let list = api::font_files();
     let dir = concat!(env!("CARGO_MANIFEST_DIR"), "/../../library/fonts");
+    // library/fonts のフォントがすべて一覧に載っている
+    let mut on_disk: Vec<String> = std::fs::read_dir(dir)
+        .unwrap()
+        .map(|e| e.unwrap().file_name().to_string_lossy().into_owned())
+        .filter(|n| [".otf", ".ttf", ".ttc"].iter().any(|e| n.to_ascii_lowercase().ends_with(e)))
+        .collect();
+    on_disk.sort();
+    let mut listed: Vec<String> = list.iter().map(|f| f.file.clone()).collect();
+    listed.sort();
+    assert_eq!(listed, on_disk);
     for f in &list {
         let body = std::fs::read(format!("{dir}/{}", f.file)).unwrap();
         assert_eq!(f.size, body.len(), "{}", f.file);

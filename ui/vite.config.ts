@@ -23,13 +23,15 @@ function versionFile(): Plugin {
 /**
  * Web版の同梱フォント（library/fonts）を、版ごとのハッシュ付きの名前で配信する（wasm には埋め込まない）。
  * 開発サーバではその名前で中身を返し、ビルドでは fonts/ に出力する。名前の決め方は src/lib/engine/fonts.ts と共通。
+ * 対象のファイルは crates/formdoc-library/build.rs の is_font と同じ規則（直下の otf / ttf / ttc）。
+ * 開発サーバは起動時に一覧を作るので、bun ready でフォントが変わったら開発サーバを再起動する。
  */
 function bundledFonts(): Plugin {
   const dir = new URL('../library/fonts/', import.meta.url);
   const load = () => {
     if (!existsSync(dir)) throw new Error('library/fonts がありません。先にリポジトリのルートで `bun ready` を実行してください。');
     return readdirSync(dir)
-      .filter((f) => /\.(otf|ttf|ttc)$/.test(f))
+      .filter((f) => /\.(otf|ttf|ttc)$/i.test(f))
       .map((file) => {
         const body = readFileSync(new URL(file, dir));
         return { path: fontPath({ file, sha256: createHash('sha256').update(body).digest('hex') }), body };

@@ -16,6 +16,11 @@ pub struct FontFile {
     pub data: Option<&'static [u8]>,
 }
 
+// Web版（wasm）にフォントを埋め込むと wasm が 30MB 近く大きくなる。cargo の機能の統一（-p を並べたビルドなど）で
+// 意図せず有効になったときに気付けるよう、ビルドを止める。
+#[cfg(all(target_arch = "wasm32", feature = "embed-fonts"))]
+compile_error!("Web版（wasm）では embed-fonts を有効にしないでください。formdoc-wasm だけを -p で指定してビルドします");
+
 include!(concat!(env!("OUT_DIR"), "/embedded.rs"));
 
 /// フォント以外の全ファイル（パスは library/ からの相対、区切りは '/'）。

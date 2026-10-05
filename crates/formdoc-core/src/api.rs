@@ -287,6 +287,7 @@ pub struct FontFileInfo {
     pub file: String,
     /// 中身の SHA-256（16進小文字）
     pub sha256: String,
+    /// バイト数
     pub size: usize,
 }
 

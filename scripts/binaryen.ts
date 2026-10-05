@@ -17,7 +17,7 @@ const SHA256: Record<string, string> = {
 
 /** この環境の配布物の名前（binaryen の命名） */
 function platform(): string {
-  const arch = process.arch === 'arm64' ? 'arm64' : 'x86_64';
+  const arch = ({ arm64: 'arm64', x64: 'x86_64' } as Record<string, string>)[process.arch];
   const os = { win32: 'windows', darwin: 'macos', linux: 'linux' }[process.platform as string];
   const key = `${arch}-${os}`;
   if (!os || !SHA256[key]) throw new Error(`binaryen の配布物がこの環境（${process.platform} ${process.arch}）に対応していません`);
