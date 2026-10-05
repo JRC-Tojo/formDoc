@@ -113,3 +113,29 @@ impl Expr {
         }
     }
 }
+
+#[test]
+fn digit_grouping_follows_the_setting() {
+    use crate::{DEFAULT_GROUP, NumFormat, format_number, group_literal};
+    // 既定は5桁以上だけ区切る。4 にすると 4桁から区切る（文書テンプレートの Lint の digit-grouping）
+    let f = |v: f64, group: u8| format_number(v, NumFormat { digits: Some(0), group });
+    assert_eq!(f(7872.0, DEFAULT_GROUP), "7872");
+    assert_eq!(f(23550.0, DEFAULT_GROUP), "23,550");
+    assert_eq!(f(7872.0, 4), "7,872");
+    assert_eq!(f(-1234567.0, 4), "-1,234,567");
+    assert_eq!(f(999.0, 4), "999");
+    assert_eq!(f(1234.0, 0), "1234");
+    // 式に書いた数値も同じ規則（小数部は区切らない、数字以外を含むものはそのまま）
+    assert_eq!(group_literal("1000000", 4), "1,000,000");
+    assert_eq!(group_literal("8000.125", 4), "8,000.125");
+    assert_eq!(group_literal("1e6", 4), "1e6");
+    // 計算行の代入式・結果にも効く
+    let s = scope(&[("A", 9428.0, Some(0))]);
+    let req = |group| CalcRequest { expr: "A * 1000".into(), scope: s.clone(), digits: Some(0), group, ..Default::default() };
+    let o = crate::calc(&req(Some(4))).unwrap();
+    assert_eq!(o.text, "9,428,000");
+    assert!(o.substituted.contains("9,428") && o.substituted.contains("1,000"), "{}", o.substituted);
+    // 設定が無いときは，これまでどおり式に書いた数値は書いたとおり（5桁以上の結果だけ区切る）
+    let legacy = crate::calc(&CalcRequest { expr: "A * 100000".into(), scope: s.clone(), digits: Some(0), ..Default::default() }).unwrap();
+    assert!(legacy.substituted.contains("100000") && legacy.text == "942,800,000", "{legacy:?}");
+}

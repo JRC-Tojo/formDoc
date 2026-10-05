@@ -12,7 +12,7 @@ pub mod render;
 
 pub use ast::{CmpOp, Expr};
 pub use eval::{EvalError, Rounding, Scope, VarValue, eval};
-pub use format::{NumFormat, format_number, round_half_up, unit_to_math, unit_to_text};
+pub use format::{DEFAULT_GROUP, NumFormat, format_number, group_literal, round_half_up, unit_to_math, unit_to_text};
 pub use parse::{ParseError, parse};
 pub use render::{RenderOptions, name_math, var_math};
 
@@ -64,6 +64,10 @@ pub struct CalcRequest {
     pub units_in_sub: bool,
     #[serde(default)]
     pub rounding: Rounding,
+    /// 3桁区切りを入れる整数部の桁数（文書テンプレートの設定）。None なら計算結果は DEFAULT_GROUP 桁から区切り、
+    /// 式に書いた数値は書いたとおりに表示する。Some(n) なら両方とも n 桁から区切る
+    #[serde(default)]
+    pub group: Option<u8>,
 }
 
 fn yes() -> bool {
@@ -88,8 +92,8 @@ pub struct CalcOutput {
     pub vars: Vec<String>,
 }
 
-fn opts(frac: bool, units_in_sub: bool, rounding: Rounding) -> RenderOptions {
-    RenderOptions { frac, units_in_sub, rounding }
+fn opts(frac: bool, units_in_sub: bool, rounding: Rounding, group: Option<u8>) -> RenderOptions {
+    RenderOptions { frac, units_in_sub, rounding, group: group.unwrap_or(DEFAULT_GROUP), literal_group: group.unwrap_or(0) }
 }
 
 pub fn calc(req: &CalcRequest) -> Result<CalcOutput, Error> {
@@ -98,8 +102,8 @@ pub fn calc(req: &CalcRequest) -> Result<CalcOutput, Error> {
         return Err(EvalError { message: "計算行に比較式は書けません（照査を使ってください）".into() }.into());
     }
     let value = eval(&e, &req.scope, req.rounding)?;
-    let o = opts(req.frac, req.units_in_sub, req.rounding);
-    let text = format_number(value, NumFormat { digits: req.digits, group: true });
+    let o = opts(req.frac, req.units_in_sub, req.rounding, req.group);
+    let text = format_number(value, NumFormat { digits: req.digits, group: o.group });
     let trivial = matches!(e, Expr::Num(..));
     let unit = if req.unit.is_empty() { String::new() } else { unit_to_math(&req.unit) };
     let num = render::number_math(&text);
@@ -128,6 +132,9 @@ pub struct CheckRequest {
     pub frac: bool,
     #[serde(default)]
     pub rounding: Rounding,
+    /// 3桁区切りを入れる整数部の桁数（CalcRequest::group と同じ）
+    #[serde(default)]
+    pub group: Option<u8>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -157,7 +164,7 @@ pub fn check(req: &CheckRequest) -> Result<CheckOutput, Error> {
     let Expr::Cmp(op, l, r) = &e else {
         return Err(EvalError { message: "照査式には比較演算子（<= など）が必要です".into() }.into());
     };
-    let o = opts(req.frac, false, req.rounding);
+    let o = opts(req.frac, false, req.rounding, req.group);
     let side = |x: &Expr| -> Result<CheckSide, Error> {
         let value = eval(x, &req.scope, req.rounding)?;
         // 判定は表示値どうしで行う（紙面上の数値と判定結果を一致させる）
@@ -167,10 +174,10 @@ pub fn check(req: &CheckRequest) -> Result<CheckOutput, Error> {
         });
         Ok(CheckSide {
             value,
-            // 数値をそのまま書いた側（制限値 0.7 など）は書いたとおりに表示する
+            // 数値をそのまま書いた側（制限値 0.7 など）は書いたとおりに表示する（3桁区切りの設定があれば区切りだけ入れる）
             text: match x {
-                Expr::Num(_, src) => src.clone(),
-                _ => format_number(value, NumFormat { digits, group: true }),
+                Expr::Num(_, src) => group_literal(src, o.literal_group),
+                _ => format_number(value, NumFormat { digits, group: o.group }),
             },
             symbolic: render::symbolic(x, &req.scope, o),
             substituted: if matches!(x, Expr::Num(..) | Expr::Var(_)) {

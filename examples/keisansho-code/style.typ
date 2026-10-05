@@ -94,6 +94,8 @@
     // 全角英数字・半角カナを禁止
     fullwidth-alnum: true,
     halfwidth-kana: true,
+    // 4桁以上の数値に3桁区切りを入れる（1234 → 1,234）。本文・表を検出し、計算結果の表示も4桁から区切る
+    digit-grouping: true,
     // 表記ゆれ（左を右に統一）
     replace: (
       (from: "行なう", to: "行う"),

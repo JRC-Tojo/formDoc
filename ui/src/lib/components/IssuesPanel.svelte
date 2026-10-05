@@ -19,6 +19,7 @@
     'lint-fullwidth': '全角英数字',
     'lint-wording': '表記ゆれ',
     'lint-unit': '単位表記',
+    'lint-digit-grouping': '桁区切り',
   };
 
   function go(i: Issue) {

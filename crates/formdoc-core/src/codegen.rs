@@ -453,9 +453,14 @@ pub fn generate_with(doc: &Document, t: &Template, report: &Report, error_boxes:
 }
 
 /// 生成ソースの先頭（パッケージ・文書テンプレートの読み込みと文書情報）。
+/// 表記の設定（数値の桁区切り）が既定と違うときは、設定を反映した関数で上書きする（コードモードでも同じ表記になるように）。
 pub fn header(doc: &Document, t: &Template) -> String {
+    let config = match t.group_setting() {
+        Some(g) => format!("#let (vdef, vcalc, check-line, fmt) = fd-config(group: {g})\n"),
+        None => String::new(),
+    };
     format!(
-        "#import \"{PACKAGE}\": *\n#import \"style.typ\": style\n#show: style.with({})\n\n",
+        "#import \"{PACKAGE}\": *\n{config}#import \"style.typ\": style\n#show: style.with({})\n\n",
         style_args(doc, t).join(", ")
     )
 }

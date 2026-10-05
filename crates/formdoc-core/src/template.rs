@@ -215,6 +215,10 @@ pub struct LintRules {
     pub fullwidth_alnum: bool,
     #[serde(default)]
     pub halfwidth_kana: bool,
+    /// 4桁以上の数値に3桁区切りを入れる（1234 → 1,234）。本文・表の数値を検出し、計算結果の表示も4桁から区切る。
+    /// false なら計算結果は5桁以上だけ区切り（formdoc_expr::DEFAULT_GROUP）、本文は検査しない
+    #[serde(default)]
+    pub digit_grouping: bool,
     #[serde(default)]
     pub replace: Vec<Replace>,
     #[serde(default)]
@@ -238,6 +242,16 @@ impl Template {
     pub fn default_digits(&self, unit: &str) -> Option<u8> {
         let norm = unit.replace(['·', '・', '.'], "*");
         self.digits.get(unit).or_else(|| self.digits.get(&norm)).copied()
+    }
+
+    /// 3桁区切りの設定（Lint の digit-grouping）。有効なら区切りを入れる整数部の桁数、無効なら None（式エンジンの既定）。
+    pub fn group_setting(&self) -> Option<u8> {
+        self.lint.digit_grouping.then_some(4)
+    }
+
+    /// 計算結果の表示で3桁区切りを入れる整数部の桁数。
+    pub fn group_digits(&self) -> u8 {
+        self.group_setting().unwrap_or(formdoc_expr::DEFAULT_GROUP)
     }
 
     pub fn field(&self, key: &str) -> Option<&MetaField> {
