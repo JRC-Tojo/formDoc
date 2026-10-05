@@ -9,11 +9,11 @@ export interface CodeApplied {
 /** 組版エンジン。Web版は Web Worker 内の wasm、デスクトップ版は Tauri コマンド（ネイティブ）。中身は同じ formdoc-core。 */
 export interface Engine {
   catalog(): Promise<Catalog>;
-  /** スタイルの info を読む（一覧表示用。現在のスタイルは変えない） */
+  /** 文書テンプレートの info を読む（一覧表示用。現在の文書テンプレートは変えない） */
   styleInfo(source: string): Promise<StyleInfo>;
-  /** GUIモードのスタイルを設定する */
+  /** GUIモードの文書テンプレートを設定する */
   setStyle(source: string): Promise<StyleInfo>;
-  /** 現在のスタイルで新規文書を作る */
+  /** 現在の文書テンプレートで新規文書を作る */
   newDocument(): Promise<Doc>;
   updateDocument(doc: Doc, known: string[]): Promise<UpdateResult>;
   /** コードモードで見せるコード（直前に組版した文書を、部品ごとの目印つきの Typst にしたもの） */
@@ -60,7 +60,7 @@ export interface TextFile {
 }
 
 /**
- * システムフォルダ（ユーザーごとの設定・スタイル・テンプレート）。
+ * システムフォルダ（ユーザーごとの設定・文書テンプレート・部品テンプレート）。
  * デスクトップ版は %APPDATA%\formDoc、Web版はブラウザ内（localStorage / IndexedDB）。
  */
 export interface SystemStore {
@@ -68,13 +68,13 @@ export interface SystemStore {
   info(): Promise<{ root: string; styles: string; templates: string; projects: string } | null>;
   loadSettings(): Promise<string | null>;
   saveSettings(text: string): Promise<void>;
-  /** 利用者のスタイル（同梱スタイルは Catalog から別に得る） */
+  /** 利用者の文書テンプレート（同梱文書テンプレートは Catalog から別に得る） */
   listStyles(): Promise<TextFile[]>;
-  /** スタイルを追加する（Web版のみ。デスクトップ版は styles フォルダに置く） */
+  /** 文書テンプレートを追加する（Web版のみ。デスクトップ版は styles フォルダに置く） */
   addStyle?(name: string, text: string): Promise<void>;
-  /** テンプレート：このPC（システムフォルダ）と、指定フォルダから読む */
+  /** 部品テンプレート：このPC（システムフォルダ）と、指定フォルダから読む */
   listTemplates(folders: string[]): Promise<TextFile[]>;
-  /** テンプレートを保存する。folder が null ならこのPC（システムフォルダ） */
+  /** 部品テンプレートを保存する。folder が null ならこのPC（システムフォルダ） */
   saveTemplate(folder: string | null, name: string, text: string): Promise<string>;
   /** フォルダを選ぶ（デスクトップ：パスを返す。Web：中の .fdtpl を読み込んで返す） */
   pickTemplateFolder(): Promise<{ folder: string; files: TextFile[] } | null>;
@@ -84,10 +84,36 @@ export interface SystemStore {
   startupFile?(): Promise<string | null>;
 }
 
+/** 公開された新しい版 */
+export interface UpdateInfo {
+  /** 更新の識別子（Web版：ビルド識別子、デスクトップ版：版）。「あとで」にした更新を再び出さないため */
+  id: string;
+  /** 版（Web版で版が同じまま中身だけ更新されたときは、今と同じ版） */
+  version: string;
+  /** 変更内容（デスクトップ版：リリースノート） */
+  notes?: string;
+}
+
+/**
+ * 新しい版の検知と更新。通知の画面は共通（UpdateNotice.svelte）で、検知と更新の仕組みだけが違う。
+ * Web版：main へのマージのたびに GitHub Pages に配信される。version.json のビルド識別子を比べ、更新は再読み込み。
+ * デスクトップ版：リリースを公開したときだけ。GitHub Releases の latest.json を見て、ダウンロード・インストールして再起動。
+ */
+export interface Updater {
+  /** 確認する間隔（ミリ秒） */
+  interval: number;
+  /** 新しい版があれば返す */
+  check(): Promise<UpdateInfo | null>;
+  /** 新しい版にする。progress はダウンロードの進み具合（0〜1、全体の大きさが分からなければ null） */
+  apply(progress?: (ratio: number | null) => void): Promise<void>;
+}
+
 export interface Platform {
   engine: Engine;
   files: Files;
   folder: Folder | null;
   drafts: Drafts | null;
   system: SystemStore;
+  /** 開発サーバでは null（更新を確認しない） */
+  updater: Updater | null;
 }

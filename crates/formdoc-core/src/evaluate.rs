@@ -48,7 +48,7 @@ pub struct VarInfo {
     pub unit: String,
     pub digits: Option<u8>,
     pub desc: String,
-    /// 使える範囲の持ち主（見出し・テンプレートのブロックID）。None は文書全体
+    /// 使える範囲の持ち主（見出し・部品テンプレートのブロックID）。None は文書全体
     pub scope: Option<String>,
     /// 「グローバル変数として定義」
     pub global: bool,
@@ -162,7 +162,7 @@ pub fn refs_in_text(text: &str) -> Vec<String> {
     out
 }
 
-/// 変数の有効範囲。文書全体（根）・見出しの節・テンプレート（group）ごとに1つ。
+/// 変数の有効範囲。文書全体（根）・見出しの節・部品テンプレート（group）ごとに1つ。
 /// 変数は、定義した範囲の中で、定義より後ろからだけ使える（「グローバル変数として定義」なら文書全体）。
 struct Frame {
     /// 範囲の持ち主のブロックID（根は None）
@@ -225,7 +225,7 @@ impl Ctx<'_> {
         for name in refs_in_text(text) {
             if !self.scope.contains_key(&name) {
                 self.r.issue(b, field, Severity::Error, "var-undef",
-                    format!("{{{{{name}}}}} の変数「{name}」は、この位置より前で定義されていないか、使える範囲（同じ見出し・テンプレートの中）の外です{}", self.scope_hint(&name)));
+                    format!("{{{{{name}}}}} の変数「{name}」は、この位置より前で定義されていないか、使える範囲（同じ見出し・部品テンプレートの中）の外です{}", self.scope_hint(&name)));
             }
         }
     }
@@ -252,7 +252,7 @@ impl Ctx<'_> {
         let out: Vec<String> = names
             .iter()
             .filter(|n| !self.scope.contains_key(*n) && self.r.vars.iter().any(|v| &v.name == *n))
-            .map(|n| format!("「{n}」は別の節・テンプレートのローカル変数です（使うには、定義側で「グローバル変数として定義」にチェック）"))
+            .map(|n| format!("「{n}」は別の節・部品テンプレートのローカル変数です（使うには、定義側で「グローバル変数として定義」にチェック）"))
             .collect();
         if out.is_empty() { String::new() } else { format!("。{}", out.join("。")) }
     }
@@ -269,7 +269,7 @@ impl Ctx<'_> {
         }
     }
 
-    /// 部品の並び（文書、またはテンプレートの中身）を上から評価する。
+    /// 部品の並び（文書、または部品テンプレートの中身）を上から評価する。
     fn walk(&mut self, blocks: &[Block]) {
         let base = self.frames.len();
         for b in blocks {
@@ -292,7 +292,7 @@ impl Ctx<'_> {
         }
     }
 
-    /// テンプレートのまとまり。中の変数は外から見えない。props.exports の変数だけを外（親の範囲）に公開する。
+    /// 部品テンプレートのまとまり。中の変数は外から見えない。props.exports の変数だけを外（親の範囲）に公開する。
     fn group(&mut self, b: &Block) {
         self.r.blocks.insert(b.id.clone(), BlockResult { status: "ok", ..Default::default() });
         self.frames.push(Frame { owner: Some(b.id.clone()), level: None, vars: vec![] });
@@ -304,7 +304,7 @@ impl Ctx<'_> {
         self.pop_frame();
         for (name, v) in found {
             let Some(v) = v else {
-                self.r.issue(b, "exports", Severity::Error, "export-undef", format!("公開する変数「{name}」がテンプレートの中で定義されていません"));
+                self.r.issue(b, "exports", Severity::Error, "export-undef", format!("公開する変数「{name}」が部品テンプレートの中で定義されていません"));
                 continue;
             };
             if self.visible_by.contains_key(&name) {

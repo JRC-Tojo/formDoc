@@ -46,33 +46,33 @@
     <header>
       <div class="kind">📄 文書情報</div>
       {#if !app.style}
-        <p class="start">スタイルを選ぶと執筆を始められます。スタイルは文書全体の体裁（書体・余白・見出し・表紙）と、ここで入力する項目を決めます。</p>
+        <p class="start">文書テンプレートを選ぶと執筆を始められます。文書テンプレートは文書全体の体裁（書体・余白・見出し・表紙）と、ここで入力する項目を決めます。</p>
       {/if}
     </header>
     <div class="styles">
-      <div class="lbl">スタイル</div>
+      <div class="lbl">文書テンプレート</div>
       {#each app.styles as st (st.path)}
         <button class="style" class:on={st.source === current} disabled={!st.info} onclick={() => app.chooseStyle(st)} title={st.error ?? st.path}>
           <span class="sname">{st.info?.name ?? st.path.split(/[\/]/).pop()}</span>
           <span class="small muted">{st.error ? `読み込めません: ${st.error}` : st.info?.description}</span>
         </button>
       {:else}
-        <p class="small muted">スタイルが見つかりません。</p>
+        <p class="small muted">文書テンプレートが見つかりません。</p>
       {/each}
       {#if app.style && !app.styles.some((s) => s.source === current)}
-        <div class="small muted">この文書は保存時のスタイル「{app.style.info.name}」で組版しています。</div>
+        <div class="small muted">この文書は保存時の文書テンプレート「{app.style.info.name}」で組版しています。</div>
       {/if}
       <div class="sfoot small">
         {#if app.systemPath}
-          <button class="ghost small" onclick={() => app.platform?.system.openPath?.(app.systemPath!.styles)}>スタイルのフォルダを開く</button>
+          <button class="ghost small" onclick={() => app.platform?.system.openPath?.(app.systemPath!.styles)}>文書テンプレートのフォルダを開く</button>
         {:else}
-          <button class="ghost small" onclick={() => app.importStyle()}>スタイル（.typ）を取り込む…</button>
+          <button class="ghost small" onclick={() => app.importStyle()}>文書テンプレート（.typ）を取り込む…</button>
         {/if}
         <button class="ghost small" onclick={() => app.loadStyles()}>再読み込み</button>
       </div>
     </div>
     {#if app.style}
-      <p class="small muted">体裁はスタイルで固定されており、ここでは変更できません。</p>
+      <p class="small muted">体裁は文書テンプレートで固定されており、ここでは変更できません。</p>
       {#each metaFields as f (app.style.info.id + f.key)}
         <Field def={f} value={app.doc.meta[f.key]} issues={metaIssues} onchange={(v) => app.setMeta(f.key, v)} />
       {/each}

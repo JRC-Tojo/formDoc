@@ -7,7 +7,7 @@ fn style() -> String {
     builtin_style("keisansho").unwrap()
 }
 
-/// 計算書スタイルを設定したセッション。
+/// 計算書の文書テンプレートを設定したセッション。
 fn session() -> Session {
     let mut s = Session::new();
     s.set_style(&style()).unwrap();
@@ -123,7 +123,7 @@ fn old_meta_chapter_start_is_migrated() {
 
 #[test]
 fn builtin_snippets_compile_without_errors() {
-    // 同梱テンプレート（I形断面・単純梁）をそのまま文書にして組版できる。汎用図形の評価値も返る
+    // 同梱部品テンプレート（I形断面・単純梁）をそのまま文書にして組版できる。汎用図形の評価値も返る
     let snippets = formdoc_core::template::builtin_snippets();
     assert!(snippets.len() >= 2);
     for sn in snippets {
@@ -140,7 +140,7 @@ fn builtin_snippets_compile_without_errors() {
 
 #[test]
 fn shape_repeat_and_influence_line() {
-    // 単純梁テンプレート：荷重 n 個を間隔 s で繰り返し、影響線縦距を自動計算する
+    // 単純梁の部品テンプレート：荷重 n 個を間隔 s で繰り返し、影響線縦距を自動計算する
     let sn = formdoc_core::template::builtin_snippets().into_iter().find(|s| s["name"].as_str().unwrap().starts_with("単純梁")).unwrap();
     let mut s = session();
     let mut doc = s.new_document().unwrap();
@@ -225,7 +225,7 @@ fn group_hides_internal_variables_and_exports() {
     doc.blocks = vec![
         g,
         blk("c1", "calc", json!({"name": "a1", "expr": "A"})),   // 公開した変数は使える
-        g2,                                                       // 中の H は前のテンプレートと重ならない
+        g2,                                                       // 中の H は前の部品テンプレートと重ならない
         blk("c2", "calc", json!({"name": "a2", "expr": "H"})),   // 内部の変数は使えない
     ];
     let r = s.update_document(doc, &[]);

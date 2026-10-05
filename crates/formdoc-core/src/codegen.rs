@@ -15,7 +15,7 @@ use crate::template::{MetaField, Template};
 /// 社内標準パッケージ。
 pub const PACKAGE: &str = "@local/formdoc:0.1.0";
 
-/// 文書情報の1項目を style 関数の引数にする。値が無ければ None（スタイル側の既定値を使う）。
+/// 文書情報の1項目を style 関数の引数にする。値が無ければ None（文書テンプレート側の既定値を使う）。
 fn meta_arg(f: &MetaField, v: Option<&Value>) -> Option<String> {
     let v = v.filter(|v| !v.is_null()).or(f.default.as_ref())?;
     Some(match f.kind.as_str() {
@@ -412,7 +412,7 @@ pub fn generate_with(doc: &Document, t: &Template, report: &Report, error_boxes:
     Generated { source: g.out, spans: g.spans, codes: g.codes }
 }
 
-/// 生成ソースの先頭（パッケージ・スタイルの読み込みと文書情報）。
+/// 生成ソースの先頭（パッケージ・文書テンプレートの読み込みと文書情報）。
 pub fn header(doc: &Document, t: &Template) -> String {
     format!(
         "#import \"{PACKAGE}\": *\n#import \"style.typ\": style\n#show: style.with({})\n\n",
@@ -437,7 +437,7 @@ impl Gen<'_> {
     fn blocks(&mut self, blocks: &[Block]) {
         for b in blocks {
             if b.kind == "group" {
-                // テンプレートのまとまり。目印の行で囲む（コードモードで編集しても元に戻せるように）
+                // 部品テンプレートのまとまり。目印の行で囲む（コードモードで編集しても元に戻せるように）
                 let start = self.line_no();
                 self.out.push_str(&format!("// @group {} {}\n", b.id, b.str("title").replace('\n', " ")));
                 self.blocks(&b.children);

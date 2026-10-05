@@ -1,5 +1,5 @@
 // Web版の実装。エンジンは Web Worker（wasm）、保存はダウンロード、下書きは IndexedDB。
-import type { Drafts, Engine, Files, Platform, SystemStore, TextFile } from './types';
+import type { Drafts, Engine, Files, Platform, SystemStore, TextFile, Updater } from './types';
 
 function workerEngine(): Engine {
   const worker = new Worker(new URL('../engine/worker.ts', import.meta.url), { type: 'module' });
@@ -126,7 +126,7 @@ async function idbPut(store: string, key: string, value: string) {
 
 const SETTINGS_KEY = 'formdoc.settings';
 
-/** Web版のシステムフォルダ相当。設定は localStorage、スタイル・テンプレートは IndexedDB。 */
+/** Web版のシステムフォルダ相当。設定は localStorage、文書テンプレート・部品テンプレートは IndexedDB。 */
 const system: SystemStore = {
   info: async () => null,
   async loadSettings() {
@@ -178,6 +178,36 @@ const system: SystemStore = {
   },
 };
 
+/**
+ * 新しい版の検知（main へのマージのたびに GitHub Pages へ配信される）。
+ * 配信中の version.json のビルド識別子が、いま動いているものと違えば新しい版。
+ * JS・wasm はファイル名にハッシュが付くため、HTML さえ新しくなれば中身はすべて新しくなる。
+ * HTML はブラウザ・配信側（GitHub Pages は最大10分）にキャッシュされうるため、再読み込みでは
+ * URL に ?v=<識別子> を付けて別物として取り直させる（付けた ?v= は起動時に消す）。
+ */
+async function latest(): Promise<{ version: string; build: string } | null> {
+  const res = await fetch(`./version.json?t=${Date.now()}`, { cache: 'no-store' });
+  return res.ok ? res.json() : null;
+}
+
+const updater: Updater = {
+  interval: 10 * 60 * 1000,
+  async check() {
+    const v = await latest();
+    return v?.build && v.build !== __BUILD_ID__ ? { id: v.build, version: v.version } : null;
+  },
+  async apply() {
+    const v = await latest();
+    location.replace(`${location.pathname}?v=${encodeURIComponent(v?.build ?? Date.now())}`);
+  },
+};
+
 export function createWebPlatform(): Platform {
-  return { engine: workerEngine(), files, folder: null, drafts, system };
+  // 更新時に付けた ?v= を表示から消す（ブックマーク等に残さないため）
+  const url = new URL(location.href);
+  if (url.searchParams.has('v')) {
+    url.searchParams.delete('v');
+    history.replaceState(history.state, '', url);
+  }
+  return { engine: workerEngine(), files, folder: null, drafts, system, updater: import.meta.env.DEV ? null : updater };
 }

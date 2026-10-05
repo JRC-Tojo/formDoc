@@ -15,7 +15,7 @@ pub struct Document {
     /// 作成に使ったライブラリの版。開いた環境の版と異なれば警告する。
     #[serde(default)]
     pub library: String,
-    /// スタイルの id（スタイルの中身は保存ファイルに同梱する）
+    /// 文書テンプレートの id（文書テンプレートの中身は保存ファイルに同梱する）
     pub template: String,
     #[serde(default)]
     pub meta: Meta,
@@ -30,7 +30,7 @@ fn schema_version() -> u32 {
     SCHEMA_VERSION
 }
 
-/// 文書情報（表紙など）。キーはスタイルの `info.fields` の key（= style 関数の引数名）。
+/// 文書情報（表紙など）。キーは文書テンプレートの `info.fields` の key（= style 関数の引数名）。
 /// 旧形式の `chapter_start` は読み込み時に `chapter-start` に読み替える。
 #[derive(Debug, Clone, Default, Serialize, PartialEq)]
 #[serde(transparent)]
@@ -84,7 +84,7 @@ pub struct Block {
     pub kind: String,
     #[serde(default)]
     pub props: Map<String, Value>,
-    /// 子要素（"group" ＝ 挿入したテンプレートのまとまり）。見出しの配下は並び順から決まるため子要素にはしない
+    /// 子要素（"group" ＝ 挿入した部品テンプレートのまとまり）。見出しの配下は並び順から決まるため子要素にはしない
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub children: Vec<Block>,
 }

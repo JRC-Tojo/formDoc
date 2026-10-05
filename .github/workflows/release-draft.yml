@@ -1,0 +1,68 @@
+# バージョンアップの PR（release/v<版> → main）が承認されたら、インストーラー付きのリリースの下書きを作る。
+# 下書きは公開されるまで利用者に届かない。管理者が内容を確認して「Publish release」を押すと、
+# デスクトップ版がタグ v<版> の latest.json を見つけて更新を通知する。
+# 事前設定：リポジトリの Secrets に TAURI_SIGNING_PRIVATE_KEY（自動更新の署名鍵。README 参照）を登録する。
+# もう一度承認したときは、同じ下書きのファイルを作り直す。
+name: リリースの下書き
+
+on:
+  pull_request_review:
+    types: [submitted]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.event.pull_request.head.ref }}
+  cancel-in-progress: true
+
+jobs:
+  draft:
+    if: >-
+      github.event.review.state == 'approved' &&
+      startsWith(github.event.pull_request.head.ref, 'release/v') &&
+      github.event.pull_request.base.ref == 'main' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: windows-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      HEAD_REF: ${{ github.event.pull_request.head.ref }}
+      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - id: v
+        run: |
+          tag="v${HEAD_REF#release/v}"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          # 公開済みの版は作り直さない
+          if [ "$(gh release view "$tag" --json isDraft -q .isDraft 2>/dev/null)" = "false" ]; then
+            echo "::error::$tag は公開済みです"; exit 1
+          fi
+      - uses: ./.github/actions/setup
+        with:
+          cache-key: desktop
+      - run: bun ready --desktop
+      # tauri.release.conf.json で自動更新用の署名（.sig）も作る（手元のビルドでは署名鍵が無いため使わない）
+      - name: インストーラーのビルド（自動更新用の署名つき）
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: bun run tauri build --config src-tauri/tauri.release.conf.json
+      - name: リリースの下書き
+        env:
+          TAG: ${{ steps.v.outputs.tag }}
+        run: |
+          if gh release view "$TAG" > /dev/null 2>&1; then
+            gh release edit "$TAG" --target "$HEAD_SHA"
+          else
+            # リリースノートは前回のリリースからの PR を自動でまとめたもの。公開前に下書きで編集する
+            gh release create "$TAG" --draft --target "$HEAD_SHA" --title "formDoc ${TAG#v}" --generate-notes
+          fi
+          NOTES=$(gh release view "$TAG" --json body -q .body) bun scripts/updater-manifest.ts "$TAG" latest.json
+          installer=$(ls target/release/bundle/nsis/*_"${TAG#v}"_*-setup.exe)
+          gh release upload "$TAG" --clobber latest.json "$installer" "$installer.sig"

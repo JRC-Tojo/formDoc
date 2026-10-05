@@ -1,6 +1,6 @@
 <script lang="ts">
   // 文書の構成。見出しは番号付きで、配下の部品を字下げして表示する。
-  // 見出しの節と、挿入したテンプレートのまとまり（group）は折りたためる。ドラッグで並べ替える（見出しは節ごと）。
+  // 見出しの節と、挿入した部品テンプレートのまとまり（group）は折りたためる。ドラッグで並べ替える（見出しは節ごと）。
   import { app } from '../state.svelte';
   import { findBlock, sectionEnd } from '../tree';
   import type { Block } from '../types';
@@ -26,7 +26,7 @@
 
   const comps = $derived(app.catalog?.components ?? {});
 
-  /** 見出し番号（§4． / 4.1 / (1) / 1)）。テンプレートの中の見出しも文書の順に数える */
+  /** 見出し番号（§4． / 4.1 / (1) / 1)）。部品テンプレートの中の見出しも文書の順に数える */
   const numbering = $derived.by(() => {
     const out: Record<string, string> = {};
     const c = [Number(app.doc?.meta['chapter-start'] ?? 1) - 1, 0, 0, 0];
@@ -77,7 +77,7 @@
       case 'heading':
         return `${p.text ?? ''}${p.symbol ? '　' + p.symbol : ''}`;
       case 'group':
-        return `${p.title || 'テンプレート'}（${b.children?.length ?? 0}）`;
+        return `${p.title || '部品テンプレート'}（${b.children?.length ?? 0}）`;
       case 'paragraph':
         return String(p.text ?? '').replace(/\s+/g, ' ').slice(0, 40) || '（空の段落）';
       case 'vdef':
@@ -178,7 +178,7 @@
   }
 
   function openAdd() {
-    if (!app.style) return app.flash('先に文書情報でスタイルを選んでください', 'error');
+    if (!app.style) return app.flash('先に文書情報で文書テンプレートを選んでください', 'error');
     app.dialog = { kind: 'insert' };
   }
 
@@ -243,7 +243,7 @@
   </ol>
 
   <div class="foot">
-    <button class="primary" onclick={openAdd} title="部品・テンプレートを選んで、選択中の部品の下に追加します">＋ 部品を追加…</button>
+    <button class="primary" onclick={openAdd} title="部品・部品テンプレートを選んで、選択中の部品の下に追加します">＋ 部品を追加…</button>
     {#if app.selected}
       <div class="ops">
         <button title="複製" onclick={() => app.duplicateBlock(app.selectedId!)}>複製</button>
@@ -273,7 +273,7 @@
       <hr />
       <button class="ghost" role="menuitem" onclick={() => run(() => (app.dialog = { kind: 'saveTemplate', blockId: id }))}
         title={b?.kind === 'heading' ? '見出しと、その配下の節をまとめて保存します' : 'この部品を保存します'}>
-        テンプレートとして保存…{b?.kind === 'heading' ? '（節ごと）' : ''}
+        部品テンプレートとして保存…{b?.kind === 'heading' ? '（節ごと）' : ''}
       </button>
       <hr />
       <button class="ghost danger" role="menuitem" onclick={() => run(() => app.removeBlock(id))}>削除{b?.kind === 'group' ? '（まとまりごと）' : ''}</button>

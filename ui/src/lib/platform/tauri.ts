@@ -2,7 +2,9 @@
 import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
 import { open, save } from '@tauri-apps/plugin-dialog';
-import type { Engine, Files, Folder, Platform, SystemStore, TextFile } from './types';
+import { check, type Update } from '@tauri-apps/plugin-updater';
+import { relaunch } from '@tauri-apps/plugin-process';
+import type { Engine, Files, Folder, Platform, SystemStore, TextFile, Updater } from './types';
 
 const engine: Engine = {
   catalog: () => invoke('catalog'),
@@ -81,6 +83,33 @@ const system: SystemStore = {
   startupFile: () => invoke('startup_file'),
 };
 
+/**
+ * 新しい版の検知（リリースを公開したときだけ）。GitHub Releases の latest.json（tauri.conf.json の plugins.updater）を見る。
+ * 更新はインストーラーをダウンロードして実行し（署名を検証する）、終わったら再起動する。
+ */
+let pending: Update | null = null;
+const updater: Updater = {
+  interval: 6 * 60 * 60 * 1000,
+  async check() {
+    pending = await check();
+    return pending ? { id: pending.version, version: pending.version, notes: pending.body } : null;
+  },
+  async apply(progress) {
+    if (!pending) return;
+    let total: number | null = null;
+    let done = 0;
+    await pending.downloadAndInstall((ev) => {
+      if (ev.event === 'Started') total = ev.data.contentLength ?? null;
+      else if (ev.event === 'Progress') {
+        done += ev.data.chunkLength;
+        progress?.(total ? done / total : null);
+      }
+    });
+    // Windows はインストーラーの起動時にアプリが終了するため、ここに来るのは他の OS のときだけ
+    await relaunch();
+  },
+};
+
 export function createTauriPlatform(): Platform {
-  return { engine, files, folder, drafts: null, system };
+  return { engine, files, folder, drafts: null, system, updater: import.meta.env.DEV ? null : updater };
 }

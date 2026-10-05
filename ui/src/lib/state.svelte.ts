@@ -75,7 +75,7 @@ export type Dialog =
   | { kind: 'shapes'; blockId: string };
 
 class AppState {
-  platform: Platform | null = null;
+  platform = $state.raw<Platform | null>(null);
   catalog = $state<Catalog | null>(null);
   loading = $state('エンジンを起動しています…');
   message = $state<{ kind: 'info' | 'error'; text: string } | null>(null);
@@ -83,12 +83,12 @@ class AppState {
   systemPath = $state<{ root: string; styles: string; templates: string; projects: string } | null>(null);
   dialog = $state<Dialog | null>(null);
 
-  // スタイル
+  // 文書テンプレート
   styles = $state<StyleEntry[]>([]);
-  /** 現在のスタイル（ソースと info） */
+  /** 現在の文書テンプレート（ソースと info） */
   style = $state<{ file: string; source: string; info: StyleInfo } | null>(null);
 
-  // テンプレート
+  // 部品テンプレート
   templates = $state<TemplateEntry[]>([]);
   /** Web版で読み込んだフォルダの分（その場限り） */
   private sessionTemplates: TemplateEntry[] = [];
@@ -116,7 +116,7 @@ class AppState {
   private running = false;
   private queued = false;
 
-  /** 現在のスタイルの規則（部品の一覧・見出しの階層など） */
+  /** 現在の文書テンプレートの規則（部品の一覧・見出しの階層など） */
   get template(): StyleInfo | null {
     return this.style?.info ?? null;
   }
@@ -125,7 +125,7 @@ class AppState {
     return findBlock(this.doc?.blocks ?? [], this.selectedId);
   }
 
-  /** 折りたたんだ見出し・テンプレートのID（表示だけの状態。保存しない） */
+  /** 折りたたんだ見出し・部品テンプレートのID（表示だけの状態。保存しない） */
   collapsed = $state<Record<string, boolean>>({});
 
   issuesFor(id: string): Issue[] {
@@ -196,14 +196,14 @@ class AppState {
     this.saveSettings({ recent });
   }
 
-  // ---------- スタイル ----------
+  // ---------- 文書テンプレート ----------
 
-  /** 同梱スタイルと利用者のスタイル（システムフォルダ／ブラウザ内）を読み、info を評価する */
+  /** 同梱文書テンプレートと利用者の文書テンプレート（システムフォルダ／ブラウザ内）を読み、info を評価する */
   async loadStyles() {
     const p = this.platform!;
     const user = await p.system.listStyles().catch(() => []);
     const entries: StyleEntry[] = user.map((f) => ({ path: f.path, source: f.text, info: null }));
-    // デスクトップ版は同梱スタイルをシステムフォルダにコピー済み。Web版は同梱分を先頭に並べる
+    // デスクトップ版は同梱文書テンプレートをシステムフォルダにコピー済み。Web版は同梱分を先頭に並べる
     if (!this.systemPath) {
       for (const s of this.catalog?.styles ?? []) entries.unshift({ path: `builtin:${s.file}`, source: s.source, info: null });
     }
@@ -217,7 +217,7 @@ class AppState {
     this.styles = entries;
   }
 
-  /** Web版：スタイルファイル（.typ）をブラウザ内に取り込む */
+  /** Web版：文書テンプレートファイル（.typ）をブラウザ内に取り込む */
   async importStyle() {
     const f = await this.platform!.files.openFile(['typ']);
     if (!f) return;
@@ -233,7 +233,7 @@ class AppState {
   }
 
   /**
-   * スタイルを選ぶ。新規文書（部品が無い）なら骨組みと既定値で始め、
+   * 文書テンプレートを選ぶ。新規文書（部品が無い）なら骨組みと既定値で始め、
    * 執筆中の文書なら部品はそのままに、同じキーの文書情報だけを引き継ぐ。
    */
   async chooseStyle(entry: StyleEntry) {
@@ -250,7 +250,7 @@ class AppState {
     const cur = this.doc;
     if (!cur || cur.blocks.length === 0) {
       for (const b of fresh.blocks) b.id = uid();
-      // スタイルを選ぶ前に入力した値は残す
+      // 文書テンプレートを選ぶ前に入力した値は残す
       const kept = Object.fromEntries(Object.entries(cur?.meta ?? {}).filter(([k, v]) => info.fields.some((f) => f.key === k) && v !== '' && v != null));
       this.style = { file, source: entry.source, info };
       this.edit((d) => {
@@ -260,7 +260,7 @@ class AppState {
         d.blocks = fresh.blocks;
       });
     } else {
-      if (this.style && !confirm(`スタイルを「${info.name}」に変えます。部品はそのまま残り、文書情報は同じ項目だけ引き継ぎます。よろしいですか？`)) return;
+      if (this.style && !confirm(`文書テンプレートを「${info.name}」に変えます。部品はそのまま残り、文書情報は同じ項目だけ引き継ぎます。よろしいですか？`)) return;
       this.style = { file, source: entry.source, info };
       this.edit((d) => {
         d.template = info.id;
@@ -272,7 +272,7 @@ class AppState {
     await this.refresh();
   }
 
-  // ---------- テンプレート ----------
+  // ---------- 部品テンプレート ----------
 
   async loadTemplates() {
     const p = this.platform!;
@@ -285,13 +285,13 @@ class AppState {
         if (file.format !== 'formdoc-template') continue;
         out.push({ file, source: f.folder === local ? 'このPC' : f.folder, path: f.path });
       } catch {
-        /* テンプレートでないファイルは飛ばす */
+        /* 部品テンプレートでないファイルは飛ばす */
       }
     }
     this.templates = [...out, ...this.sessionTemplates];
   }
 
-  /** テンプレートを読み込むフォルダを追加する（デスクトップは設定に記録、Web はその場限り） */
+  /** 部品テンプレートを読み込むフォルダを追加する（デスクトップは設定に記録、Web はその場限り） */
   async addTemplateFolder() {
     const r = await this.platform!.system.pickTemplateFolder();
     if (!r) return;
@@ -308,16 +308,16 @@ class AppState {
       }
     }
     await this.loadTemplates();
-    this.flash(`${r.folder} のテンプレートを読み込みました（${r.files.length} 件）`);
+    this.flash(`${r.folder} の部品テンプレートを読み込みました（${r.files.length} 件）`);
   }
 
-  /** テンプレートとして保存する。folder が null ならこのPC（システムフォルダ） */
+  /** 部品テンプレートとして保存する。folder が null ならこのPC（システムフォルダ） */
   async saveTemplate(t: TemplateFile, folder: string | null): Promise<boolean> {
     const name = `${safeFileName(t.name)}.fdtpl`;
     try {
       const path = await this.platform!.system.saveTemplate(folder, name, JSON.stringify(t, null, 1));
       await this.loadTemplates();
-      this.flash(`テンプレート「${t.name}」を保存しました（${path}）`);
+      this.flash(`部品テンプレート「${t.name}」を保存しました（${path}）`);
       return true;
     } catch (e: any) {
       this.flash(`保存できませんでした: ${e?.message ?? e}`, 'error');
@@ -325,7 +325,7 @@ class AppState {
     }
   }
 
-  /** 見出しなら配下の節ごと、それ以外（テンプレートのまとまりを含む）はその部品だけ */
+  /** 見出しなら配下の節ごと、それ以外（部品テンプレートのまとまりを含む）はその部品だけ */
   fragmentOf(blockId: string): Block[] {
     const loc = locate(this.doc?.blocks ?? [], blockId);
     if (!loc) return [];
@@ -339,7 +339,7 @@ class AppState {
   }
 
   /**
-   * テンプレートを選択中の部品の下に入れる。中身は1つのまとまり（group）にし、
+   * 部品テンプレートを選択中の部品の下に入れる。中身は1つのまとまり（group）にし、
    * 中の変数はその中だけで使えるようにする（exports の変数だけ外から使える）。
    */
   async insertTemplate(title: string, blocks: Block[], exports: string[], assets: Record<string, string> = {}) {
@@ -522,7 +522,7 @@ class AppState {
       if (!from) return;
       const count = sectionEnd(from.list, from.index) - from.index;
       const moving = from.list.slice(from.index, from.index + count);
-      // 自分の中（テンプレートの中など）へは動かせない
+      // 自分の中（部品テンプレートの中など）へは動かせない
       if (parentId && moving.some((m) => m.id === parentId || flatten(m.children ?? []).some((c) => c.id === parentId))) return;
       const target = parentId ? findBlock(d.blocks, parentId) : null;
       const list = target ? (target.children ??= []) : d.blocks;
@@ -598,7 +598,7 @@ class AppState {
     return !this.dirty || confirm(`保存していない変更があります。破棄して${action}しますか？`);
   }
 
-  /** 新規作成。文書情報の画面でスタイルを選ぶと執筆を始められる */
+  /** 新規作成。文書情報の画面で文書テンプレートを選ぶと執筆を始められる */
   async newDocument(force = false) {
     if (!force && !this.confirmDiscard('新規作成')) return;
     this.doc = emptyDoc();
@@ -629,10 +629,28 @@ class AppState {
     this.draftTimer = setTimeout(() => this.platform?.drafts?.save(DRAFT_KEY, JSON.stringify(this.saved())), 1000);
   }
 
+  /** 新しい版への更新で閉じる最中（未保存の確認を出さない） */
+  updating = false;
+
+  /**
+   * 新しい版に更新する前の準備。Web版は下書きをすぐ保存する（再読み込み後に復元される）。
+   * デスクトップ版は未保存の変更があれば確認する。続けてよければ true
+   */
+  async prepareUpdate(): Promise<boolean> {
+    if (has('browserStorage') && this.platform?.drafts) {
+      if (this.draftTimer) clearTimeout(this.draftTimer);
+      if (this.doc) await this.platform.drafts.save(DRAFT_KEY, JSON.stringify(this.saved()));
+    } else if (this.dirty && !confirm('保存していない変更があります。更新すると失われます。続けますか？')) {
+      return false;
+    }
+    this.updating = true;
+    return true;
+  }
+
   private async loadSaved(s: SavedDoc, path: string | null) {
     if (s.format !== 'formdoc') throw new Error('formDoc の文書ファイルではありません');
     const p = this.platform!;
-    // スタイル：保存ファイルに同梱されたもの（旧形式は同じ id のスタイル）で組版する
+    // 文書テンプレート：保存ファイルに同梱されたもの（旧形式は同じ id の文書テンプレート）で組版する
     const sameId = this.styles.find((e) => e.info?.id === s.document.template);
     const source = s.style?.source ?? sameId?.source;
     let style: AppState['style'] = null;
@@ -641,7 +659,7 @@ class AppState {
         const info = await p.engine.setStyle(source);
         style = { file: s.style?.file ?? `${info.id}.typ`, source, info };
       } catch (e: any) {
-        this.flash(`文書のスタイルを読み込めません: ${e?.message ?? e}`, 'error');
+        this.flash(`文書に同梱された文書テンプレートを読み込めません: ${e?.message ?? e}`, 'error');
       }
     }
     this.doc = s.document;
@@ -662,9 +680,9 @@ class AppState {
     this.pageHashes = [];
     this.result = null;
     if (style && sameId && sameId.source !== style.source) {
-      this.flash(`この文書は保存時のスタイル「${style.info.name}」で組版しています（システムフォルダのスタイルとは内容が異なります。文書情報から選び直せます）`);
+      this.flash(`この文書は保存時の文書テンプレート「${style.info.name}」で組版しています（システムフォルダの文書テンプレートとは内容が異なります。文書情報から選び直せます）`);
     } else if (!style) {
-      this.flash('スタイルが見つかりません。文書情報でスタイルを選んでください', 'error');
+      this.flash('文書テンプレートが見つかりません。文書情報で文書テンプレートを選んでください', 'error');
     }
     await this.refresh();
   }
@@ -757,7 +775,7 @@ class AppState {
 
   async enterCodeMode() {
     if (!this.style) {
-      this.flash('先に文書情報でスタイルを選んでください', 'error');
+      this.flash('先に文書情報で文書テンプレートを選んでください', 'error');
       return;
     }
     this.mode = 'code';
@@ -792,7 +810,7 @@ class AppState {
     }
   }
 
-  /** コード（main.typ）とスタイル（style.typ）をファイルとして保存する */
+  /** コード（main.typ）と文書テンプレート（style.typ）をファイルとして保存する */
   async saveCodeFiles() {
     const code = await this.platform!.engine.code();
     if (!code || !this.style) return;
@@ -828,7 +846,7 @@ class AppState {
   async openInVSCode() {
     const f = this.platform?.folder;
     if (!f) return;
-    if (!this.style) return this.flash('先に文書情報でスタイルを選んでください', 'error');
+    if (!this.style) return this.flash('先に文書情報で文書テンプレートを選んでください', 'error');
     if (!this.codeFolder) {
       const base = this.systemPath?.projects;
       if (!base) return;

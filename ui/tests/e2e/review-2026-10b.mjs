@@ -1,6 +1,6 @@
-// 2回目の試用レビュー対応のブラウザ確認。Web版 dev サーバ（npm run dev）に対して実行する。
+// 2回目の試用レビュー対応のブラウザ確認。Web版 dev サーバ（bun run dev）に対して実行する。
 // 準備: chrome --headless=new --remote-debugging-port=9222 --user-data-dir=<tmp> を起動し、playwright-core を入れた場所で
-//   node ui/tests/e2e/review-2026-10b.mjs <スクリーンショットの出力先>
+//   bun ui/tests/e2e/review-2026-10b.mjs <スクリーンショットの出力先>
 import { chromium } from 'playwright-core';
 
 const out = process.argv[2] ?? '.';
@@ -25,7 +25,7 @@ await page.waitForFunction(() => globalThis.__formdoc && __formdoc.loading === '
 await page.locator('button.style', { hasText: '計算書' }).click();
 await page.waitForFunction(() => __formdoc.pageHashes.length > 0, null, { timeout: 60000 });
 
-// 1. テンプレートを挿入すると、一覧に1つのまとまりとして出る
+// 1. 部品テンプレートを挿入すると、一覧に1つのまとまりとして出る
 async function insertTemplate(name, fill) {
   await page.getByRole('button', { name: '＋ 部品を追加…' }).click();
   await page.locator('.modal .item', { hasText: name }).click();
@@ -38,7 +38,7 @@ async function insertTemplate(name, fill) {
 await page.locator('.outline .row', { hasText: '設計条件' }).click();
 await insertTemplate('I形断面');
 await insertTemplate('I形断面');
-ok((await page.locator('.outline .item.group').count()) === 2, 'テンプレートは一覧で1つのまとまり（2つ挿入 → 2行）');
+ok((await page.locator('.outline .item.group').count()) === 2, '部品テンプレートは一覧で1つのまとまり（2つ挿入 → 2行）');
 const names = await st(() => __formdoc.result.vars.map((v) => v.name));
 ok(names.includes('A') && names.includes('A_2'), '公開する変数は A と A_2: ' + names.join(','));
 ok((await errs()).length === 0, '内部の変数（H など）が重なってもエラーにならない: ' + (await errs()).join(' / '));
@@ -98,7 +98,7 @@ const code = await st(() => __formdoc.codeText);
 ok(code.includes('// @group') && code.includes('// @block'), 'コードモードは同じ文書（目印つき）');
 const pagesBefore = await st(() => __formdoc.pageHashes.length);
 ok(pagesBefore > 0, 'プレビューはそのまま');
-// 1つ目のテンプレートの H を 800 にする
+// 1つ目の部品テンプレートの H を 800 にする
 await st(() => {
   const t = __formdoc.codeText;
   const i = t.indexOf('vdef("H", 700.0');
@@ -115,7 +115,7 @@ ok((await st(() => JSON.stringify(__formdoc.doc).includes('"kind":"typst"'))), '
 ok((await errs()).length === 0, 'コード編集後もエラー0件: ' + (await errs()).join(' / '));
 ok(!(await page.getByRole('button', { name: 'Typstに変換' }).count()), '「Typstに変換」ボタンは無い');
 
-// 6. 単純梁テンプレート：荷重3個にすると図と影響線が変わる
+// 6. 単純梁の部品テンプレート：荷重3個にすると図と影響線が変わる
 await insertTemplate('単純梁', async () => {
   const row = page.locator('.modal tr', { hasText: '荷重の数' });
   await row.locator('input[value="value"]').check();

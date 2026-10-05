@@ -1,7 +1,7 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "メインウィンドウの権限（ダイアログ、閉じる前の確認、タイトル。ファイルの読み書きはアプリ側のコマンドで行う）",
+  "description": "メインウィンドウの権限（ダイアログ、閉じる前の確認、タイトル、自動更新と再起動。ファイルの読み書きはアプリ側のコマンドで行う）",
   "windows": [
     "main"
   ],
@@ -9,6 +9,8 @@
     "core:default",
     "dialog:default",
     "core:window:allow-destroy",
-    "core:window:allow-set-title"
+    "core:window:allow-set-title",
+    "updater:default",
+    "process:allow-restart"
   ]
 }

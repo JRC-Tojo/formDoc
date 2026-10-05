@@ -1,6 +1,6 @@
 <script lang="ts">
-  // 「部品を追加」ダイアログ。部品とテンプレートを同じ一覧から選んで、選択中の部品の下に入れる。
-  // テンプレートは1つのまとまり（group）として入る。中の変数はその中だけで使えるため、挿入する側は
+  // 「部品を追加」ダイアログ。部品と部品テンプレートを同じ一覧から選んで、選択中の部品の下に入れる。
+  // 部品テンプレートは1つのまとまり（group）として入る。中の変数はその中だけで使えるため、挿入する側は
   // 「入力」の変数をつなぎ、「公開」の変数の名前を決めるだけでよい。
   import { app } from '../state.svelte';
   import { analyze, renameBlocks, uniqueName, type RenameMap } from '../vars';
@@ -15,7 +15,7 @@
   let query = $state('');
   let group = $state<string>('すべて');
   let picked = $state<Item | null>(null);
-  /** テンプレートの挿入設定（選んだら表示） */
+  /** 部品テンプレートの挿入設定（選んだら表示） */
   let binding = $state<null | { entry: TemplateEntry; inputs: Bind[]; exports: { name: string; label: string; to: string }[] }>(null);
   type Bind = { name: string; label: string; unit?: string; hasDefault: boolean; mode: 'var' | 'value'; varName: string; value: string };
 
@@ -32,7 +32,7 @@
     for (const entry of app.templates) {
       const f = entry.file;
       if (f.styles?.length && !f.styles.includes(styleId)) continue;
-      out.push({ type: 'template', entry, label: f.name, icon: '❖', help: f.description, group: `テンプレート：${entry.source}` });
+      out.push({ type: 'template', entry, label: f.name, icon: '❖', help: f.description, group: `部品テンプレート：${entry.source}` });
     }
     return out;
   });
@@ -41,7 +41,7 @@
     items.filter((i) => (group === 'すべて' || i.group === group) && (!query || (i.label + i.help).toLowerCase().includes(query.toLowerCase()))),
   );
 
-  /** 挿入位置で使える変数（同じ節・テンプレートの中のローカル変数と、グローバル変数） */
+  /** 挿入位置で使える変数（同じ節・部品テンプレートの中のローカル変数と、グローバル変数） */
   const before = $derived(
     [...new Set(visibleVars(app.doc?.blocks ?? [], app.result?.vars ?? [], app.selectedId, 'after').map((v) => v.name))],
   );
@@ -106,7 +106,7 @@
       const defBlock = usage.definedBy[b.name];
       if (b.mode === 'var') {
         if (b.varName !== b.name) map[b.name] = b.varName;
-        // テンプレート内の既定値の定義は、つないだ変数で置き換えるので除く
+        // 部品テンプレート内の既定値の定義は、つないだ変数で置き換えるので除く
         if (defBlock) blocks = blocks.filter((x) => x.id !== defBlock || x.kind !== 'vdef');
       } else if (defBlock) {
         const vb = blocks.find((x) => x.id === defBlock);
@@ -117,12 +117,12 @@
     }
     blocks = renameBlocks([...prepend, ...blocks], comps, map);
     await app.insertTemplate(f.name, blocks, bnd.exports.map((e) => e.to), f.assets ?? {});
-    app.flash(`テンプレート「${f.name}」を挿入しました`);
+    app.flash(`部品テンプレート「${f.name}」を挿入しました`);
     close();
   }
 </script>
 
-<Modal title={binding ? `テンプレートの挿入：${binding.entry.file.name}` : '部品を追加'} onclose={close} width="900px" height="620px">
+<Modal title={binding ? `部品テンプレートの挿入：${binding.entry.file.name}` : '部品を追加'} onclose={close} width="900px" height="620px">
   {#if !binding}
     <div class="layout">
       <nav>
@@ -130,7 +130,7 @@
           <button class="ghost" class:on={group === g} onclick={() => (group = g)}>{g}</button>
         {/each}
         <div class="navfoot">
-          <button class="small" onclick={() => app.addTemplateFolder()} title="フォルダ内のテンプレート（.fdtpl）を一覧に加えます">＋ テンプレートのフォルダを追加…</button>
+          <button class="small" onclick={() => app.addTemplateFolder()} title="フォルダ内の部品テンプレート（.fdtpl）を一覧に加えます">＋ 部品テンプレートのフォルダを追加…</button>
         </div>
       </nav>
       <section class="list">
@@ -141,7 +141,7 @@
             <button class="item" class:on={picked === it} onclick={() => (picked = it)} ondblclick={() => choose(it)}>
               <span class="icon">{it.icon}</span>
               <span class="label">{it.label}</span>
-              {#if it.type === 'template'}<span class="tag small">テンプレート</span>{/if}
+              {#if it.type === 'template'}<span class="tag small">部品テンプレート</span>{/if}
             </button>
           {:else}
             <div class="muted small">該当するものがありません</div>
@@ -175,7 +175,7 @@
     <div class="bind">
       {#if binding.inputs.length}
         <h4>入力する変数</h4>
-        <p class="small muted">テンプレートが受け取る値です。文書の既存の変数につなぐか、値を入れてください。</p>
+        <p class="small muted">部品テンプレートが受け取る値です。文書の既存の変数につなぐか、値を入れてください。</p>
         <table>
           <tbody>
             {#each binding.inputs as b}
@@ -212,7 +212,7 @@
           </tbody>
         </table>
       {/if}
-      <p class="small muted">テンプレートは1つのまとまりとして入ります。内部の変数はその中だけで使えるため、文書の変数と名前が重なっても問題ありません。</p>
+      <p class="small muted">部品テンプレートは1つのまとまりとして入ります。内部の変数はその中だけで使えるため、文書の変数と名前が重なっても問題ありません。</p>
       {#each bindErrors as e}<div class="err small">{e}</div>{/each}
     </div>
   {/if}
