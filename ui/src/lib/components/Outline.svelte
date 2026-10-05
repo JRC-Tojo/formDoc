@@ -98,7 +98,8 @@
       case 'typst':
         return String(p.code ?? '').split('\n')[0].slice(0, 40);
       default:
-        return '';
+        // 計算ロジックを持つ部品など：名前（label）と評価の要約
+        return [p.label, r?.summary].filter(Boolean).join('　') || comps[b.kind]?.label || '';
     }
   }
 

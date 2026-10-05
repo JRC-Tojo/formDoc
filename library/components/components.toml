@@ -4,7 +4,7 @@
 # 描画は library/typst/formdoc の関数で行い、Typstコード生成は formdoc-core::codegen が担う。
 #
 # 計算ロジックを持つ部品（TODO 5）：
-#   logic  = "<file>.rhai"   … この フォルダの Rhai スクリプト。入力（props）とその位置で使える変数（vars）から変数を定義する
+#   logic  = "<file>.rhai"   … このフォルダの Rhai スクリプト。入力（props）とその位置で使える変数（vars）から変数を定義する
 #   render = "<Typst関数名>"  … 描画関数。定義した変数の配列と、スクリプトが返した values（名前付き引数）を受け取る
 #   計算はスクリプト（Rust 側）だけで行い、コードには結果の値を vdef として出力する（Typst 側では計算し直さない。
 #   コードモードで寸法を書き換えたいときは部品の入力を変える）。式エンジンにある計算（calc 部品）で足りるものはそちらを使う。

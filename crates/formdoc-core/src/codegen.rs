@@ -410,21 +410,20 @@ fn logic_code(b: &Block, render: &str, report: &Report) -> String {
     for name in &res.vars {
         let Some(v) = report.vars.iter().rev().find(|v| &v.name == name && v.block_id == b.id) else { continue };
         lines.push(format!(
-            "#let {} = vdef({}, {}, unit: {}, digits: {}, desc: {})",
-            ident(name), lit(name), num(v.value), lit(&v.unit), opt_digits(v.digits), lit(&v.desc)
+            "#let {} = vdef({}, {}, unit: {}, digits: {}, desc: {}{})",
+            ident(name), lit(name), num(v.value), lit(&v.unit), opt_digits(v.digits), lit(&v.desc), opt_lit_arg("display", v.display.as_deref())
         ));
     }
-    if !render.is_empty() {
+    // 入力に誤りがあり値を計算できなかったときは描画しない（コードモードでも Typst のエラーにしないため）
+    if res.status == "error" || res.values.is_none() {
+        lines.push(format!("// {}：入力に誤りがあるため表示しません", b.kind));
+    } else if !render.is_empty() {
         let vars: Vec<String> = res.vars.iter().map(|n| ident(n)).collect();
-        let args: Vec<String> = res.values.iter().flatten().map(|(k, v)| format!(", {}: {}", ident_key(k), typst_value(v))).collect();
+        // キーは logic.rs で検査済み（英字で始まる英数字・_・-）
+        let args: Vec<String> = res.values.iter().flatten().map(|(k, v)| format!(", {k}: {}", typst_value(v))).collect();
         lines.push(format!("#{render}(({}{}){})", vars.join(", "), if vars.len() == 1 { "," } else { "" }, args.concat()));
     }
     lines.join("\n")
-}
-
-/// 名前付き引数の名前（Typst の識別子に使える文字だけにする）。
-fn ident_key(k: &str) -> String {
-    k.chars().map(|c| if c.is_ascii_alphanumeric() || c == '-' || c == '_' { c } else { '-' }).collect()
 }
 
 fn error_box(b: &Block, report: &Report) -> String {

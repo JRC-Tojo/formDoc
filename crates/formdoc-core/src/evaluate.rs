@@ -48,6 +48,9 @@ pub struct VarInfo {
     pub unit: String,
     pub digits: Option<u8>,
     pub desc: String,
+    /// 数式での表示記号（指定したときだけ）
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub display: Option<String>,
     /// 使える範囲の持ち主（見出し・部品テンプレートのブロックID）。None は文書全体
     pub scope: Option<String>,
     /// 「グローバル変数として定義」
@@ -222,6 +225,7 @@ impl Ctx<'_> {
             unit: v.unit.clone(),
             digits: v.digits,
             desc: v.desc.clone(),
+            display: v.display.clone(),
         });
         self.scope.insert(name.to_string(), v);
         true
@@ -331,7 +335,7 @@ impl Ctx<'_> {
 
     /// 計算ロジック（Rhai）を持つ部品：スクリプトを実行し、返した変数を定義する。
     fn logic(&mut self, b: &Block, logic: &crate::logic::ComponentLogic, res: &mut BlockResult) {
-        let out = match crate::logic::run(&logic.script, &b.props, &self.scope) {
+        let out = match logic.ast.as_ref().map_err(String::clone).and_then(|ast| crate::logic::run_ast(ast, &b.props, &self.scope)) {
             Ok(o) => o,
             Err(e) => return self.r.issue(b, "", Severity::Error, "logic", e),
         };
@@ -345,7 +349,7 @@ impl Ctx<'_> {
         }
         let mut names = Vec::new();
         for v in &out.vars {
-            let digits = v.digits.map(|d| d.clamp(0.0, 10.0) as u8).or_else(|| self.t.default_digits(&v.unit));
+            let digits = v.digits().or_else(|| self.t.default_digits(&v.unit));
             let value = VarValue { value: v.value, digits, unit: v.unit.clone(), display: v.display.clone(), desc: v.desc.clone() };
             if self.define(b, "", &v.name, value) {
                 names.push(v.name.clone());

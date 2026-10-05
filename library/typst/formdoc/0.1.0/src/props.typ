@@ -22,7 +22,7 @@
   )
   let w = B * s
   let num(x) = str(calc.round(x, digits: 1))
-  box(width: w + 2.2em, height: height + 1.6em, {
+  box(width: w + 3em, height: height + 1.6em, {
     // 上：フランジ幅、左：高さ、中：腹板厚・フランジ厚
     place(dx: 1.8em, dy: 0pt, box(width: w, align(center, text(size: 8pt, num(B)))))
     place(dx: 0pt, dy: 1.3em, box(height: height, align(horizon, text(size: 8pt, rotate(-90deg, reflow: true, num(H))))))
@@ -37,7 +37,8 @@
   columns: (auto, 1fr),
   column-gutter: 2.5em,
   align: horizon,
-  i-section-fig(H, B, tw, tf),
+  // 寸法が無い（手書きのコードなど）ときは略図を描かない
+  if H > 0 and B > 0 { i-section-fig(H, B, tw, tf) } else { [] },
   {
     if label != "" { [#label]; v(0.6em) }
     props-list(vars)
