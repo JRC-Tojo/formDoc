@@ -11,7 +11,8 @@
     "build:desktop": "vite build --mode desktop",
     "preview": "vite preview --mode web",
     "check": "svelte-check --tsconfig ./tsconfig.json",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "test": "bun test tests/unit"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.12.1",

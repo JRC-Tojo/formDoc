@@ -1,7 +1,9 @@
 {
   "name": "formdoc",
   "private": true,
-  "workspaces": ["ui"],
+  "workspaces": [
+    "ui"
+  ],
   "scripts": {
     "ready": "bun scripts/ready.ts",
     "dev": "bun run --cwd ui dev",
@@ -9,7 +11,8 @@
     "build:web": "bun run --cwd ui build:web",
     "check": "bun run --cwd ui check",
     "test": "cargo test -p formdoc-expr -p formdoc-core",
-    "version:bump": "bun scripts/bump-version.ts"
+    "version:bump": "bun scripts/bump-version.ts",
+    "test:ui": "bun run --cwd ui test"
   },
   "devDependencies": {
     "@types/bun": "^1.3.0"
