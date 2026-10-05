@@ -133,6 +133,7 @@ fields = [
   { key = "tf", label = "フランジ厚 tf（mm）", type = "number", required = true },
   { key = "r", label = "フィレット半径 r（mm）", type = "number", help = "圧延H形のみ。溶接I形では使わない" },
   { key = "suffix", label = "変数名の添字", type = "text", help = "同じ範囲に2つ置くとき（例: 2 → A_2, I_y_2）" },
+  { key = "global", label = "グローバル変数として定義", type = "bool", default = false, help = "チェックしないと、同じ見出し（節）・部品テンプレートの中だけで使えるローカル変数になる" },
 ]
 
 [table]

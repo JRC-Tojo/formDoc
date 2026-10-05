@@ -18,6 +18,7 @@
 | 汎用図形 | 線・矢印・矩形・円・多角形・寸法線・文字を描画エディタで描く。座標に変数・式、図形ごとに縦横の繰り返し（回数・間隔、番号 `ix`・`iy`）、文字に `{{式:桁}}` |
 | 体裁の固定 | 書体・余白・見出し番号（§4．/4.1/(1)/1)）・図表番号・表紙は文書テンプレートで固定。部品の描画関数は `library/typst/formdoc`。執筆者は変更できない |
 | 計算の自動化 | 式から「記号式 = 代入式 = 結果」を自動生成。値は表示桁で丸めた値で後続計算（読者が電卓で検算できる） |
+| 部品の計算ロジック | 部品定義（components.toml）に `logic = "<file>.rhai"` と `render = "<Typst関数>"` を書くと、入力から変数を計算する部品を追加できる（例：断面諸量（I形）＝ A・I・r・y を計算）。スクリプトはサンドボックス（ファイル・時刻・乱数・モジュール読み込みなし、操作数の上限あり）で実行し、無限ループもエラーとして止める |
 | 照査の自動判定 | 紙面に表示される値どうしで OK/NG を判定 |
 | 記号説明 | 「ここに，」は直前の計算で使った変数から自動生成。説明漏れは警告 |
 | 基準引用 | 登録済みの略称（`data/references.toml`）からのみ選択 |
@@ -39,14 +40,14 @@ library/
   typst/formdoc/0.1.0/   社内標準 Typst パッケージ（文書テンプレート・部品の描画関数・formdoc_expr.wasm ※生成物、Git 管理外）
   styles/                同梱文書テンプレート（keisansho.typ ＝ 計算書）
   snippets/              同梱部品テンプレート（.fdtpl：I形断面、単純梁と集中荷重）
-  components/            部品定義（GUIの入力フォームはここから自動生成）
+  components/            部品定義（GUIの入力フォームはここから自動生成）と、部品の計算ロジック（*.rhai）
   vendor/preview/        同梱 Typst パッケージ（CeTZ ほか）※bun ready で取得、Git 管理外
   fonts/                 同梱フォント（Noto Serif JP / Noto Sans JP、数式用 New Computer Modern Math）※bun ready で取得、Git 管理外
                          デスクトップ版・CLI はバイナリに埋め込み、Web版は別ファイルで配信する（下記「Web版のフォント」）
 ui/                      Vite + Svelte 5（--mode web / desktop）
   src/lib/platform/      能力フラグ（capabilities.ts）と Web / Tauri 実装
   src-tauri/             デスクトップ版（Tauri 2）
-examples/                GUI文書（document.json）とコードモードの例
+examples/                GUI文書（document.json）とコードモードの例。keisansho-demo は計算書サンプル p.18〜48 の再現
 scripts/                 開発用のスクリプト（bun で実行。ready.ts ＝ bun ready、版上げ、自動更新の latest.json 作成）
 .github/workflows/       Web版の配信（pages）、バージョンアップ・ポータブル版・リリースの下書き
 ```
@@ -163,6 +164,5 @@ wasm に残っている約21MB は Typst 本体（コード 約13MB）と、Typs
 詳細な残作業（設計・手順・完了条件）は [TODO.md](TODO.md) を参照。
 
 - Web版の初回表示はフォント（約26MB）の取得に時間がかかる。必要なフォントだけを遅延取得する・サブセット化する余地がある（TODO 2）
-- 部品の計算ロジックを文書テンプレート側で追加する仕組み（Rhai）は未実装
 - 要領書・作業計画書の型は未作成（部品の追加で対応予定：脚注・箇条書き・組織図など）
 - 単位の次元チェック（kN と kN·m の取り違え検出）は未実装

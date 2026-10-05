@@ -34,7 +34,7 @@
 
   // 執筆者が使える部品（並び順が「部品を追加」の順）
   blocks: (
-    "heading", "paragraph", "kijun", "vdef", "calc", "sum", "check", "where",
+    "heading", "paragraph", "kijun", "vdef", "calc", "sum", "check", "where", "section-props",
     "table", "fig-shapes", "image", "pagebreak", "typst",
   ),
 

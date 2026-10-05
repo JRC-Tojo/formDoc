@@ -37,7 +37,7 @@ fn text(r: &UpdateResult, name: &str) -> String {
 
 #[test]
 fn section_properties_match_the_sample() {
-    let (mut s, r) = run(json!([h700(json!({}))]));
+    let (s, r) = run(json!([h700(json!({}))]));
     assert!(r.exportable, "{:?}", r.issues);
     // サンプル p.40 の値（断面積・断面二次モーメント・断面二次半径・図心から縁まで）と p.46 の腹板の断面積
     assert_eq!(text(&r, "A"), "23,550");
@@ -46,7 +46,7 @@ fn section_properties_match_the_sample() {
     assert_eq!(text(&r, "r_z"), "81.7");
     assert_eq!(text(&r, "y_u"), "350");
     assert_eq!(text(&r, "y_l"), "350");
-    assert_eq!(text(&r, "A_w"), "7,872");
+    assert_eq!(text(&r, "A_w").replace(',', ""), "7872"); // 4桁の桁区切りは文書テンプレートの設定による
     assert!(s.pdf().unwrap().starts_with(b"%PDF"));
 }
 
