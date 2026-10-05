@@ -10,7 +10,7 @@ use crate::codegen::{self, Generated};
 use crate::compile::{self, Diagnostic};
 use crate::evaluate::{self, Issue, Report, Severity, VarInfo};
 use crate::lint;
-use crate::model::{Block, Document, Meta};
+use crate::model::{Document, Meta};
 use crate::template::{self, Template};
 use crate::world::FormdocWorld;
 
@@ -118,6 +118,13 @@ impl Session {
     pub fn new_document(&self) -> Result<Document, String> {
         let (_, t) = self.style.as_ref().ok_or("文書テンプレートが選ばれていません")?;
         Ok(new_document(t))
+    }
+
+    /// 足りない必須の章を、決められた順序の位置に追加した文書を返す（構造形式を変えたときなど）。
+    /// 追加した部品のIDは "new-1" のような仮のもの（GUIは付け直す）。
+    pub fn complete_chapters(&self, doc: &Document) -> Result<Document, String> {
+        let (_, t) = self.style.as_ref().ok_or("文書テンプレートが選ばれていません")?;
+        Ok(crate::structure::complete(doc, t))
     }
 
     fn pages(&self, known: &[String]) -> Vec<PageOut> {
@@ -230,24 +237,19 @@ impl Session {
     }
 }
 
-/// 文書テンプレートの既定値と骨組みから新規文書を作る（ブロックIDは b1, b2 …。GUIは付け直す）。
+/// 文書テンプレートの既定値と骨組み（構造形式の既定値で必須の章）から新規文書を作る（ブロックIDは b1, b2 …。GUIは付け直す）。
 pub fn new_document(t: &Template) -> Document {
-    let blocks = t
-        .skeleton
-        .iter()
-        .enumerate()
-        .map(|(i, s)| {
-            let mut props = s.clone();
-            let kind = props.remove("kind").and_then(|k| k.as_str().map(str::to_string)).unwrap_or_else(|| "paragraph".into());
-            Block { id: format!("b{}", i + 1), kind, props, children: vec![] }
-        })
-        .collect();
     let mut meta = Meta::default();
     for f in &t.fields {
         if let Some(d) = &f.default {
             meta.set(&f.key, d.clone());
         }
     }
+    let mut n = 0;
+    let blocks = crate::structure::skeleton(t, meta.str(&t.structure.variant_field), &mut || {
+        n += 1;
+        format!("b{n}")
+    });
     Document {
         schema_version: crate::model::SCHEMA_VERSION,
         library: formdoc_library::version().into(),

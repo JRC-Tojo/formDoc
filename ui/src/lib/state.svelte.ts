@@ -1,6 +1,7 @@
 // アプリ全体の状態。文書が変わるたびにエンジンで再評価・再組版する（間引きあり）。
 import { getPlatform, has } from './platform';
 import type { Platform } from './platform/types';
+import { chapterInfo, insertableAfter, withoutChapters } from './chapters';
 import { cloneWithIds, findBlock, flatten, locate, sectionEnd } from './tree';
 import type {
   Block,
@@ -119,6 +120,24 @@ class AppState {
   /** 現在の文書テンプレートの規則（部品の一覧・見出しの階層など） */
   get template(): StyleInfo | null {
     return this.style?.info ?? null;
+  }
+
+  /** 部品の章構成の情報（エンジンの評価結果。章の定義が無い文書テンプレートでは null） */
+  chapterOf(id: string | null) {
+    return chapterInfo(this.result, id);
+  }
+
+  /** 消したり動かしたりできない章の見出しか（🔒。文書テンプレートで決められた章） */
+  isLocked(b: Block): boolean {
+    const c = this.chapterOf(b.id);
+    return !!c && (c.no_remove || c.no_move);
+  }
+
+  /** 部品 afterId の直後に kind の部品を置けるか。置けなければ理由を返す（章で使える部品・中身を固定した章） */
+  cannotInsert(kind: string, afterId: string | null): string | null {
+    const ok = insertableAfter(this.result, this.doc?.blocks ?? [], afterId);
+    if (!ok || kind === 'group' || ok.includes(kind)) return null;
+    return ok.length ? 'この位置の章では、この部品は使えません' : 'この位置には部品を追加できません（文書テンプレートで章の中身・章の外が決められています）';
   }
 
   get selected(): Block | null {
@@ -330,7 +349,7 @@ class AppState {
   fragmentOf(blockId: string): Block[] {
     const loc = locate(this.doc?.blocks ?? [], blockId);
     if (!loc) return [];
-    return loc.list.slice(loc.index, sectionEnd(loc.list, loc.index));
+    return withoutChapters(loc.list.slice(loc.index, sectionEnd(loc.list, loc.index)));
   }
 
   /** 新しい部品を入れる位置：選択中の部品の直後（同じ並び）。未選択なら文書の末尾 */
@@ -350,8 +369,10 @@ class AppState {
       this.assets[path] = bytes;
       await this.platform!.engine.setAsset(path, bytes);
     }
-    const group: Block = { id: uid(), kind: 'group', props: { title, exports }, children: blocks.map((b) => cloneWithIds(b, uid)) };
+    const group: Block = { id: uid(), kind: 'group', props: { title, exports }, children: withoutChapters(blocks).map((b) => cloneWithIds(b, uid)) };
     const afterId = this.selectedId;
+    const why = flatten(group.children ?? []).map((b) => this.cannotInsert(b.kind, afterId)).find(Boolean);
+    if (why) return this.flash(why, 'error');
     this.edit((d) => {
       const at = this.insertPoint(d, afterId);
       at.list.splice(at.index, 0, group);
@@ -465,6 +486,48 @@ class AppState {
     this.edit((d) => {
       d.meta[key] = value;
     }, `meta:${key}`);
+    // 構造形式を変えたら、その形式で必須の章を足す（不要になった章は検証パネルに出るので利用者が消す）。
+    // 取り消しは構造形式の変更と1回にまとめる
+    if (key === this.template?.structure?.['variant-field']) this.completeChapters(`meta:${key}`);
+  }
+
+  /** 部品の props をまとめて変える（取り消しは1回） */
+  setProps(id: string, props: Record<string, any>) {
+    this.edit((d) => {
+      const b = findBlock(d.blocks, id);
+      if (b) Object.assign(b.props, props);
+    });
+  }
+
+  /**
+   * 足りない必須の章を、文書テンプレートで決められた順序の位置に追加する
+   * （章の id が無い見出しで見出し文が同じものは、その章として対応付ける）。
+   * coalesceKey を渡すと、直前の同じ種類の変更と1回の取り消しにまとめる。
+   */
+  async completeChapters(coalesceKey?: string) {
+    if (!this.doc || !this.template?.chapters?.length) return;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const before = $state.snapshot(this.doc) as Doc;
+      let done: Doc;
+      try {
+        done = await this.platform!.engine.completeChapters(before);
+      } catch (e: any) {
+        return this.flash(e?.message ?? String(e), 'error');
+      }
+      // 待っている間に文書が変わったら、変わった文書でやり直す（利用者の編集を上書きしないように）
+      if (JSON.stringify($state.snapshot(this.doc)) !== JSON.stringify(before)) continue;
+      if (JSON.stringify(done.blocks) === JSON.stringify(before.blocks)) return;
+      const known = new Set(flatten(before.blocks).map((b) => b.id));
+      const added = flatten(done.blocks).filter((b) => !known.has(b.id));
+      // エンジンが付けた仮のIDを付け直す
+      for (const b of added) b.id = uid();
+      this.edit((d) => {
+        d.blocks = done.blocks;
+      }, coalesceKey);
+      const n = added.filter((b) => b.kind === 'heading').length;
+      this.flash(n ? `章を ${n} 個追加しました` : '見出しを文書テンプレートの章に対応付けました');
+      return;
+    }
   }
 
   defaultProps(kind: string): Record<string, any> {
@@ -480,6 +543,8 @@ class AppState {
   }
 
   addBlock(kind: string, afterId: string | null = this.selectedId) {
+    const why = this.cannotInsert(kind, afterId);
+    if (why) return this.flash(why, 'error');
     const block: Block = { id: uid(), kind, props: this.defaultProps(kind) };
     this.edit((d) => {
       const at = this.insertPoint(d, afterId);
@@ -491,6 +556,7 @@ class AppState {
   }
 
   removeBlock(id: string) {
+    if (this.chapterOf(id)?.no_remove) return this.flash('文書テンプレートで決められた章のため削除できません', 'error');
     this.edit((d) => {
       const loc = locate(d.blocks, id);
       if (!loc) return;
@@ -503,6 +569,7 @@ class AppState {
   duplicateBlock(id: string) {
     const src = findBlock(this.doc?.blocks ?? [], id);
     if (!src) return;
+    if (this.chapterOf(id)?.no_remove) return this.flash('文書テンプレートで決められた章は複製できません', 'error');
     const copy = cloneWithIds($state.snapshot(src) as Block, uid);
     // 同じ範囲に同じ名前の変数は定義できないため、複製時は名前に _2 を付ける
     if (typeof copy.props.name === 'string' && copy.props.name) copy.props.name += '_2';
@@ -518,6 +585,7 @@ class AppState {
    * parentId: 移動先の並び（null は文書の直下、group のID ならその中）、index: 移動先の並びでの位置（移動前の数え方）
    */
   moveBlock(id: string, parentId: string | null, index: number) {
+    if (this.chapterOf(id)?.no_move) return this.flash('文書テンプレートで決められた章のため移動できません', 'error');
     this.edit((d) => {
       const from = locate(d.blocks, id);
       if (!from) return;

@@ -232,6 +232,7 @@
             <span class="icon" title={comps[b.kind]?.label}>{comps[b.kind]?.icon ?? '•'}</span>
           {/if}
           <span class="text">{title(b)}</span>
+          {#if app.isLocked(b)}<span class="lock" title="文書テンプレートで決められた章（削除・移動はできません）">🔒</span>{/if}
           {#if st !== 'ok'}
             <span class="st {st}" title={st === 'error' ? 'エラー' : st === 'ng' ? '照査NG' : '注意'}>
               {st === 'error' ? '✕' : st === 'ng' ? 'NG' : '!'}
@@ -306,6 +307,7 @@
   .item.group .row { color: var(--accent); }
   .fold { width: 1.1em; flex: none; text-align: center; color: var(--muted); cursor: pointer; font-size: 11px; }
   .num { color: var(--accent); min-width: 2.4em; }
+  .lock { font-size: 10px; opacity: 0.7; margin-left: 4px; }
   .icon { display: inline-block; min-width: 2.2em; text-align: center; color: var(--muted); font-size: 11px; }
   .text { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .st { font-size: 10.5px; font-weight: 700; border-radius: 3px; padding: 0 4px; }

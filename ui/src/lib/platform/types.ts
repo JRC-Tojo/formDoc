@@ -16,6 +16,8 @@ export interface Engine {
   /** 現在の文書テンプレートで新規文書を作る */
   newDocument(): Promise<Doc>;
   updateDocument(doc: Doc, known: string[]): Promise<UpdateResult>;
+  /** 足りない必須の章を、決められた順序の位置に追加した文書を返す（追加した部品のIDは仮のもの） */
+  completeChapters(doc: Doc): Promise<Doc>;
   /** コードモードで見せるコード（直前に組版した文書を、部品ごとの目印つきの Typst にしたもの） */
   code(): Promise<string | null>;
   /** コードモードの編集を、直前に組版した文書に戻す（変わった部品は Typstコード部品になる） */

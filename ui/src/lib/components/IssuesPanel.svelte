@@ -43,6 +43,9 @@
     {#each fixableCodes as code}
       <button class="small" onclick={() => app.applyAllFixes(code)} title="文書全体の同じ種類の指摘をまとめて直します">{labels[code] ?? code}をすべて修正</button>
     {/each}
+    {#if issues.some((i) => i.code === 'chapter-missing')}
+      <button class="small" onclick={() => app.completeChapters()} title="文書テンプレートで決められた必須の章を、決められた順序の位置に追加します">足りない章を追加</button>
+    {/if}
     {#if app.result && !app.result.exportable}
       <span class="block-note small">エラーを解消するまでPDFは出力できません</span>
     {/if}

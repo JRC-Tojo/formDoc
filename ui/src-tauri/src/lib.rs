@@ -70,6 +70,12 @@ fn new_document(state: State<'_, AppState>) -> R<Document> {
     state.session.lock().unwrap().new_document()
 }
 
+/// 足りない必須の章を追加した文書を返す。
+#[tauri::command]
+fn complete_chapters(state: State<'_, AppState>, doc: Document) -> R<Document> {
+    state.session.lock().unwrap().complete_chapters(&doc)
+}
+
 #[tauri::command]
 async fn update_document(state: State<'_, AppState>, doc: Document, known: Vec<String>) -> R<api::UpdateResult> {
     Ok(state.session.lock().unwrap().update_document(doc, &known))
@@ -352,6 +358,7 @@ pub fn run() {
             style_info,
             set_style,
             new_document,
+            complete_chapters,
             update_document,
             set_asset,
             remove_asset,

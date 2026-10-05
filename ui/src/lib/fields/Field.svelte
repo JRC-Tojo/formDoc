@@ -33,7 +33,7 @@
   {/if}
 
   {#if def.type === 'text' || def.type === 'var'}
-    <input id={def.key} type="text" value={value ?? ''} use:track data-insert={def.type === 'var' ? 'name' : 'ref'}
+    <input id={def.key} type="text" value={value ?? ''} use:track data-insert={def.type === 'var' ? 'name' : 'ref'} readonly={def.readonly}
       class:mono={def.type === 'var'} oninput={(e) => onchange(e.currentTarget.value)} spellcheck="false" />
   {:else if def.type === 'expr'}
     <input id={def.key} type="text" class="mono" value={value ?? ''} use:track data-insert="name"
@@ -53,7 +53,7 @@
   {:else if def.type === 'bool'}
     <label class="check"><input type="checkbox" checked={value ?? def.default ?? false} onchange={(e) => onchange(e.currentTarget.checked)} />{def.label}</label>
   {:else if def.type === 'select'}
-    <select id={def.key} value={String(value ?? def.default ?? '')} onchange={(e) => onchange(def.key === 'level' ? Number(e.currentTarget.value) : e.currentTarget.value)}>
+    <select id={def.key} value={String(value ?? def.default ?? '')} disabled={def.readonly} onchange={(e) => onchange(def.key === 'level' ? Number(e.currentTarget.value) : e.currentTarget.value)}>
       {#each def.options ?? [] as o}<option value={o}>{o}</option>{/each}
     </select>
   {:else if def.type === 'kijun'}

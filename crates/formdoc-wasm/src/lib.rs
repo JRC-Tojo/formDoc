@@ -63,6 +63,14 @@ pub fn new_document() -> Result<String, JsError> {
     serde_json::to_string(&d).map_err(err)
 }
 
+/// 足りない必須の章を追加した文書を返す（JSON）。
+#[wasm_bindgen]
+pub fn complete_chapters(doc_json: &str) -> Result<String, JsError> {
+    let doc = serde_json::from_str(doc_json).map_err(|e| err(format!("文書の形式が不正です: {e}")))?;
+    let d = SESSION.with(|s| s.borrow().complete_chapters(&doc)).map_err(err)?;
+    serde_json::to_string(&d).map_err(err)
+}
+
 /// GUI文書を更新する。known は既に表示済みのページハッシュ（JSON配列）。
 #[wasm_bindgen]
 pub fn update_document(doc_json: &str, known_json: &str) -> Result<String, JsError> {

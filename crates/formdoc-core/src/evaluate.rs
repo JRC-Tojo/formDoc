@@ -69,6 +69,9 @@ pub struct BlockResult {
     /// sum ブロックの内訳ごとの桁
     #[serde(skip_serializing_if = "Option::is_none")]
     pub value: Option<f64>,
+    /// 章構成の情報（GUI が削除・移動・追加を止めるため。structure.rs）
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub chapter: Option<crate::structure::ChapterInfo>,
     /// 汎用図形の評価値。図形ごとに、繰り返しの各回（ix が先、iy が後）の座標と文字。
     /// コード生成と描画エディタの両方がこれを使う（式の評価を1か所にするため）
     #[serde(skip_serializing_if = "Vec::is_empty")]
@@ -642,6 +645,13 @@ pub fn evaluate(doc: &Document, t: &Template) -> Report {
         }
     }
     cx.walk(&doc.blocks);
+    let chapters = crate::structure::analyze(doc, t);
+    cx.r.issues.extend(chapters.issues);
+    for (id, info) in chapters.info {
+        if let Some(res) = cx.r.blocks.get_mut(&id) {
+            res.chapter = Some(info);
+        }
+    }
     if doc.library != formdoc_library::version() && !doc.library.is_empty() {
         cx.r.issues.push(Issue {
             block_id: None,

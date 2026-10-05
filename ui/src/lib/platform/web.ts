@@ -27,6 +27,7 @@ function workerEngine(): Engine {
     setStyle: (src) => call('setStyle', src),
     newDocument: () => call('newDocument'),
     updateDocument: (doc, known) => call('updateDocument', doc, known),
+    completeChapters: (doc) => call('completeChapters', doc),
     code: () => call('code'),
     applyCode: (code) => call('applyCode', code),
     setAsset: (path, bytes) => call('setAsset', path, bytes),

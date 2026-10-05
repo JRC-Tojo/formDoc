@@ -19,6 +19,12 @@ fn sample() -> Document {
     serde_json::from_str(&text).unwrap()
 }
 
+/// 内容のエラー（章構成の検出を除く）。章構成は tests/structure.rs で確かめるため、
+/// ここでは章の無い小さな文書でも変数・計算・図形の振る舞いだけを見られるようにする。
+fn is_content_error(i: &formdoc_core::evaluate::Issue) -> bool {
+    format!("{:?}", i.severity) == "Error" && !i.code.starts_with("chapter-")
+}
+
 fn set(doc: &mut Document, id: &str, key: &str, v: serde_json::Value) {
     doc.blocks.iter_mut().find(|b| b.id == id).unwrap().props.insert(key.into(), v);
 }
@@ -27,7 +33,7 @@ fn set(doc: &mut Document, id: &str, key: &str, v: serde_json::Value) {
 fn sample_is_exportable() {
     let mut s = session();
     let r = s.update_document(sample(), &[]);
-    let errors: Vec<_> = r.issues.iter().filter(|i| format!("{:?}", i.severity) == "Error").collect();
+    let errors: Vec<_> = r.issues.iter().filter(|i| is_content_error(i)).collect();
     assert!(errors.is_empty(), "{errors:?}");
     assert!(r.exportable);
     assert!(r.pages.len() >= 3);
@@ -91,8 +97,9 @@ fn duplicate_variable_and_lint() {
 
 #[test]
 fn new_document_has_skeleton() {
+    // 骨組みは文書テンプレートの章の定義から作る（中身の確認は tests/structure.rs）
     let d = session().new_document().unwrap();
-    assert_eq!(d.blocks.len(), 3);
+    assert!(d.blocks.iter().any(|b| b.kind == "heading" && b.str("chapter") == "gaiyou"));
     assert_eq!(d.meta.str("title"), "計算書");
     assert_eq!(d.meta.get("chapter-start").and_then(|v| v.as_i64()), Some(1));
     let c = formdoc_core::api::catalog().unwrap();
@@ -114,7 +121,12 @@ fn style_info_is_read_from_typst() {
 
 #[test]
 fn old_meta_chapter_start_is_migrated() {
-    let doc = sample();
+    // 旧形式（chapter_start）で保存された文書
+    let mut json: serde_json::Value = serde_json::to_value(sample()).unwrap();
+    let meta = json["meta"].as_object_mut().unwrap();
+    meta.remove("chapter-start");
+    meta.insert("chapter_start".into(), 4.into());
+    let doc: Document = serde_json::from_value(json).unwrap();
     assert_eq!(doc.meta.get("chapter-start").and_then(|v| v.as_i64()), Some(4));
     let mut s = session();
     s.update_document(doc, &[]);
@@ -131,7 +143,7 @@ fn builtin_snippets_compile_without_errors() {
         let mut doc = s.new_document().unwrap();
         doc.blocks = serde_json::from_value(sn["blocks"].clone()).unwrap();
         let r = s.update_document(doc, &[]);
-        let errors: Vec<_> = r.issues.iter().filter(|i| format!("{:?}", i.severity) == "Error").collect();
+        let errors: Vec<_> = r.issues.iter().filter(|i| is_content_error(i)).collect();
         assert!(errors.is_empty(), "{}: {errors:?}", sn["name"]);
         let shapes = r.blocks.values().find(|b| !b.shapes.is_empty()).expect("図形の評価値");
         assert!(shapes.shapes.iter().flatten().all(|v| v.x1.is_some() || !v.pts.is_empty()));
@@ -164,7 +176,9 @@ fn shape_repeat_and_influence_line() {
     assert_eq!(fig.shapes[3].len(), 3);
     let labels: Vec<_> = fig.shapes[12].iter().map(|v| v.label.clone().unwrap()).collect();
     assert_eq!(labels, ["0.625", "0.375", "0.125"]);
-    assert!(r.exportable, "{:?}", r.issues);
+    // 章の無い試験用の文書なので、章構成以外のエラーが無いことを確かめる
+    let errs: Vec<_> = r.issues.iter().filter(|i| is_content_error(i)).collect();
+    assert!(errs.is_empty(), "{errs:?}");
 }
 
 fn blk(id: &str, kind: &str, props: serde_json::Value) -> formdoc_core::model::Block {
@@ -172,7 +186,7 @@ fn blk(id: &str, kind: &str, props: serde_json::Value) -> formdoc_core::model::B
 }
 
 fn errors(r: &formdoc_core::api::UpdateResult) -> Vec<String> {
-    r.issues.iter().filter(|i| format!("{:?}", i.severity) == "Error").map(|i| format!("{}:{}", i.block_id.clone().unwrap_or_default(), i.code)).collect()
+    r.issues.iter().filter(|i| is_content_error(i)).map(|i| format!("{}:{}", i.block_id.clone().unwrap_or_default(), i.code)).collect()
 }
 
 #[test]
@@ -267,7 +281,7 @@ fn code_edit_becomes_typst_block_and_keeps_variables() {
     // 他の部品はそのまま
     assert_eq!(a.doc.blocks.iter().find(|b| b.id == "b11").unwrap(), doc.blocks.iter().find(|b| b.id == "b11").unwrap());
     let r = s.update_document(a.doc, &[]);
-    assert!(r.exportable, "{:?}", r.issues.iter().filter(|i| format!("{:?}", i.severity) == "Error").collect::<Vec<_>>());
+    assert!(r.exportable, "{:?}", r.issues.iter().filter(|i| is_content_error(i)).collect::<Vec<_>>());
     // V = 120 で後ろの計算（i）が変わる
     let i = r.vars.iter().find(|v| v.name == "i").unwrap();
     assert_ne!(i.text, "0.425");
