@@ -245,7 +245,7 @@ impl Ctx<'_> {
         if src.trim().is_empty() {
             return None;
         }
-        let req = CalcRequest { expr: src.into(), scope: self.scope.clone(), rounding: self.t.rounding, group: Some(self.t.group_digits()), ..Default::default() };
+        let req = CalcRequest { expr: src.into(), scope: self.scope.clone(), rounding: self.t.rounding, group: self.t.group_setting(), ..Default::default() };
         match formdoc_expr::calc(&req) {
             Ok(o) => Some(o.value),
             Err(e) => {
@@ -370,7 +370,7 @@ impl Ctx<'_> {
         if src.trim().is_empty() {
             return None;
         }
-        let req = CalcRequest { expr: src.into(), scope: self.scope.clone(), rounding: self.t.rounding, group: Some(self.t.group_digits()), ..Default::default() };
+        let req = CalcRequest { expr: src.into(), scope: self.scope.clone(), rounding: self.t.rounding, group: self.t.group_setting(), ..Default::default() };
         formdoc_expr::calc(&req).ok().map(|o| o.value)
     }
 
@@ -417,7 +417,7 @@ impl Ctx<'_> {
             frac: b.bool("frac", true),
             units_in_sub: b.bool("units_in_sub", false),
             rounding: self.t.rounding,
-            group: Some(self.t.group_digits()),
+            group: self.t.group_setting(),
         };
         match formdoc_expr::calc(&req) {
             Ok(o) => Some(o),
@@ -517,7 +517,7 @@ impl Ctx<'_> {
                     unit: b.str("unit").into(),
                     frac: true,
                     rounding: self.t.rounding,
-                    group: Some(self.t.group_digits()),
+                    group: self.t.group_setting(),
                 };
                 match formdoc_expr::check(&req) {
                     Ok(o) => {

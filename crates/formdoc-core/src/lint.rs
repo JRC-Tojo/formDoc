@@ -132,10 +132,16 @@ pub fn lint_text(b: &Block, field: &str, text: &str, rules: &LintRules, out: &mu
     }
 }
 
-/// 3桁区切りの無い4桁以上の整数を取り出す（1234、12345）。年（2026年）・日付や番号（2026-10-02、03-5435-7630）・
-/// 記号の一部（SM400、G1234）・小数部（0.12345）・既に区切りのある数（1,234）は対象にしない。
-fn ungrouped_numbers(text: &str) -> Vec<String> {
+/// 数の直後にあれば「数ではなく番号・日付の一部」とみなす文字（2026年、第1234号、第1234条）
+const NUMBER_SUFFIXES: &[char] = &['年', '号', '条'];
+
+/// 3桁区切りの無い `group` 桁以上の整数部を取り出す（1234、-8000、8000mm、12345.6 の 12345）。
+/// 対象にしないもの：年・号など（2026年、第1234号）、日付や番号（2026-10-02、2026.10.05、03-5435-7630）、
+/// 記号・規格の一部（SM400、G1234、JIS G 3101、ISO 9001）、小数部（0.12345）、既に区切りのある数（1,234）。
+fn ungrouped_numbers(text: &str, group: usize) -> Vec<String> {
     let chars: Vec<char> = text.chars().collect();
+    let at = |k: isize| if k < 0 { None } else { chars.get(k as usize).copied() };
+    let digits_from = |k: usize| chars[k..].iter().take_while(|c| c.is_ascii_digit()).count();
     let mut out = Vec::new();
     let mut i = 0;
     while i < chars.len() {
@@ -147,30 +153,43 @@ fn ungrouped_numbers(text: &str) -> Vec<String> {
         while i < chars.len() && chars[i].is_ascii_digit() {
             i += 1;
         }
-        let prev = start.checked_sub(1).map(|k| chars[k]);
-        let next = chars.get(i).copied();
-        let joined = |c: Option<char>| c.is_some_and(|c| c.is_ascii_alphabetic() || matches!(c, '-' | '/' | ':' | '_' | ',' | '.'));
-        // 小数点の後ろ（小数部）は除くが、小数点の前（整数部）は対象にする
-        let next_ok = next == Some('.') || !joined(next);
-        if i - start >= 4 && !joined(prev) && next_ok && next != Some('年') {
+        let (s, e) = (start as isize, i as isize);
+        let prev = at(s - 1);
+        let next = at(e);
+        // 前：英字・_・.（小数部）・,（区切り済み）が直前なら、記号や数の一部
+        let mut joined = prev.is_some_and(|c| c.is_ascii_alphabetic() || matches!(c, '_' | '.' | ',' | '/' | ':'));
+        // 前の「-」は、さらに前が英数字なら番号の区切り（03-5435、A-1234）、そうでなければ負の符号
+        joined |= prev == Some('-') && at(s - 2).is_some_and(|c| c.is_ascii_alphanumeric());
+        // 前が「英大文字＋空白」なら規格番号（JIS G 3101、ISO 9001）
+        joined |= prev == Some(' ') && at(s - 2).is_some_and(|c| c.is_ascii_uppercase());
+        // 後ろ：番号の区切り（- / : _）、区切り済みの数（,＋ちょうど3桁）、日付（.数字.）、年・号など
+        joined |= next.is_some_and(|c| matches!(c, '-' | '/' | ':' | '_'));
+        joined |= chars[i..].iter().find(|c| **c != ' ').is_some_and(|c| NUMBER_SUFFIXES.contains(c));
+        joined |= next == Some(',') && digits_from(i + 1) == 3;
+        joined |= next == Some('.') && {
+            let k = i + 1 + digits_from((i + 1).min(chars.len()));
+            k > i + 1 && at(k as isize) == Some('.')
+        };
+        if i - start >= group && !joined {
             out.push(chars[start..i].iter().collect());
         }
     }
     out
 }
 
-/// 数値の3桁区切りの検出（Lint の digit-grouping）。修正は、その数字の並びが文中の別の数の一部に現れないときだけ付ける。
-fn lint_digit_grouping(b: &Block, field: &str, text: &str, out: &mut Vec<Issue>) {
-    let text = strip_refs(text);
+/// 数値の3桁区切りの検出（Lint の digit-grouping）。`group` 桁以上の区切りの無い数を指す。
+/// 修正（文字列の置換）は、その数字の並びが元の文の別の場所（{{式}} の中・別の数の一部）に現れないときだけ付ける。
+fn lint_digit_grouping(b: &Block, field: &str, raw: &str, group: u8, out: &mut Vec<Issue>) {
+    let text = strip_refs(raw);
+    let found = ungrouped_numbers(&text, group as usize);
     let mut seen = std::collections::BTreeSet::new();
-    let found = ungrouped_numbers(&text);
     for n in &found {
         if !seen.insert(n.clone()) {
             continue;
         }
-        let to = formdoc_expr::group_literal(n, 4);
-        let msg = format!("4桁以上の数値には3桁区切りを入れます（「{n}」→「{to}」）");
-        let safe = text.matches(n.as_str()).count() == found.iter().filter(|x| *x == n).count();
+        let to = formdoc_expr::group_literal(n, group);
+        let msg = format!("{group}桁以上の数値には3桁区切りを入れます（「{n}」→「{to}」）");
+        let safe = raw.matches(n.as_str()).count() == found.iter().filter(|x| *x == n).count();
         let mut issue = mk(b, field, "lint-digit-grouping", msg, n, &to);
         if !safe {
             issue.fix = None;
@@ -184,9 +203,10 @@ pub fn lint(doc: &Document, t: &Template) -> Vec<Issue> {
     for b in doc.all_blocks() {
         for (field, text) in text_fields(b) {
             lint_text(b, &field, &text, &t.lint, &mut out);
-            // 数値の桁区切りは文章だけを見る（コードモードのソースは数値の引数が多いため対象にしない）
-            if t.lint.digit_grouping {
-                lint_digit_grouping(b, &field, &text, &mut out);
+            // 数値の桁区切りは文章の欄だけを見る（text_fields は Typstコード部品のコードを返さない。
+            // コードモードのソースは数値の引数が多いため lint_source でも対象にしない）
+            if let Some(group) = t.group_setting() {
+                lint_digit_grouping(b, &field, &text, group, &mut out);
             }
         }
         for (field, unit) in unit_fields(b) {
@@ -280,7 +300,13 @@ mod tests {
             ("8000".to_string(), "8,000".to_string()),
             ("23550".to_string(), "23,550".to_string()),
         ]);
-        // 区切り済み・3桁以下・年・日付・番号・記号の一部・小数部・変数参照は対象外
-        assert!(fixes("1,234 と 999，2026年，2026-10-02，03-5435-7630，SM4000，0.12345，{{L_b}}．").is_empty());
+        // 単位を詰めて書いた数・負の数・カンマで並べた数も検出する
+        assert_eq!(fixes("8000mm，-9500 kN，8000, 9000 とする．").len(), 3);
+        // 区切り済み・3桁以下・年・号・日付・番号・規格・記号の一部・小数部・変数参照は対象外
+        assert!(fixes("1,234 と 999，2026年，2026 年，第1234号，2026-10-02，2026.10.05，03-5435-7630，JIS G 3101，ISO 9001，SM4000，0.12345，{{L_b}}．").is_empty());
+        // {{式}} の中に同じ数字があるときは、置換で式を壊さないよう修正を付けない
+        let issues = lint(&para("支間 1000 mm，{{A * 1000}}．"), &t);
+        let i = issues.iter().find(|i| i.code == "lint-digit-grouping").expect("1000 を検出する");
+        assert!(i.fix.is_none());
     }
 }

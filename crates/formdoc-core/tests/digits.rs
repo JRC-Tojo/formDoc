@@ -22,7 +22,7 @@ fn run(grouping: bool) -> (Session, UpdateResult) {
     let doc: Document = serde_json::from_value(json!({"template": "t", "blocks": [
         {"id": "v", "kind": "vdef", "props": {"name": "A_n", "value": 9428, "unit": "mm2", "digits": 0}},
         {"id": "c", "kind": "calc", "props": {"name": "N", "expr": "A_n * 100", "unit": "N", "digits": 0}},
-        {"id": "k", "kind": "check", "props": {"expr": "A_n <= 10000", "digits": 0}},
+        {"id": "k", "kind": "check", "props": {"expr": "A_n <= 9500", "digits": 0}},
         {"id": "p", "kind": "paragraph", "props": {"text": "支間長 8000 mm，断面積 {{A_n}} とする．"}},
     ]}))
     .unwrap();
@@ -67,9 +67,9 @@ fn grouping_on_groups_from_four_digits() {
     // 本文の区切りの無い数字を検出し，直し方を示す
     let fix = r.issues.iter().find(|i| i.code == "lint-digit-grouping").and_then(|i| i.fix.clone()).expect("8000 を検出する");
     assert_eq!((fix.from.as_str(), fix.to.as_str()), ("8000", "8,000"));
-    // コードモード（Typst）で組版しても同じ表記になる（照査の制限値 10000 も区切る）
+    // コードモード（Typst）で組版しても同じ表記になる（照査に書いた制限値 9500 も区切る）
     assert!(pdf_text_contains(&s, &style(true), "9,428"));
-    assert!(pdf_text_contains(&s, &style(true), "10,000"));
+    assert!(pdf_text_contains(&s, &style(true), "9,500"));
 }
 
 #[test]
@@ -79,4 +79,5 @@ fn grouping_off_keeps_four_digit_numbers() {
     assert_eq!(text(&r, "N"), "942,800");
     assert!(r.issues.iter().all(|i| i.code != "lint-digit-grouping"));
     assert!(pdf_text_contains(&s, &style(false), "9428"));
+    assert!(pdf_text_contains(&s, &style(false), "9500"));
 }

@@ -64,7 +64,8 @@ pub struct CalcRequest {
     pub units_in_sub: bool,
     #[serde(default)]
     pub rounding: Rounding,
-    /// 3桁区切りを入れる整数部の桁数（None なら DEFAULT_GROUP。0 なら区切らない）
+    /// 3桁区切りを入れる整数部の桁数（文書テンプレートの設定）。None なら計算結果は DEFAULT_GROUP 桁から区切り、
+    /// 式に書いた数値は書いたとおりに表示する。Some(n) なら両方とも n 桁から区切る
     #[serde(default)]
     pub group: Option<u8>,
 }
@@ -92,7 +93,7 @@ pub struct CalcOutput {
 }
 
 fn opts(frac: bool, units_in_sub: bool, rounding: Rounding, group: Option<u8>) -> RenderOptions {
-    RenderOptions { frac, units_in_sub, rounding, group: group.unwrap_or(DEFAULT_GROUP) }
+    RenderOptions { frac, units_in_sub, rounding, group: group.unwrap_or(DEFAULT_GROUP), literal_group: group.unwrap_or(0) }
 }
 
 pub fn calc(req: &CalcRequest) -> Result<CalcOutput, Error> {
@@ -131,7 +132,7 @@ pub struct CheckRequest {
     pub frac: bool,
     #[serde(default)]
     pub rounding: Rounding,
-    /// 3桁区切りを入れる整数部の桁数（None なら DEFAULT_GROUP）
+    /// 3桁区切りを入れる整数部の桁数（CalcRequest::group と同じ）
     #[serde(default)]
     pub group: Option<u8>,
 }
@@ -173,9 +174,9 @@ pub fn check(req: &CheckRequest) -> Result<CheckOutput, Error> {
         });
         Ok(CheckSide {
             value,
-            // 数値をそのまま書いた側（制限値 0.7 など）は書いたとおりに表示する
+            // 数値をそのまま書いた側（制限値 0.7 など）は書いたとおりに表示する（3桁区切りの設定があれば区切りだけ入れる）
             text: match x {
-                Expr::Num(_, src) => group_literal(src, o.group),
+                Expr::Num(_, src) => group_literal(src, o.literal_group),
                 _ => format_number(value, NumFormat { digits, group: o.group }),
             },
             symbolic: render::symbolic(x, &req.scope, o),

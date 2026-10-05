@@ -135,5 +135,7 @@ fn digit_grouping_follows_the_setting() {
     let o = crate::calc(&req(Some(4))).unwrap();
     assert_eq!(o.text, "9,428,000");
     assert!(o.substituted.contains("9,428") && o.substituted.contains("1,000"), "{}", o.substituted);
-    assert!(!crate::calc(&req(None)).unwrap().substituted.contains("9,428"));
+    // 設定が無いときは，これまでどおり式に書いた数値は書いたとおり（5桁以上の結果だけ区切る）
+    let legacy = crate::calc(&CalcRequest { expr: "A * 100000".into(), scope: s.clone(), digits: Some(0), ..Default::default() }).unwrap();
+    assert!(legacy.substituted.contains("100000") && legacy.text == "942,800,000", "{legacy:?}");
 }

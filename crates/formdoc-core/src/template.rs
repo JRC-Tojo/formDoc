@@ -244,9 +244,14 @@ impl Template {
         self.digits.get(unit).or_else(|| self.digits.get(&norm)).copied()
     }
 
-    /// 計算結果の表示で3桁区切りを入れる整数部の桁数（Lint の digit-grouping による）。
+    /// 3桁区切りの設定（Lint の digit-grouping）。有効なら区切りを入れる整数部の桁数、無効なら None（式エンジンの既定）。
+    pub fn group_setting(&self) -> Option<u8> {
+        self.lint.digit_grouping.then_some(4)
+    }
+
+    /// 計算結果の表示で3桁区切りを入れる整数部の桁数。
     pub fn group_digits(&self) -> u8 {
-        if self.lint.digit_grouping { 4 } else { formdoc_expr::DEFAULT_GROUP }
+        self.group_setting().unwrap_or(formdoc_expr::DEFAULT_GROUP)
     }
 
     pub fn field(&self, key: &str) -> Option<&MetaField> {

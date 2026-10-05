@@ -125,6 +125,7 @@ wasm に残っている約21MB は Typst 本体（コード 約13MB）と、Typs
 
 ```typst
 #import "@local/formdoc:0.1.0": *
+#let (vdef, vcalc, check-line, fmt) = fd-config(group: 4)   // 文書テンプレートで数値の桁区切りを有効にしている場合（4桁から区切る）
 #import "style.typ": style          // 文書テンプレートのファイルを同じフォルダに置く
 #show: style.with(title: "主桁の設計計算書", chapter-start: 4)
 

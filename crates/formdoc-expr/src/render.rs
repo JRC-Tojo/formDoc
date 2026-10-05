@@ -20,11 +20,13 @@ pub struct RenderOptions {
     pub rounding: Rounding,
     /// 3桁区切りを入れる整数部の桁数（format::NumFormat::group と同じ）
     pub group: u8,
+    /// 式に書いた数値に3桁区切りを入れる整数部の桁数。0 なら書いたとおり（文書テンプレートで区切りを設定したときだけ入れる）
+    pub literal_group: u8,
 }
 
 impl Default for RenderOptions {
     fn default() -> Self {
-        Self { frac: true, units_in_sub: false, rounding: Rounding::Display, group: DEFAULT_GROUP }
+        Self { frac: true, units_in_sub: false, rounding: Rounding::Display, group: DEFAULT_GROUP, literal_group: 0 }
     }
 }
 
@@ -98,7 +100,7 @@ struct Ctx<'a> {
 impl Ctx<'_> {
     fn go(&self, e: &Expr) -> String {
         match e {
-            Expr::Num(_, text) => number_math(&group_literal(text, self.opts.group)),
+            Expr::Num(_, text) => number_math(&group_literal(text, self.opts.literal_group)),
             Expr::Var(n) if n == "pi" || n == "π" => "pi".into(),
             Expr::Var(n) => {
                 if !self.substituted {
