@@ -1,0 +1,9864 @@
+{
+ "schema_version": 1,
+ "library": "0.1.0",
+ "template": "keisansho",
+ "meta": {
+  "title": "主桁の設計計算書",
+  "project": "〇〇駅ホーム改良設計",
+  "author": "設計8U",
+  "date": "2026-10-02",
+  "chapter-start": 1,
+  "cover": true,
+  "variant": "上路桁"
+ },
+ "blocks": [
+  {
+   "id": "d1",
+   "kind": "heading",
+   "props": {
+    "level": 1,
+    "text": "設計概要",
+    "chapter": "gaiyou"
+   }
+  },
+  {
+   "id": "d2",
+   "kind": "paragraph",
+   "props": {
+    "text": "本計算書は，〇〇駅ホーム改良に伴い新設する上路プレートガーダー（支間 8.000 m）の主桁・横桁・支承の設計計算を示すものである．本書では主桁の設計を示す．"
+   }
+  },
+  {
+   "id": "d3",
+   "kind": "heading",
+   "props": {
+    "level": 1,
+    "text": "設計条件",
+    "chapter": "jouken"
+   }
+  },
+  {
+   "id": "d4",
+   "kind": "heading",
+   "props": {
+    "level": 2,
+    "text": "一般条件",
+    "chapter": "jouken-ippan"
+   }
+  },
+  {
+   "id": "d5",
+   "kind": "paragraph",
+   "props": {
+    "text": "線区：在来線（設計最高速度 110 km/h）．\n適用基準：【鋼標準】鉄道構造物等設計標準・同解説（鋼・合成構造物），【建造物標準】鉄道構造物等設計標準・同解説（コンクリート構造物）．"
+   }
+  },
+  {
+   "id": "d6",
+   "kind": "heading",
+   "props": {
+    "level": 2,
+    "text": "検討箇所",
+    "chapter": "kentou"
+   }
+  },
+  {
+   "id": "d7",
+   "kind": "paragraph",
+   "props": {
+    "text": "主桁の支間中央（e点）および支点部（A点）について，耐荷性・耐疲労性・走行安全性・公衆安全性・使用性の照査を行う．"
+   }
+  },
+  {
+   "id": "d8",
+   "kind": "heading",
+   "props": {
+    "level": 2,
+    "text": "作用の種類",
+    "chapter": "sayou"
+   }
+  },
+  {
+   "id": "d9",
+   "kind": "paragraph",
+   "props": {
+    "text": "死荷重，列車荷重（EA−17），衝撃荷重，車両横荷重，制動・始動荷重，ロングレール縦荷重，風荷重，地震の影響を考慮する（§4.1）．"
+   }
+  },
+  {
+   "id": "d10",
+   "kind": "heading",
+   "props": {
+    "level": 2,
+    "text": "荷重の組合せ",
+    "chapter": "kumiawase"
+   }
+  },
+  {
+   "id": "d11",
+   "kind": "paragraph",
+   "props": {
+    "text": "作用の組合せは【鋼標準】第Ⅰ編 4.5 による（§4.3）．"
+   }
+  },
+  {
+   "id": "d12",
+   "kind": "heading",
+   "props": {
+    "level": 2,
+    "text": "材料特性値",
+    "chapter": "zairyou"
+   }
+  },
+  {
+   "id": "d13",
+   "kind": "paragraph",
+   "props": {
+    "text": "主桁は SM400 とし，材料特性値は【鋼標準】による．"
+   }
+  },
+  {
+   "id": "d14",
+   "kind": "heading",
+   "props": {
+    "level": 2,
+    "text": "共通仕様",
+    "chapter": "kyoutsuu"
+   }
+  },
+  {
+   "id": "d15",
+   "kind": "paragraph",
+   "props": {
+    "text": "軌道構造は直結軌道とし，桁下面に防塵板を設置する．"
+   }
+  },
+  {
+   "id": "d16",
+   "kind": "heading",
+   "props": {
+    "level": 2,
+    "text": "施工計画",
+    "chapter": "sekou"
+   }
+  },
+  {
+   "id": "d17",
+   "kind": "paragraph",
+   "props": {
+    "text": "架設は線路閉鎖間合いにおける一括架設とし，架設時の照査は完成時に包含される．"
+   }
+  },
+  {
+   "id": "d18",
+   "kind": "heading",
+   "props": {
+    "level": 1,
+    "text": "設計結果",
+    "chapter": "kekka"
+   }
+  },
+  {
+   "id": "d19",
+   "kind": "heading",
+   "props": {
+    "level": 2,
+    "text": "照査の方針"
+   }
+  },
+  {
+   "id": "d20",
+   "kind": "paragraph",
+   "props": {
+    "text": "主桁は，耐荷性・耐疲労性・走行安全性・公衆安全性・使用性（乗り心地）について照査する．照査の詳細は §4 に示す．"
+   }
+  },
+  {
+   "id": "d21",
+   "kind": "heading",
+   "props": {
+    "level": 2,
+    "text": "設計結果一覧表"
+   }
+  },
+  {
+   "id": "d22",
+   "kind": "heading",
+   "props": {
+    "level": 3,
+    "text": "主桁"
+   }
+  },
+  {
+   "id": "d23",
+   "kind": "table",
+   "props": {
+    "caption": "",
+    "data": {
+     "header_rows": 2,
+     "rows": [
+      [
+       {
+        "text": "箇所",
+        "colspan": 6
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "支間中央"
+       },
+       {
+        "text": "支　点",
+        "colspan": 2
+       },
+       {
+        "text": ""
+       }
+      ],
+      [
+       {
+        "text": "断面力種別",
+        "colspan": 6
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "M（kN·m）"
+       },
+       {
+        "text": "V（kN）"
+       },
+       {
+        "text": "N（kN）"
+       }
+      ],
+      [
+       {
+        "text": "設計応答値",
+        "rowspan": 11,
+        "vertical": true
+       },
+       {
+        "text": "作用の特性値",
+        "rowspan": 7,
+        "vertical": true
+       },
+       {
+        "text": "永久作用",
+        "colspan": 3
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "D"
+       },
+       {
+        "text": "47.02",
+        "align": "right"
+       },
+       {
+        "text": "23.52",
+        "align": "right"
+       },
+       {
+        "text": "—"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "主たる変動作用",
+        "colspan": 3,
+        "rowspan": 3
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "L"
+       },
+       {
+        "text": "353.76",
+        "align": "right"
+       },
+       {
+        "text": "199.56",
+        "align": "right"
+       },
+       {
+        "text": "—"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "I"
+       },
+       {
+        "text": "150.35",
+        "align": "right"
+       },
+       {
+        "text": "94.99",
+        "align": "right"
+       },
+       {
+        "text": "—"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "C"
+       },
+       {
+        "text": "—"
+       },
+       {
+        "text": "—"
+       },
+       {
+        "text": "—"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "従たる変動作用",
+        "colspan": 3,
+        "rowspan": 3
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "LF"
+       },
+       {
+        "text": "17.31",
+        "align": "right"
+       },
+       {
+        "text": "11.93",
+        "align": "right"
+       },
+       {
+        "text": "51.00",
+        "align": "right"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "W"
+       },
+       {
+        "text": "86.76",
+        "align": "right"
+       },
+       {
+        "text": "43.40",
+        "align": "right"
+       },
+       {
+        "text": "—"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "LR"
+       },
+       {
+        "text": "—"
+       },
+       {
+        "text": "—"
+       },
+       {
+        "text": "64.00",
+        "align": "right"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "安全性",
+        "rowspan": 4,
+        "vertical": true
+       },
+       {
+        "text": "γf = 1.0 または 1.1　　γa = 1.0",
+        "colspan": 7
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "耐荷性",
+        "vertical": true
+       },
+       {
+        "text": "1.0D＋1.1(L＋I＋C)＋\n1.0({LR}＋{LF}＋{W})",
+        "colspan": 3
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "705.61",
+        "align": "right"
+       },
+       {
+        "text": "402.86",
+        "align": "right"
+       },
+       {
+        "text": "115.00",
+        "align": "right"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "耐疲労性",
+        "rowspan": 2,
+        "vertical": true
+       },
+       {
+        "text": "疲労限",
+        "vertical": true
+       },
+       {
+        "text": "max\n1.0D＋1.1(L＋I＋C)",
+        "colspan": 2
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "601.54",
+        "align": "right"
+       },
+       {
+        "text": "—"
+       },
+       {
+        "text": "—"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "繰返し",
+        "vertical": true
+       },
+       {
+        "text": "max\n1.0D＋1.0(L＋3/4I＋C)",
+        "colspan": 2
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "疲労限による照査を満足するため省略",
+        "colspan": 3
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       }
+      ],
+      [
+       {
+        "text": "断面",
+        "colspan": 4,
+        "rowspan": 6
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "材質",
+        "colspan": 2
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "SM400",
+        "colspan": 3
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "断面形状\n（I断面）",
+        "colspan": 2
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "1 − H　700 × 350 × 12 × 22",
+        "colspan": 3
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "引張降伏強度 fsyk（N/mm²）\n圧縮降伏強度 f'syk（N/mm²）",
+        "colspan": 2
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "235.0　（16 ＜ t ≦ 40）",
+        "colspan": 3
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "せん断降伏強度 fsvyk（N/mm²）",
+        "colspan": 2
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "140.0　（t ≦ 16）",
+        "colspan": 3
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "設計降伏強度 fsyd（N/mm²）\n設計降伏強度 f'syd（N/mm²）",
+        "colspan": 2
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "223.8　（γs ＝ 1.05）",
+        "colspan": 3
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "設計せん断降伏強度 fsvyd（N/mm²）",
+        "colspan": 2
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "133.3　（γs ＝ 1.05）",
+        "colspan": 3
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       }
+      ],
+      [
+       {
+        "text": "断面諸元",
+        "colspan": 4,
+        "rowspan": 5
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "I（mm⁴）",
+        "colspan": 2
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "2,080,000,000",
+        "colspan": 3
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "A（mm²）",
+        "colspan": 2
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "23,550",
+        "colspan": 3
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "Aw（mm²）",
+        "colspan": 2
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "7,872",
+        "colspan": 3
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "yu（mm）",
+        "colspan": 2
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "350.0",
+        "colspan": 3
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "yl（mm）",
+        "colspan": 2
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "350.0",
+        "colspan": 3
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       }
+      ],
+      [
+       {
+        "text": "照査結果",
+        "rowspan": 23,
+        "vertical": true
+       },
+       {
+        "text": "γb = 1.05 または 1.1　　γi = 1.2",
+        "colspan": 8
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "安全性",
+        "rowspan": 20,
+        "vertical": true
+       },
+       {
+        "text": "耐荷性",
+        "rowspan": 8,
+        "vertical": true
+       },
+       {
+        "text": "板要素",
+        "rowspan": 3,
+        "vertical": true
+       },
+       {
+        "text": "上フランジ",
+        "colspan": 2
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "7.7　≦　12.7",
+        "colspan": 3
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "腹板",
+        "colspan": 2
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "54.7　≦　132.8",
+        "colspan": 3
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "下フランジ",
+        "colspan": 2
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "7.7　≦　16.0",
+        "colspan": 3
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "部材",
+        "rowspan": 5,
+        "vertical": true
+       },
+       {
+        "text": "曲げ＋軸力",
+        "rowspan": 2
+       },
+       {
+        "text": "上フランジ"
+       },
+       {
+        "text": "0.96　≦　1.0",
+        "colspan": 3
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "下フランジ"
+       },
+       {
+        "text": "0.81　≦　1.0",
+        "colspan": 3
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "せん断"
+       },
+       {
+        "text": "腹板"
+       },
+       {
+        "text": "0.15　≦　1.0",
+        "colspan": 3
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "曲げ＋せん断",
+        "rowspan": 2
+       },
+       {
+        "text": "腹板上縁"
+       },
+       {
+        "text": "0.44　≦　1.0",
+        "colspan": 3
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "腹板下縁"
+       },
+       {
+        "text": "0.41　≦　1.0",
+        "colspan": 3
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "橋桁の転倒",
+        "rowspan": 5,
+        "vertical": true
+       },
+       {
+        "text": "風時",
+        "rowspan": 3
+       },
+       {
+        "text": "列車あり",
+        "colspan": 2
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "0.71　≦　1.0",
+        "colspan": 3
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "列車あり（空車）",
+        "colspan": 2
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "0.76　≦　1.0",
+        "colspan": 3
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "列車なし",
+        "colspan": 2
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "0.25　≦　1.0",
+        "colspan": 3
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "地震時",
+        "rowspan": 2
+       },
+       {
+        "text": "列車あり",
+        "colspan": 2
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "0.64　≦　1.0",
+        "colspan": 3
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "列車なし",
+        "colspan": 2
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "0.21　≦　1.0",
+        "colspan": 3
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "耐疲労性",
+        "rowspan": 4,
+        "vertical": true
+       },
+       {
+        "text": "照査個所と継手等級",
+        "colspan": 3
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "疲労限\nΔσfud　≦　Δσcod",
+        "colspan": 2
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "繰返し\n（累積疲労損傷度）\nγi^m・D"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "フランジと垂直補剛材\n(d)十字溶接，荷重非伝達型①　D",
+        "colspan": 3
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "87.5 N/mm²　≦　109.2 N/mm²",
+        "colspan": 2
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "照査不要"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "垂直補剛材上部のすみ肉回し溶接部\n(d)十字溶接，荷重非伝達型②　E",
+        "colspan": 3
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "76.8 N/mm²　≦　80.6 N/mm²",
+        "colspan": 2
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "照査不要"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "垂直補剛材下部のすみ肉溶接部\n(d)十字溶接，荷重非伝達型①　D",
+        "colspan": 3
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "76.8 N/mm²　≦　84.0 N/mm²",
+        "colspan": 2
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "照査不要"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "走行安全性",
+        "colspan": 3,
+        "rowspan": 2
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "たわみ"
+       },
+       {
+        "text": "7.0 mm　≦　L/400 ＝ 20.0 mm",
+        "colspan": 3
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "角折れ"
+       },
+       {
+        "text": "照査不要",
+        "colspan": 3
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "公衆安全性",
+        "colspan": 4
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "桁下面に防塵板を設置",
+        "colspan": 3
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "使用性（乗り心地）",
+        "colspan": 4,
+        "rowspan": 2
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "たわみ"
+       },
+       {
+        "text": "6.6 mm　≦　L/500 ＝ 16.0 mm",
+        "colspan": 3
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "角折れ"
+       },
+       {
+        "text": "照査不要",
+        "colspan": 3
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       }
+      ]
+     ],
+     "widths": [
+      "1.6em",
+      "1.6em",
+      "1.6em",
+      "1.6em",
+      "1fr",
+      "5.5em",
+      "1fr",
+      "1fr",
+      "1fr"
+     ]
+    }
+   }
+  },
+  {
+   "id": "d24",
+   "kind": "heading",
+   "props": {
+    "level": 1,
+    "text": "主桁の設計",
+    "chapter": "buzai"
+   }
+  },
+  {
+   "id": "d25",
+   "kind": "heading",
+   "props": {
+    "level": 2,
+    "text": "作用"
+   }
+  },
+  {
+   "id": "d26",
+   "kind": "heading",
+   "props": {
+    "level": 3,
+    "text": "死荷重",
+    "symbol": "D",
+    "kijun": {
+     "abbr": "鋼標準",
+     "loc": "第Ⅰ編 4.4.2"
+    }
+   }
+  },
+  {
+   "id": "d27",
+   "kind": "sum",
+   "props": {
+    "name": "W_D",
+    "unit": "kN/m",
+    "desc": "死荷重",
+    "items": [
+     {
+      "label": "軌道",
+      "name": "w_rail",
+      "expr": "4.50 / 2"
+     },
+     {
+      "label": "脱線防止ガード",
+      "name": "w_guard",
+      "expr": "0.50 / 2"
+     },
+     {
+      "label": "鋼重　主桁（横桁・横構・添接 含む）",
+      "name": "w_steel",
+      "expr": "1.81 * 1.58"
+     },
+     {
+      "label": "防塵板",
+      "name": "w_dust",
+      "expr": "0.006 * 77.0 * 1.2 * 1.5 / 2"
+     },
+     {
+      "label": "歩行板",
+      "name": "w_walk",
+      "expr": "0.2 / 2"
+     }
+    ],
+    "global": true
+   }
+  },
+  {
+   "id": "d28",
+   "kind": "heading",
+   "props": {
+    "level": 3,
+    "text": "列車荷重",
+    "symbol": "L",
+    "kijun": {
+     "abbr": "鋼標準",
+     "loc": "第Ⅰ編 4.4.3"
+    }
+   }
+  },
+  {
+   "id": "d29",
+   "kind": "kijun",
+   "props": {
+    "prefix": "EA−17（機関車荷重）",
+    "kijun": {
+     "abbr": "鋼標準",
+     "loc": "第Ⅰ編 解説図 4.4.1"
+    }
+   }
+  },
+  {
+   "id": "d30",
+   "kind": "paragraph",
+   "props": {
+    "text": "E荷重"
+   }
+  },
+  {
+   "id": "d31",
+   "kind": "vdef",
+   "props": {
+    "name": "P",
+    "value": 170,
+    "unit": "kN",
+    "desc": "機関車の動輪軸重",
+    "show": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d32",
+   "kind": "vdef",
+   "props": {
+    "name": "w_E",
+    "value": 50,
+    "unit": "kN/m",
+    "desc": "列車荷重（E荷重）の等分布荷重",
+    "show": true,
+    "display": "W",
+    "global": true
+   }
+  },
+  {
+   "id": "d33",
+   "kind": "paragraph",
+   "props": {
+    "text": "A荷重"
+   }
+  },
+  {
+   "id": "d34",
+   "kind": "vdef",
+   "props": {
+    "name": "P_1",
+    "value": 130,
+    "unit": "kN",
+    "desc": "A荷重の軸重",
+    "show": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d35",
+   "kind": "vdef",
+   "props": {
+    "name": "P_2",
+    "value": 190,
+    "unit": "kN",
+    "desc": "A荷重の軸重",
+    "show": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d36",
+   "kind": "vdef",
+   "props": {
+    "name": "w_EQ",
+    "value": 35,
+    "unit": "kN/m",
+    "desc": "地震時の照査に用いるEA荷重",
+    "show": true,
+    "label": "地震時の照査に用いるEA荷重",
+    "display": "w",
+    "global": true
+   }
+  },
+  {
+   "id": "d37",
+   "kind": "heading",
+   "props": {
+    "level": 3,
+    "text": "衝撃荷重",
+    "symbol": "I",
+    "kijun": {
+     "abbr": "鋼標準",
+     "loc": "第Ⅰ編 4.4.4"
+    }
+   }
+  },
+  {
+   "id": "d38",
+   "kind": "vdef",
+   "props": {
+    "name": "K_a",
+    "value": 2.0,
+    "unit": "",
+    "desc": "係数で，在来鉄道では Ka = 2.0，新幹線では Ka = 1.0 としてよい",
+    "show": false,
+    "global": true
+   }
+  },
+  {
+   "id": "d39",
+   "kind": "vdef",
+   "props": {
+    "name": "V",
+    "value": 110,
+    "unit": "km/h",
+    "desc": "当該区間を走行する列車の最高速度",
+    "show": false,
+    "global": true
+   }
+  },
+  {
+   "id": "d40",
+   "kind": "paragraph",
+   "props": {
+    "text": "・曲げモーメントに対して"
+   }
+  },
+  {
+   "id": "d41",
+   "kind": "vdef",
+   "props": {
+    "name": "L_b",
+    "value": 8.0,
+    "unit": "m",
+    "desc": "部材に最大活荷重断面力を生じさせる同符号の影響線の基線の長さ（曲げモーメント）",
+    "show": false,
+    "global": true
+   }
+  },
+  {
+   "id": "d42",
+   "kind": "calc",
+   "props": {
+    "name": "n_e",
+    "expr": "70 * L_b^(-0.8)",
+    "unit": "Hz",
+    "desc": "載荷時の部材の基本固有振動数",
+    "digits": 3,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d43",
+   "kind": "calc",
+   "props": {
+    "name": "i_M",
+    "expr": "K_a * V / (7.2 * n_e * L_b) + 10 / (65 + L_b)",
+    "unit": "",
+    "desc": "設計衝撃係数",
+    "digits": 3,
+    "show": true,
+    "display": "i",
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d44",
+   "kind": "check",
+   "props": {
+    "expr": "i_M <= 0.7",
+    "unit": ""
+   }
+  },
+  {
+   "id": "d45",
+   "kind": "paragraph",
+   "props": {
+    "text": "・せん断力に対して"
+   }
+  },
+  {
+   "id": "d46",
+   "kind": "vdef",
+   "props": {
+    "name": "L_bs",
+    "value": 4.0,
+    "unit": "m",
+    "desc": "影響線の基線の長さ（せん断力）",
+    "show": false,
+    "display": "L_b",
+    "global": true
+   }
+  },
+  {
+   "id": "d47",
+   "kind": "calc",
+   "props": {
+    "name": "n_es",
+    "expr": "70 * L_bs^(-0.8)",
+    "unit": "Hz",
+    "desc": "載荷時の部材の基本固有振動数（せん断力）",
+    "digits": 3,
+    "show": false,
+    "display": "n_e",
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d48",
+   "kind": "calc",
+   "props": {
+    "name": "i_S",
+    "expr": "K_a * V / (7.2 * n_es * L_bs) + 10 / (65 + L_bs)",
+    "unit": "",
+    "desc": "設計衝撃係数（せん断力）",
+    "digits": 3,
+    "show": true,
+    "display": "i",
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d49",
+   "kind": "check",
+   "props": {
+    "expr": "i_S <= 0.7",
+    "unit": ""
+   }
+  },
+  {
+   "id": "d50",
+   "kind": "where",
+   "props": {
+    "vars": [
+     "i_M",
+     "K_a",
+     "V",
+     "L_b",
+     "n_e"
+    ]
+   }
+  },
+  {
+   "id": "d51",
+   "kind": "heading",
+   "props": {
+    "level": 3,
+    "text": "車両横荷重および車輪横圧荷重",
+    "symbol": "LF",
+    "kijun": {
+     "abbr": "鋼標準",
+     "loc": "第Ⅰ編 4.4.6"
+    }
+   }
+  },
+  {
+   "id": "d52",
+   "kind": "paragraph",
+   "props": {
+    "text": "設計最高速度が 130km/h 未満であるため，車輪横圧荷重は考慮しない．\n列車荷重の特性値をなす動輪軸重の位置の動輪軸重に対して，E荷重の連結器を挟む車両配置間にて等分に作用し，その 15 %の大きさからなる連行荷重を車両横荷重の特性値とする．"
+   }
+  },
+  {
+   "id": "d53",
+   "kind": "vdef",
+   "props": {
+    "name": "alpha_LF",
+    "value": 0.15,
+    "unit": "",
+    "desc": "車両横荷重の係数",
+    "show": false,
+    "global": true
+   }
+  },
+  {
+   "id": "d54",
+   "kind": "calc",
+   "props": {
+    "name": "L_F",
+    "expr": "P * alpha_LF",
+    "unit": "kN",
+    "desc": "車両横荷重",
+    "digits": 1,
+    "show": true,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d55",
+   "kind": "paragraph",
+   "props": {
+    "text": "作用高：レール面（RL）"
+   }
+  },
+  {
+   "id": "d56",
+   "kind": "paragraph",
+   "props": {
+    "text": "水平トルク算出用のアーム長（RL〜上横構上面）"
+   }
+  },
+  {
+   "id": "d57",
+   "kind": "calc",
+   "props": {
+    "name": "h_1",
+    "expr": "359 + 22 + 9",
+    "unit": "mm",
+    "desc": "水平トルク算出用のアーム長",
+    "digits": 0,
+    "show": true,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d58",
+   "kind": "vdef",
+   "props": {
+    "name": "B_g",
+    "value": 1.5,
+    "unit": "m",
+    "desc": "主桁間隔",
+    "show": false,
+    "display": "B",
+    "global": true
+   }
+  },
+  {
+   "id": "d59",
+   "kind": "paragraph",
+   "props": {
+    "text": "鉛直方向車両横荷重の算出係数（1レールあたりの断面力に乗じる係数）"
+   }
+  },
+  {
+   "id": "d60",
+   "kind": "calc",
+   "props": {
+    "name": "beta_LF",
+    "expr": "2 * alpha_LF * h_1 / (1000 * B_g)",
+    "unit": "",
+    "desc": "鉛直方向車両横荷重の算出係数",
+    "digits": 3,
+    "show": true,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d61",
+   "kind": "paragraph",
+   "props": {
+    "text": "軸方向車両横荷重の算出係数"
+   }
+  },
+  {
+   "id": "d62",
+   "kind": "calc",
+   "props": {
+    "name": "gamma_LF",
+    "expr": "2 * alpha_LF / B_g",
+    "unit": "",
+    "desc": "軸方向車両横荷重の算出係数",
+    "digits": 3,
+    "show": true,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d63",
+   "kind": "heading",
+   "props": {
+    "level": 3,
+    "text": "制動および始動荷重",
+    "symbol": "B",
+    "kijun": {
+     "abbr": "鋼標準",
+     "loc": "第Ⅰ編 4.4.7"
+    }
+   }
+  },
+  {
+   "id": "d64",
+   "kind": "paragraph",
+   "props": {
+    "text": "機関車荷重は，下表による．"
+   }
+  },
+  {
+   "id": "d65",
+   "kind": "table",
+   "props": {
+    "caption": "",
+    "data": {
+     "header_rows": 0,
+     "rows": [
+      [
+       {
+        "text": "制動荷重"
+       },
+       {
+        "text": "列車荷重の特性値の 25%"
+       }
+      ],
+      [
+       {
+        "text": "始動荷重"
+       },
+       {
+        "text": "列車荷重の特性値をなす動輪軸重の 25%"
+       }
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "id": "d66",
+   "kind": "paragraph",
+   "props": {
+    "text": "注）列車荷重の載荷長は部材に最大の影響を与える範囲とする．"
+   }
+  },
+  {
+   "id": "d67",
+   "kind": "calc",
+   "props": {
+    "name": "B",
+    "expr": "P / 2 * 0.25",
+    "unit": "kN",
+    "desc": "制動・始動荷重（軸重）",
+    "digits": 2,
+    "show": true,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d68",
+   "kind": "paragraph",
+   "props": {
+    "text": "鉛直方向反力の算定係数"
+   }
+  },
+  {
+   "id": "d69",
+   "kind": "calc",
+   "props": {
+    "name": "h_c",
+    "expr": "1.500 + 1.059",
+    "unit": "m",
+    "desc": "重心位置〜桁最下端",
+    "digits": 3,
+    "show": true,
+    "label": "重心位置〜桁最下端",
+    "display": "h",
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d70",
+   "kind": "vdef",
+   "props": {
+    "name": "L",
+    "value": 8.0,
+    "unit": "m",
+    "desc": "支間長",
+    "show": false,
+    "global": true
+   }
+  },
+  {
+   "id": "d71",
+   "kind": "calc",
+   "props": {
+    "name": "beta_B",
+    "expr": "h_c / L",
+    "unit": "",
+    "desc": "鉛直方向反力の算定係数",
+    "digits": 3,
+    "show": true,
+    "display": "beta",
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d72",
+   "kind": "heading",
+   "props": {
+    "level": 3,
+    "text": "ロングレール縦荷重",
+    "symbol": "LR",
+    "kijun": {
+     "abbr": "鋼標準",
+     "loc": "第Ⅰ編 4.4.8"
+    }
+   }
+  },
+  {
+   "id": "d73",
+   "kind": "paragraph",
+   "props": {
+    "text": "本橋りょうに用いる開発型締結装置の構造から，以下の荷重を使用する．"
+   }
+  },
+  {
+   "id": "d74",
+   "kind": "vdef",
+   "props": {
+    "name": "L_R",
+    "value": 16,
+    "unit": "kN/m",
+    "desc": "ロングレール縦荷重（1軌道あたり）",
+    "show": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d75",
+   "kind": "paragraph",
+   "props": {
+    "text": "ただし，1軌道当たり 2,000 kN を超えないものとする．"
+   }
+  },
+  {
+   "id": "d76",
+   "kind": "heading",
+   "props": {
+    "level": 3,
+    "text": "風荷重",
+    "symbol": "W",
+    "kijun": {
+     "abbr": "鋼標準",
+     "loc": "第Ⅰ編 4.4.9"
+    }
+   }
+  },
+  {
+   "id": "d77",
+   "kind": "paragraph",
+   "props": {
+    "text": "列車がある場合"
+   }
+  },
+  {
+   "id": "d78",
+   "kind": "vdef",
+   "props": {
+    "name": "w_1",
+    "value": 1.5,
+    "unit": "kN/m2",
+    "desc": "列車がある場合の風荷重特性値",
+    "show": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d79",
+   "kind": "paragraph",
+   "props": {
+    "text": "列車がある場合の風荷重の作用高 H（主桁最下端まで風荷重を載荷する）"
+   }
+  },
+  {
+   "id": "d80",
+   "kind": "calc",
+   "props": {
+    "name": "H_w",
+    "expr": "3.600 + 0.359 + 0.700",
+    "unit": "m",
+    "desc": "風荷重の作用高",
+    "digits": 3,
+    "show": true,
+    "display": "H",
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d81",
+   "kind": "paragraph",
+   "props": {
+    "text": "水平成分荷重"
+   }
+  },
+  {
+   "id": "d82",
+   "kind": "calc",
+   "props": {
+    "name": "w_h",
+    "expr": "w_1 * H_w",
+    "unit": "kN/m",
+    "desc": "水平成分荷重",
+    "digits": 2,
+    "show": true,
+    "display": "w_1",
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d83",
+   "kind": "paragraph",
+   "props": {
+    "text": "鉛直成分荷重"
+   }
+  },
+  {
+   "id": "d84",
+   "kind": "calc",
+   "props": {
+    "name": "M_w",
+    "expr": "w_h * H_w / 2",
+    "unit": "kN*m/m",
+    "desc": "風荷重によるモーメント",
+    "digits": 2,
+    "show": true,
+    "display": "M",
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d85",
+   "kind": "calc",
+   "props": {
+    "name": "w_2",
+    "expr": "M_w / B_g",
+    "unit": "kN/m",
+    "desc": "風荷重（列車がある場合）の鉛直成分",
+    "digits": 2,
+    "show": true,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d86",
+   "kind": "paragraph",
+   "props": {
+    "text": "列車がない場合"
+   }
+  },
+  {
+   "id": "d87",
+   "kind": "vdef",
+   "props": {
+    "name": "w_1n",
+    "value": 3.0,
+    "unit": "kN/m2",
+    "desc": "列車がない場合の風荷重特性値",
+    "show": true,
+    "display": "w_1",
+    "global": true
+   }
+  },
+  {
+   "id": "d88",
+   "kind": "calc",
+   "props": {
+    "name": "H_wn",
+    "expr": "0.359 + 0.700",
+    "unit": "m",
+    "desc": "風荷重の作用高（列車なし）",
+    "digits": 3,
+    "show": true,
+    "display": "H",
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d89",
+   "kind": "calc",
+   "props": {
+    "name": "w_hn",
+    "expr": "w_1n * H_wn",
+    "unit": "kN/m",
+    "desc": "水平成分荷重（列車なし）",
+    "digits": 2,
+    "show": true,
+    "display": "w_1",
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d90",
+   "kind": "calc",
+   "props": {
+    "name": "M_wn",
+    "expr": "w_hn * H_wn / 2",
+    "unit": "kN*m/m",
+    "desc": "風荷重によるモーメント（列車なし）",
+    "digits": 2,
+    "show": true,
+    "display": "M",
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d91",
+   "kind": "calc",
+   "props": {
+    "name": "w_2n",
+    "expr": "M_wn / B_g",
+    "unit": "kN/m",
+    "desc": "風荷重（列車がない場合）の鉛直成分",
+    "digits": 2,
+    "show": true,
+    "display": "w_2",
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d92",
+   "kind": "heading",
+   "props": {
+    "level": 3,
+    "text": "地震の影響",
+    "symbol": "EQ",
+    "kijun": {
+     "abbr": "建造物標準",
+     "loc": "2.10"
+    }
+   }
+  },
+  {
+   "id": "d93",
+   "kind": "paragraph",
+   "props": {
+    "text": "・鉛直荷重"
+   }
+  },
+  {
+   "id": "d94",
+   "kind": "calc",
+   "props": {
+    "name": "R_EQD",
+    "expr": "W_D * L / 2",
+    "unit": "kN",
+    "desc": "死荷重（1支点当たり）",
+    "digits": 1,
+    "show": true,
+    "label": "死荷重",
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d95",
+   "kind": "calc",
+   "props": {
+    "name": "R_EQL",
+    "expr": "w_EQ * L / 2 / 2",
+    "unit": "kN",
+    "desc": "列車荷重（1支点当たり）",
+    "digits": 1,
+    "show": true,
+    "label": "列車荷重",
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d96",
+   "kind": "paragraph",
+   "props": {
+    "text": "・橋軸方向水平反力（固定支点のみ考慮）"
+   }
+  },
+  {
+   "id": "d97",
+   "kind": "sum",
+   "props": {
+    "name": "H_EQ1s",
+    "unit": "kN",
+    "desc": "橋軸方向水平反力",
+    "digits": 1,
+    "items": [
+     {
+      "label": "死荷重",
+      "name": "H_EQ1D",
+      "expr": "R_EQD * 0.25 * 2"
+     },
+     {
+      "label": "列車荷重",
+      "name": "H_EQ1L",
+      "expr": "R_EQL * 0.20 * 2"
+     }
+    ],
+    "global": true
+   }
+  },
+  {
+   "id": "d98",
+   "kind": "paragraph",
+   "props": {
+    "text": "・橋軸直角方向水平反力"
+   }
+  },
+  {
+   "id": "d99",
+   "kind": "sum",
+   "props": {
+    "name": "H_EQ2s",
+    "unit": "kN",
+    "desc": "橋軸直角方向水平反力",
+    "digits": 1,
+    "items": [
+     {
+      "label": "死荷重",
+      "name": "H_EQ2D",
+      "expr": "R_EQD * 0.28"
+     },
+     {
+      "label": "列車荷重",
+      "name": "H_EQ2L",
+      "expr": "R_EQL * 0.28"
+     }
+    ],
+    "global": true
+   }
+  },
+  {
+   "id": "d100",
+   "kind": "paragraph",
+   "props": {
+    "text": "・鉛直反力"
+   }
+  },
+  {
+   "id": "d101",
+   "kind": "sum",
+   "props": {
+    "name": "R_EQs",
+    "unit": "kN",
+    "desc": "鉛直反力",
+    "digits": 1,
+    "items": [
+     {
+      "label": "死荷重",
+      "name": "R_EQ3D",
+      "expr": "R_EQD * 0.125"
+     },
+     {
+      "label": "列車荷重",
+      "name": "R_EQ3L",
+      "expr": "R_EQL * 0.125"
+     }
+    ],
+    "global": true
+   }
+  },
+  {
+   "id": "d102",
+   "kind": "heading",
+   "props": {
+    "level": 2,
+    "text": "断面力の算出"
+   }
+  },
+  {
+   "id": "d103",
+   "kind": "paragraph",
+   "props": {
+    "text": "支間長　{{L}}"
+   }
+  },
+  {
+   "id": "d104",
+   "kind": "heading",
+   "props": {
+    "level": 3,
+    "text": "曲げモーメント"
+   }
+  },
+  {
+   "id": "d105",
+   "kind": "heading",
+   "props": {
+    "level": 4,
+    "text": "死荷重（D）"
+   }
+  },
+  {
+   "id": "d106",
+   "kind": "paragraph",
+   "props": {
+    "text": "WD ＝ {{W_D}}"
+   }
+  },
+  {
+   "id": "d107",
+   "kind": "vdef",
+   "props": {
+    "name": "x_a",
+    "value": 1.0,
+    "unit": "m",
+    "desc": "a点の位置",
+    "show": false,
+    "global": true
+   }
+  },
+  {
+   "id": "d108",
+   "kind": "calc",
+   "props": {
+    "name": "A_a",
+    "expr": "x_a * (L - x_a) / 2",
+    "unit": "m2",
+    "desc": "a点の曲げモーメントの影響線の面積",
+    "digits": 3,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d109",
+   "kind": "calc",
+   "props": {
+    "name": "MD_a",
+    "expr": "W_D * A_a",
+    "unit": "kN*m",
+    "desc": "a点の死荷重による曲げモーメント",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d110",
+   "kind": "vdef",
+   "props": {
+    "name": "x_b",
+    "value": 2.0,
+    "unit": "m",
+    "desc": "b点の位置",
+    "show": false,
+    "global": true
+   }
+  },
+  {
+   "id": "d111",
+   "kind": "calc",
+   "props": {
+    "name": "A_b",
+    "expr": "x_b * (L - x_b) / 2",
+    "unit": "m2",
+    "desc": "b点の曲げモーメントの影響線の面積",
+    "digits": 3,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d112",
+   "kind": "calc",
+   "props": {
+    "name": "MD_b",
+    "expr": "W_D * A_b",
+    "unit": "kN*m",
+    "desc": "b点の死荷重による曲げモーメント",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d113",
+   "kind": "vdef",
+   "props": {
+    "name": "x_c",
+    "value": 3.0,
+    "unit": "m",
+    "desc": "c点の位置",
+    "show": false,
+    "global": true
+   }
+  },
+  {
+   "id": "d114",
+   "kind": "calc",
+   "props": {
+    "name": "A_c",
+    "expr": "x_c * (L - x_c) / 2",
+    "unit": "m2",
+    "desc": "c点の曲げモーメントの影響線の面積",
+    "digits": 3,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d115",
+   "kind": "calc",
+   "props": {
+    "name": "MD_c",
+    "expr": "W_D * A_c",
+    "unit": "kN*m",
+    "desc": "c点の死荷重による曲げモーメント",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d116",
+   "kind": "vdef",
+   "props": {
+    "name": "x_d",
+    "value": 4.0,
+    "unit": "m",
+    "desc": "d点の位置",
+    "show": false,
+    "global": true
+   }
+  },
+  {
+   "id": "d117",
+   "kind": "calc",
+   "props": {
+    "name": "A_d",
+    "expr": "x_d * (L - x_d) / 2",
+    "unit": "m2",
+    "desc": "d点の曲げモーメントの影響線の面積",
+    "digits": 3,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d118",
+   "kind": "calc",
+   "props": {
+    "name": "MD_d",
+    "expr": "W_D * A_d",
+    "unit": "kN*m",
+    "desc": "d点の死荷重による曲げモーメント",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d119",
+   "kind": "vdef",
+   "props": {
+    "name": "x_e",
+    "value": 3.911,
+    "unit": "m",
+    "desc": "e点の位置",
+    "show": false,
+    "global": true
+   }
+  },
+  {
+   "id": "d120",
+   "kind": "calc",
+   "props": {
+    "name": "A_e",
+    "expr": "x_e * (L - x_e) / 2",
+    "unit": "m2",
+    "desc": "e点の曲げモーメントの影響線の面積",
+    "digits": 3,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d121",
+   "kind": "calc",
+   "props": {
+    "name": "MD_e",
+    "expr": "W_D * A_e",
+    "unit": "kN*m",
+    "desc": "e点の死荷重による曲げモーメント",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d122",
+   "kind": "table",
+   "props": {
+    "caption": "",
+    "data": {
+     "header_rows": 1,
+     "rows": [
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "a点"
+       },
+       {
+        "text": "b点"
+       },
+       {
+        "text": "c点"
+       },
+       {
+        "text": "d点"
+       },
+       {
+        "text": "e点"
+       }
+      ],
+      [
+       {
+        "text": "A ＝"
+       },
+       {
+        "text": "{{A_a}}"
+       },
+       {
+        "text": "{{A_b}}"
+       },
+       {
+        "text": "{{A_c}}"
+       },
+       {
+        "text": "{{A_d}}"
+       },
+       {
+        "text": "{{A_e}}"
+       }
+      ],
+      [
+       {
+        "text": "MD ＝"
+       },
+       {
+        "text": "{{MD_a}}"
+       },
+       {
+        "text": "{{MD_b}}"
+       },
+       {
+        "text": "{{MD_c}}"
+       },
+       {
+        "text": "{{MD_d}}"
+       },
+       {
+        "text": "{{MD_e}}"
+       }
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "id": "d123",
+   "kind": "heading",
+   "props": {
+    "level": 4,
+    "text": "列車荷重（L）"
+   }
+  },
+  {
+   "id": "d124",
+   "kind": "paragraph",
+   "props": {
+    "text": "【鋼構設計資料（第五版）】より"
+   }
+  },
+  {
+   "id": "d125",
+   "kind": "vdef",
+   "props": {
+    "name": "ML_a",
+    "value": 167.69,
+    "unit": "kN*m",
+    "desc": "a点の列車荷重による曲げモーメント",
+    "show": false,
+    "global": true
+   }
+  },
+  {
+   "id": "d126",
+   "kind": "vdef",
+   "props": {
+    "name": "ML_b",
+    "value": 271.62,
+    "unit": "kN*m",
+    "desc": "b点の列車荷重による曲げモーメント",
+    "show": false,
+    "global": true
+   }
+  },
+  {
+   "id": "d127",
+   "kind": "vdef",
+   "props": {
+    "name": "ML_c",
+    "value": 329.69,
+    "unit": "kN*m",
+    "desc": "c点の列車荷重による曲げモーメント",
+    "show": false,
+    "global": true
+   }
+  },
+  {
+   "id": "d128",
+   "kind": "vdef",
+   "props": {
+    "name": "ML_d",
+    "value": 353.25,
+    "unit": "kN*m",
+    "desc": "d点の列車荷重による曲げモーメント",
+    "show": false,
+    "global": true
+   }
+  },
+  {
+   "id": "d129",
+   "kind": "vdef",
+   "props": {
+    "name": "ML_e",
+    "value": 353.76,
+    "unit": "kN*m",
+    "desc": "e点の列車荷重による曲げモーメント",
+    "show": false,
+    "global": true
+   }
+  },
+  {
+   "id": "d130",
+   "kind": "table",
+   "props": {
+    "caption": "",
+    "data": {
+     "header_rows": 1,
+     "rows": [
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "a点"
+       },
+       {
+        "text": "b点"
+       },
+       {
+        "text": "c点"
+       },
+       {
+        "text": "d点"
+       },
+       {
+        "text": "e点"
+       }
+      ],
+      [
+       {
+        "text": "ML ＝"
+       },
+       {
+        "text": "{{ML_a}}"
+       },
+       {
+        "text": "{{ML_b}}"
+       },
+       {
+        "text": "{{ML_c}}"
+       },
+       {
+        "text": "{{ML_d}}"
+       },
+       {
+        "text": "{{ML_e}}"
+       }
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "id": "d131",
+   "kind": "heading",
+   "props": {
+    "level": 4,
+    "text": "衝撃荷重（I）",
+    "kijun": {
+     "abbr": "鋼標準",
+     "loc": "第Ⅰ編 4.4.4"
+    }
+   }
+  },
+  {
+   "id": "d132",
+   "kind": "paragraph",
+   "props": {
+    "text": "i ＝ {{i_M}}"
+   }
+  },
+  {
+   "id": "d133",
+   "kind": "calc",
+   "props": {
+    "name": "MI_a",
+    "expr": "ML_a * i_M",
+    "unit": "kN*m",
+    "desc": "a点の衝撃荷重による曲げモーメント",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d134",
+   "kind": "calc",
+   "props": {
+    "name": "MI_b",
+    "expr": "ML_b * i_M",
+    "unit": "kN*m",
+    "desc": "b点の衝撃荷重による曲げモーメント",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d135",
+   "kind": "calc",
+   "props": {
+    "name": "MI_c",
+    "expr": "ML_c * i_M",
+    "unit": "kN*m",
+    "desc": "c点の衝撃荷重による曲げモーメント",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d136",
+   "kind": "calc",
+   "props": {
+    "name": "MI_d",
+    "expr": "ML_d * i_M",
+    "unit": "kN*m",
+    "desc": "d点の衝撃荷重による曲げモーメント",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d137",
+   "kind": "calc",
+   "props": {
+    "name": "MI_e",
+    "expr": "ML_e * i_M",
+    "unit": "kN*m",
+    "desc": "e点の衝撃荷重による曲げモーメント",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d138",
+   "kind": "table",
+   "props": {
+    "caption": "",
+    "data": {
+     "header_rows": 1,
+     "rows": [
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "a点"
+       },
+       {
+        "text": "b点"
+       },
+       {
+        "text": "c点"
+       },
+       {
+        "text": "d点"
+       },
+       {
+        "text": "e点"
+       }
+      ],
+      [
+       {
+        "text": "MI ＝"
+       },
+       {
+        "text": "{{MI_a}}"
+       },
+       {
+        "text": "{{MI_b}}"
+       },
+       {
+        "text": "{{MI_c}}"
+       },
+       {
+        "text": "{{MI_d}}"
+       },
+       {
+        "text": "{{MI_e}}"
+       }
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "id": "d139",
+   "kind": "heading",
+   "props": {
+    "level": 4,
+    "text": "車両横荷重（LF）",
+    "kijun": {
+     "abbr": "鋼標準",
+     "loc": "第Ⅰ編 4.4.6"
+    }
+   }
+  },
+  {
+   "id": "d140",
+   "kind": "paragraph",
+   "props": {
+    "text": "βLF ＝ {{beta_LF}}．各点の影響線に動輪軸重を載荷した縦距の和 Ση から，MLF ＝ P/2 × βLF × Ση とする．"
+   }
+  },
+  {
+   "id": "d141",
+   "kind": "vdef",
+   "props": {
+    "name": "etaM_a",
+    "value": 1.425,
+    "unit": "",
+    "desc": "a点の曲げモーメントの影響線縦距の和",
+    "digits": 3,
+    "show": false,
+    "global": true
+   }
+  },
+  {
+   "id": "d142",
+   "kind": "calc",
+   "props": {
+    "name": "MLF_a",
+    "expr": "P / 2 * beta_LF * etaM_a",
+    "unit": "kN*m",
+    "desc": "a点の車両横荷重による曲げモーメント",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d143",
+   "kind": "vdef",
+   "props": {
+    "name": "etaM_b",
+    "value": 2.3,
+    "unit": "",
+    "desc": "b点の曲げモーメントの影響線縦距の和",
+    "digits": 3,
+    "show": false,
+    "global": true
+   }
+  },
+  {
+   "id": "d144",
+   "kind": "calc",
+   "props": {
+    "name": "MLF_b",
+    "expr": "P / 2 * beta_LF * etaM_b",
+    "unit": "kN*m",
+    "desc": "b点の車両横荷重による曲げモーメント",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d145",
+   "kind": "vdef",
+   "props": {
+    "name": "etaM_c",
+    "value": 2.375,
+    "unit": "",
+    "desc": "c点の曲げモーメントの影響線縦距の和",
+    "digits": 3,
+    "show": false,
+    "global": true
+   }
+  },
+  {
+   "id": "d146",
+   "kind": "calc",
+   "props": {
+    "name": "MLF_c",
+    "expr": "P / 2 * beta_LF * etaM_c",
+    "unit": "kN*m",
+    "desc": "c点の車両横荷重による曲げモーメント",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d147",
+   "kind": "vdef",
+   "props": {
+    "name": "etaM_d",
+    "value": 2.6,
+    "unit": "",
+    "desc": "d点の曲げモーメントの影響線縦距の和",
+    "digits": 3,
+    "show": false,
+    "global": true
+   }
+  },
+  {
+   "id": "d148",
+   "kind": "calc",
+   "props": {
+    "name": "MLF_d",
+    "expr": "P / 2 * beta_LF * etaM_d",
+    "unit": "kN*m",
+    "desc": "d点の車両横荷重による曲げモーメント",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d149",
+   "kind": "vdef",
+   "props": {
+    "name": "etaM_e",
+    "value": 2.611,
+    "unit": "",
+    "desc": "e点の曲げモーメントの影響線縦距の和",
+    "digits": 3,
+    "show": false,
+    "global": true
+   }
+  },
+  {
+   "id": "d150",
+   "kind": "calc",
+   "props": {
+    "name": "MLF_e",
+    "expr": "P / 2 * beta_LF * etaM_e",
+    "unit": "kN*m",
+    "desc": "e点の車両横荷重による曲げモーメント",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d151",
+   "kind": "table",
+   "props": {
+    "caption": "",
+    "data": {
+     "header_rows": 1,
+     "rows": [
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "a点"
+       },
+       {
+        "text": "b点"
+       },
+       {
+        "text": "c点"
+       },
+       {
+        "text": "d点"
+       },
+       {
+        "text": "e点"
+       }
+      ],
+      [
+       {
+        "text": "Ση ＝"
+       },
+       {
+        "text": "{{etaM_a}}"
+       },
+       {
+        "text": "{{etaM_b}}"
+       },
+       {
+        "text": "{{etaM_c}}"
+       },
+       {
+        "text": "{{etaM_d}}"
+       },
+       {
+        "text": "{{etaM_e}}"
+       }
+      ],
+      [
+       {
+        "text": "MLF ＝"
+       },
+       {
+        "text": "{{MLF_a}}"
+       },
+       {
+        "text": "{{MLF_b}}"
+       },
+       {
+        "text": "{{MLF_c}}"
+       },
+       {
+        "text": "{{MLF_d}}"
+       },
+       {
+        "text": "{{MLF_e}}"
+       }
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "id": "d152",
+   "kind": "heading",
+   "props": {
+    "level": 4,
+    "text": "風荷重（W）（列車有）",
+    "kijun": {
+     "abbr": "鋼標準",
+     "loc": "第Ⅰ編 4.4.9"
+    }
+   }
+  },
+  {
+   "id": "d153",
+   "kind": "paragraph",
+   "props": {
+    "text": "WW ＝ {{w_2}}"
+   }
+  },
+  {
+   "id": "d154",
+   "kind": "calc",
+   "props": {
+    "name": "MW_a",
+    "expr": "w_2 * A_a",
+    "unit": "kN*m",
+    "desc": "a点の風荷重による曲げモーメント",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d155",
+   "kind": "calc",
+   "props": {
+    "name": "MW_b",
+    "expr": "w_2 * A_b",
+    "unit": "kN*m",
+    "desc": "b点の風荷重による曲げモーメント",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d156",
+   "kind": "calc",
+   "props": {
+    "name": "MW_c",
+    "expr": "w_2 * A_c",
+    "unit": "kN*m",
+    "desc": "c点の風荷重による曲げモーメント",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d157",
+   "kind": "calc",
+   "props": {
+    "name": "MW_d",
+    "expr": "w_2 * A_d",
+    "unit": "kN*m",
+    "desc": "d点の風荷重による曲げモーメント",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d158",
+   "kind": "calc",
+   "props": {
+    "name": "MW_e",
+    "expr": "w_2 * A_e",
+    "unit": "kN*m",
+    "desc": "e点の風荷重による曲げモーメント",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d159",
+   "kind": "table",
+   "props": {
+    "caption": "",
+    "data": {
+     "header_rows": 1,
+     "rows": [
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "a点"
+       },
+       {
+        "text": "b点"
+       },
+       {
+        "text": "c点"
+       },
+       {
+        "text": "d点"
+       },
+       {
+        "text": "e点"
+       }
+      ],
+      [
+       {
+        "text": "A ＝"
+       },
+       {
+        "text": "{{A_a}}"
+       },
+       {
+        "text": "{{A_b}}"
+       },
+       {
+        "text": "{{A_c}}"
+       },
+       {
+        "text": "{{A_d}}"
+       },
+       {
+        "text": "{{A_e}}"
+       }
+      ],
+      [
+       {
+        "text": "MW ＝"
+       },
+       {
+        "text": "{{MW_a}}"
+       },
+       {
+        "text": "{{MW_b}}"
+       },
+       {
+        "text": "{{MW_c}}"
+       },
+       {
+        "text": "{{MW_d}}"
+       },
+       {
+        "text": "{{MW_e}}"
+       }
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "id": "d160",
+   "kind": "heading",
+   "props": {
+    "level": 3,
+    "text": "せん断力"
+   }
+  },
+  {
+   "id": "d161",
+   "kind": "heading",
+   "props": {
+    "level": 4,
+    "text": "死荷重（D）"
+   }
+  },
+  {
+   "id": "d162",
+   "kind": "paragraph",
+   "props": {
+    "text": "WD ＝ {{W_D}}"
+   }
+  },
+  {
+   "id": "d163",
+   "kind": "vdef",
+   "props": {
+    "name": "xs_A",
+    "value": 0.0,
+    "unit": "m",
+    "desc": "A点の位置",
+    "show": false,
+    "global": true
+   }
+  },
+  {
+   "id": "d164",
+   "kind": "calc",
+   "props": {
+    "name": "SA_A",
+    "expr": "(L - xs_A)^2 / (2 * L) - xs_A^2 / (2 * L)",
+    "unit": "m",
+    "desc": "A点のせん断力の影響線の面積",
+    "digits": 3,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d165",
+   "kind": "calc",
+   "props": {
+    "name": "SD_A",
+    "expr": "W_D * SA_A",
+    "unit": "kN",
+    "desc": "A点の死荷重によるせん断力",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d166",
+   "kind": "vdef",
+   "props": {
+    "name": "xs_a",
+    "value": 1.0,
+    "unit": "m",
+    "desc": "a点の位置",
+    "show": false,
+    "global": true
+   }
+  },
+  {
+   "id": "d167",
+   "kind": "calc",
+   "props": {
+    "name": "SA_a",
+    "expr": "(L - xs_a)^2 / (2 * L) - xs_a^2 / (2 * L)",
+    "unit": "m",
+    "desc": "a点のせん断力の影響線の面積",
+    "digits": 3,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d168",
+   "kind": "calc",
+   "props": {
+    "name": "SD_a",
+    "expr": "W_D * SA_a",
+    "unit": "kN",
+    "desc": "a点の死荷重によるせん断力",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d169",
+   "kind": "vdef",
+   "props": {
+    "name": "xs_b",
+    "value": 2.0,
+    "unit": "m",
+    "desc": "b点の位置",
+    "show": false,
+    "global": true
+   }
+  },
+  {
+   "id": "d170",
+   "kind": "calc",
+   "props": {
+    "name": "SA_b",
+    "expr": "(L - xs_b)^2 / (2 * L) - xs_b^2 / (2 * L)",
+    "unit": "m",
+    "desc": "b点のせん断力の影響線の面積",
+    "digits": 3,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d171",
+   "kind": "calc",
+   "props": {
+    "name": "SD_b",
+    "expr": "W_D * SA_b",
+    "unit": "kN",
+    "desc": "b点の死荷重によるせん断力",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d172",
+   "kind": "vdef",
+   "props": {
+    "name": "xs_c",
+    "value": 3.0,
+    "unit": "m",
+    "desc": "c点の位置",
+    "show": false,
+    "global": true
+   }
+  },
+  {
+   "id": "d173",
+   "kind": "calc",
+   "props": {
+    "name": "SA_c",
+    "expr": "(L - xs_c)^2 / (2 * L) - xs_c^2 / (2 * L)",
+    "unit": "m",
+    "desc": "c点のせん断力の影響線の面積",
+    "digits": 3,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d174",
+   "kind": "calc",
+   "props": {
+    "name": "SD_c",
+    "expr": "W_D * SA_c",
+    "unit": "kN",
+    "desc": "c点の死荷重によるせん断力",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d175",
+   "kind": "vdef",
+   "props": {
+    "name": "xs_d",
+    "value": 4.0,
+    "unit": "m",
+    "desc": "d点の位置",
+    "show": false,
+    "global": true
+   }
+  },
+  {
+   "id": "d176",
+   "kind": "calc",
+   "props": {
+    "name": "SA_d",
+    "expr": "(L - xs_d)^2 / (2 * L) - xs_d^2 / (2 * L)",
+    "unit": "m",
+    "desc": "d点のせん断力の影響線の面積",
+    "digits": 3,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d177",
+   "kind": "calc",
+   "props": {
+    "name": "SD_d",
+    "expr": "W_D * SA_d",
+    "unit": "kN",
+    "desc": "d点の死荷重によるせん断力",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d178",
+   "kind": "table",
+   "props": {
+    "caption": "",
+    "data": {
+     "header_rows": 1,
+     "rows": [
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "A点"
+       },
+       {
+        "text": "a点"
+       },
+       {
+        "text": "b点"
+       },
+       {
+        "text": "c点"
+       },
+       {
+        "text": "d点"
+       }
+      ],
+      [
+       {
+        "text": "ΣA ＝"
+       },
+       {
+        "text": "{{SA_A}}"
+       },
+       {
+        "text": "{{SA_a}}"
+       },
+       {
+        "text": "{{SA_b}}"
+       },
+       {
+        "text": "{{SA_c}}"
+       },
+       {
+        "text": "{{SA_d}}"
+       }
+      ],
+      [
+       {
+        "text": "SD ＝"
+       },
+       {
+        "text": "{{SD_A}}"
+       },
+       {
+        "text": "{{SD_a}}"
+       },
+       {
+        "text": "{{SD_b}}"
+       },
+       {
+        "text": "{{SD_c}}"
+       },
+       {
+        "text": "{{SD_d}}"
+       }
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "id": "d179",
+   "kind": "heading",
+   "props": {
+    "level": 4,
+    "text": "列車荷重（L）"
+   }
+  },
+  {
+   "id": "d180",
+   "kind": "paragraph",
+   "props": {
+    "text": "【鋼構設計資料（第五版）】より"
+   }
+  },
+  {
+   "id": "d181",
+   "kind": "vdef",
+   "props": {
+    "name": "SL_A",
+    "value": 199.56,
+    "unit": "kN",
+    "desc": "A点の列車荷重によるせん断力",
+    "show": false,
+    "global": true
+   }
+  },
+  {
+   "id": "d182",
+   "kind": "vdef",
+   "props": {
+    "name": "SL_a",
+    "value": 167.69,
+    "unit": "kN",
+    "desc": "a点の列車荷重によるせん断力",
+    "show": false,
+    "global": true
+   }
+  },
+  {
+   "id": "d183",
+   "kind": "vdef",
+   "props": {
+    "name": "SL_b",
+    "value": 135.81,
+    "unit": "kN",
+    "desc": "b点の列車荷重によるせん断力",
+    "show": false,
+    "global": true
+   }
+  },
+  {
+   "id": "d184",
+   "kind": "vdef",
+   "props": {
+    "name": "SL_c",
+    "value": 103.94,
+    "unit": "kN",
+    "desc": "c点の列車荷重によるせん断力",
+    "show": false,
+    "global": true
+   }
+  },
+  {
+   "id": "d185",
+   "kind": "vdef",
+   "props": {
+    "name": "SL_d",
+    "value": 72.06,
+    "unit": "kN",
+    "desc": "d点の列車荷重によるせん断力",
+    "show": false,
+    "global": true
+   }
+  },
+  {
+   "id": "d186",
+   "kind": "table",
+   "props": {
+    "caption": "",
+    "data": {
+     "header_rows": 1,
+     "rows": [
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "A点"
+       },
+       {
+        "text": "a点"
+       },
+       {
+        "text": "b点"
+       },
+       {
+        "text": "c点"
+       },
+       {
+        "text": "d点"
+       }
+      ],
+      [
+       {
+        "text": "SL ＝"
+       },
+       {
+        "text": "{{SL_A}}"
+       },
+       {
+        "text": "{{SL_a}}"
+       },
+       {
+        "text": "{{SL_b}}"
+       },
+       {
+        "text": "{{SL_c}}"
+       },
+       {
+        "text": "{{SL_d}}"
+       }
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "id": "d187",
+   "kind": "heading",
+   "props": {
+    "level": 4,
+    "text": "衝撃荷重（I）",
+    "kijun": {
+     "abbr": "鋼標準",
+     "loc": "第Ⅰ編 4.4.4"
+    }
+   }
+  },
+  {
+   "id": "d188",
+   "kind": "paragraph",
+   "props": {
+    "text": "i ＝ {{i_S}}"
+   }
+  },
+  {
+   "id": "d189",
+   "kind": "calc",
+   "props": {
+    "name": "SI_A",
+    "expr": "SL_A * i_S",
+    "unit": "kN",
+    "desc": "A点の衝撃荷重によるせん断力",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d190",
+   "kind": "calc",
+   "props": {
+    "name": "SI_a",
+    "expr": "SL_a * i_S",
+    "unit": "kN",
+    "desc": "a点の衝撃荷重によるせん断力",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d191",
+   "kind": "calc",
+   "props": {
+    "name": "SI_b",
+    "expr": "SL_b * i_S",
+    "unit": "kN",
+    "desc": "b点の衝撃荷重によるせん断力",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d192",
+   "kind": "calc",
+   "props": {
+    "name": "SI_c",
+    "expr": "SL_c * i_S",
+    "unit": "kN",
+    "desc": "c点の衝撃荷重によるせん断力",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d193",
+   "kind": "calc",
+   "props": {
+    "name": "SI_d",
+    "expr": "SL_d * i_S",
+    "unit": "kN",
+    "desc": "d点の衝撃荷重によるせん断力",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d194",
+   "kind": "table",
+   "props": {
+    "caption": "",
+    "data": {
+     "header_rows": 1,
+     "rows": [
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "A点"
+       },
+       {
+        "text": "a点"
+       },
+       {
+        "text": "b点"
+       },
+       {
+        "text": "c点"
+       },
+       {
+        "text": "d点"
+       }
+      ],
+      [
+       {
+        "text": "SI ＝"
+       },
+       {
+        "text": "{{SI_A}}"
+       },
+       {
+        "text": "{{SI_a}}"
+       },
+       {
+        "text": "{{SI_b}}"
+       },
+       {
+        "text": "{{SI_c}}"
+       },
+       {
+        "text": "{{SI_d}}"
+       }
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "id": "d195",
+   "kind": "heading",
+   "props": {
+    "level": 4,
+    "text": "車両横荷重（LF）",
+    "kijun": {
+     "abbr": "鋼標準",
+     "loc": "第Ⅰ編 4.4.6"
+    }
+   }
+  },
+  {
+   "id": "d196",
+   "kind": "paragraph",
+   "props": {
+    "text": "βLF ＝ {{beta_LF}}"
+   }
+  },
+  {
+   "id": "d197",
+   "kind": "vdef",
+   "props": {
+    "name": "etaS_A",
+    "value": 1.8,
+    "unit": "",
+    "desc": "A点のせん断力の影響線縦距の和",
+    "digits": 3,
+    "show": false,
+    "global": true
+   }
+  },
+  {
+   "id": "d198",
+   "kind": "calc",
+   "props": {
+    "name": "SLF_A",
+    "expr": "P / 2 * beta_LF * etaS_A",
+    "unit": "kN",
+    "desc": "A点の車両横荷重によるせん断力",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d199",
+   "kind": "vdef",
+   "props": {
+    "name": "etaS_a",
+    "value": 1.425,
+    "unit": "",
+    "desc": "a点のせん断力の影響線縦距の和",
+    "digits": 3,
+    "show": false,
+    "global": true
+   }
+  },
+  {
+   "id": "d200",
+   "kind": "calc",
+   "props": {
+    "name": "SLF_a",
+    "expr": "P / 2 * beta_LF * etaS_a",
+    "unit": "kN",
+    "desc": "a点の車両横荷重によるせん断力",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d201",
+   "kind": "vdef",
+   "props": {
+    "name": "etaS_b",
+    "value": 1.15,
+    "unit": "",
+    "desc": "b点のせん断力の影響線縦距の和",
+    "digits": 3,
+    "show": false,
+    "global": true
+   }
+  },
+  {
+   "id": "d202",
+   "kind": "calc",
+   "props": {
+    "name": "SLF_b",
+    "expr": "P / 2 * beta_LF * etaS_b",
+    "unit": "kN",
+    "desc": "b点の車両横荷重によるせん断力",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d203",
+   "kind": "vdef",
+   "props": {
+    "name": "etaS_c",
+    "value": 0.9,
+    "unit": "",
+    "desc": "c点のせん断力の影響線縦距の和",
+    "digits": 3,
+    "show": false,
+    "global": true
+   }
+  },
+  {
+   "id": "d204",
+   "kind": "calc",
+   "props": {
+    "name": "SLF_c",
+    "expr": "P / 2 * beta_LF * etaS_c",
+    "unit": "kN",
+    "desc": "c点の車両横荷重によるせん断力",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d205",
+   "kind": "vdef",
+   "props": {
+    "name": "etaS_d",
+    "value": 0.65,
+    "unit": "",
+    "desc": "d点のせん断力の影響線縦距の和",
+    "digits": 3,
+    "show": false,
+    "global": true
+   }
+  },
+  {
+   "id": "d206",
+   "kind": "calc",
+   "props": {
+    "name": "SLF_d",
+    "expr": "P / 2 * beta_LF * etaS_d",
+    "unit": "kN",
+    "desc": "d点の車両横荷重によるせん断力",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d207",
+   "kind": "table",
+   "props": {
+    "caption": "",
+    "data": {
+     "header_rows": 1,
+     "rows": [
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "A点"
+       },
+       {
+        "text": "a点"
+       },
+       {
+        "text": "b点"
+       },
+       {
+        "text": "c点"
+       },
+       {
+        "text": "d点"
+       }
+      ],
+      [
+       {
+        "text": "Ση ＝"
+       },
+       {
+        "text": "{{etaS_A}}"
+       },
+       {
+        "text": "{{etaS_a}}"
+       },
+       {
+        "text": "{{etaS_b}}"
+       },
+       {
+        "text": "{{etaS_c}}"
+       },
+       {
+        "text": "{{etaS_d}}"
+       }
+      ],
+      [
+       {
+        "text": "SLF ＝"
+       },
+       {
+        "text": "{{SLF_A}}"
+       },
+       {
+        "text": "{{SLF_a}}"
+       },
+       {
+        "text": "{{SLF_b}}"
+       },
+       {
+        "text": "{{SLF_c}}"
+       },
+       {
+        "text": "{{SLF_d}}"
+       }
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "id": "d208",
+   "kind": "heading",
+   "props": {
+    "level": 4,
+    "text": "風荷重（W）（列車有）",
+    "kijun": {
+     "abbr": "鋼標準",
+     "loc": "第Ⅰ編 4.4.9"
+    }
+   }
+  },
+  {
+   "id": "d209",
+   "kind": "paragraph",
+   "props": {
+    "text": "WW ＝ {{w_2}}"
+   }
+  },
+  {
+   "id": "d210",
+   "kind": "calc",
+   "props": {
+    "name": "SW_A",
+    "expr": "w_2 * SA_A",
+    "unit": "kN",
+    "desc": "A点の風荷重によるせん断力",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d211",
+   "kind": "calc",
+   "props": {
+    "name": "SW_a",
+    "expr": "w_2 * SA_a",
+    "unit": "kN",
+    "desc": "a点の風荷重によるせん断力",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d212",
+   "kind": "calc",
+   "props": {
+    "name": "SW_b",
+    "expr": "w_2 * SA_b",
+    "unit": "kN",
+    "desc": "b点の風荷重によるせん断力",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d213",
+   "kind": "calc",
+   "props": {
+    "name": "SW_c",
+    "expr": "w_2 * SA_c",
+    "unit": "kN",
+    "desc": "c点の風荷重によるせん断力",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d214",
+   "kind": "calc",
+   "props": {
+    "name": "SW_d",
+    "expr": "w_2 * SA_d",
+    "unit": "kN",
+    "desc": "d点の風荷重によるせん断力",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d215",
+   "kind": "table",
+   "props": {
+    "caption": "",
+    "data": {
+     "header_rows": 1,
+     "rows": [
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "A点"
+       },
+       {
+        "text": "a点"
+       },
+       {
+        "text": "b点"
+       },
+       {
+        "text": "c点"
+       },
+       {
+        "text": "d点"
+       }
+      ],
+      [
+       {
+        "text": "ΣA ＝"
+       },
+       {
+        "text": "{{SA_A}}"
+       },
+       {
+        "text": "{{SA_a}}"
+       },
+       {
+        "text": "{{SA_b}}"
+       },
+       {
+        "text": "{{SA_c}}"
+       },
+       {
+        "text": "{{SA_d}}"
+       }
+      ],
+      [
+       {
+        "text": "SW ＝"
+       },
+       {
+        "text": "{{SW_A}}"
+       },
+       {
+        "text": "{{SW_a}}"
+       },
+       {
+        "text": "{{SW_b}}"
+       },
+       {
+        "text": "{{SW_c}}"
+       },
+       {
+        "text": "{{SW_d}}"
+       }
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "id": "d216",
+   "kind": "heading",
+   "props": {
+    "level": 3,
+    "text": "軸力"
+   }
+  },
+  {
+   "id": "d217",
+   "kind": "heading",
+   "props": {
+    "level": 4,
+    "text": "車両横荷重（LF）",
+    "kijun": {
+     "abbr": "鋼標準",
+     "loc": "第Ⅰ編 4.4.6"
+    }
+   }
+  },
+  {
+   "id": "d218",
+   "kind": "paragraph",
+   "props": {
+    "text": "γLF ＝ {{gamma_LF}}．載荷できる動輪軸数 n（A点・a点は 3 軸，b〜d点は 2 軸）から NLF ＝ P/2 × γLF × n とする．"
+   }
+  },
+  {
+   "id": "d219",
+   "kind": "vdef",
+   "props": {
+    "name": "nax_A",
+    "value": 3,
+    "unit": "",
+    "desc": "A点に載荷する動輪軸数",
+    "digits": 0,
+    "show": false,
+    "global": true
+   }
+  },
+  {
+   "id": "d220",
+   "kind": "calc",
+   "props": {
+    "name": "NLF_A",
+    "expr": "P / 2 * gamma_LF * nax_A",
+    "unit": "kN",
+    "desc": "A点の車両横荷重による軸力",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d221",
+   "kind": "vdef",
+   "props": {
+    "name": "nax_a",
+    "value": 3,
+    "unit": "",
+    "desc": "a点に載荷する動輪軸数",
+    "digits": 0,
+    "show": false,
+    "global": true
+   }
+  },
+  {
+   "id": "d222",
+   "kind": "calc",
+   "props": {
+    "name": "NLF_a",
+    "expr": "P / 2 * gamma_LF * nax_a",
+    "unit": "kN",
+    "desc": "a点の車両横荷重による軸力",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d223",
+   "kind": "vdef",
+   "props": {
+    "name": "nax_b",
+    "value": 2,
+    "unit": "",
+    "desc": "b点に載荷する動輪軸数",
+    "digits": 0,
+    "show": false,
+    "global": true
+   }
+  },
+  {
+   "id": "d224",
+   "kind": "calc",
+   "props": {
+    "name": "NLF_b",
+    "expr": "P / 2 * gamma_LF * nax_b",
+    "unit": "kN",
+    "desc": "b点の車両横荷重による軸力",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d225",
+   "kind": "vdef",
+   "props": {
+    "name": "nax_c",
+    "value": 2,
+    "unit": "",
+    "desc": "c点に載荷する動輪軸数",
+    "digits": 0,
+    "show": false,
+    "global": true
+   }
+  },
+  {
+   "id": "d226",
+   "kind": "calc",
+   "props": {
+    "name": "NLF_c",
+    "expr": "P / 2 * gamma_LF * nax_c",
+    "unit": "kN",
+    "desc": "c点の車両横荷重による軸力",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d227",
+   "kind": "vdef",
+   "props": {
+    "name": "nax_d",
+    "value": 2,
+    "unit": "",
+    "desc": "d点に載荷する動輪軸数",
+    "digits": 0,
+    "show": false,
+    "global": true
+   }
+  },
+  {
+   "id": "d228",
+   "kind": "calc",
+   "props": {
+    "name": "NLF_d",
+    "expr": "P / 2 * gamma_LF * nax_d",
+    "unit": "kN",
+    "desc": "d点の車両横荷重による軸力",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d229",
+   "kind": "table",
+   "props": {
+    "caption": "",
+    "data": {
+     "header_rows": 1,
+     "rows": [
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "A点"
+       },
+       {
+        "text": "a点"
+       },
+       {
+        "text": "b点"
+       },
+       {
+        "text": "c点"
+       },
+       {
+        "text": "d点"
+       }
+      ],
+      [
+       {
+        "text": "n ＝"
+       },
+       {
+        "text": "{{nax_A}}"
+       },
+       {
+        "text": "{{nax_a}}"
+       },
+       {
+        "text": "{{nax_b}}"
+       },
+       {
+        "text": "{{nax_c}}"
+       },
+       {
+        "text": "{{nax_d}}"
+       }
+      ],
+      [
+       {
+        "text": "NLF ＝"
+       },
+       {
+        "text": "{{NLF_A}}"
+       },
+       {
+        "text": "{{NLF_a}}"
+       },
+       {
+        "text": "{{NLF_b}}"
+       },
+       {
+        "text": "{{NLF_c}}"
+       },
+       {
+        "text": "{{NLF_d}}"
+       }
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "id": "d230",
+   "kind": "heading",
+   "props": {
+    "level": 4,
+    "text": "ロングレール縦荷重",
+    "symbol": "LR",
+    "kijun": {
+     "abbr": "鋼標準",
+     "loc": "第Ⅰ編 4.4.8"
+    }
+   }
+  },
+  {
+   "id": "d231",
+   "kind": "calc",
+   "props": {
+    "name": "NR_A",
+    "expr": "L_R / 2 * (L - xs_A)",
+    "unit": "kN",
+    "desc": "A点のロングレール縦荷重による軸力",
+    "digits": 2,
+    "show": true,
+    "label": "A点",
+    "display": "N_R",
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d232",
+   "kind": "calc",
+   "props": {
+    "name": "NR_a",
+    "expr": "L_R / 2 * (L - xs_a)",
+    "unit": "kN",
+    "desc": "a点のロングレール縦荷重による軸力",
+    "digits": 2,
+    "show": true,
+    "label": "a点",
+    "display": "N_R",
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d233",
+   "kind": "calc",
+   "props": {
+    "name": "NR_b",
+    "expr": "L_R / 2 * (L - xs_b)",
+    "unit": "kN",
+    "desc": "b点のロングレール縦荷重による軸力",
+    "digits": 2,
+    "show": true,
+    "label": "b点",
+    "display": "N_R",
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d234",
+   "kind": "calc",
+   "props": {
+    "name": "NR_c",
+    "expr": "L_R / 2 * (L - xs_c)",
+    "unit": "kN",
+    "desc": "c点のロングレール縦荷重による軸力",
+    "digits": 2,
+    "show": true,
+    "label": "c点",
+    "display": "N_R",
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d235",
+   "kind": "calc",
+   "props": {
+    "name": "NR_d",
+    "expr": "L_R / 2 * (L - xs_d)",
+    "unit": "kN",
+    "desc": "d点のロングレール縦荷重による軸力",
+    "digits": 2,
+    "show": true,
+    "label": "d点",
+    "display": "N_R",
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d236",
+   "kind": "heading",
+   "props": {
+    "level": 2,
+    "text": "作用の組合せおよび設計応答値のまとめ"
+   }
+  },
+  {
+   "id": "d237",
+   "kind": "kijun",
+   "props": {
+    "prefix": "作用の組合わせは以下とする．",
+    "kijun": {
+     "abbr": "鋼標準",
+     "loc": "第Ⅰ編 4.5"
+    }
+   }
+  },
+  {
+   "id": "d238",
+   "kind": "table",
+   "props": {
+    "caption": "",
+    "data": {
+     "header_rows": 1,
+     "rows": [
+      [
+       {
+        "text": "要求性能"
+       },
+       {
+        "text": "性能項目"
+       },
+       {
+        "text": "設計作用の組合せ"
+       }
+      ],
+      [
+       {
+        "text": "安全性",
+        "rowspan": 2
+       },
+       {
+        "text": "耐荷性"
+       },
+       {
+        "text": "・1.0D＋1.1L＋1.1I＋1.1C＋{LR}＋{T}\n・1.0D＋1.1L＋1.1I＋1.1C＋{LR}＋{LF}＋{W}",
+        "align": "left"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "耐疲労性"
+       },
+       {
+        "text": "・1.0D＋1.1L＋1.1I＋1.1C ……………… 疲労限の照査\n・D＋L＋3/4I＋C …… 繰返し数の影響を考慮した照査",
+        "align": "left"
+       }
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "id": "d239",
+   "kind": "paragraph",
+   "props": {
+    "text": "{ } は不利な場合のみ考慮する．耐荷性の組合せについて，点ごとの最大値（max）と最小値（min）を示す．"
+   }
+  },
+  {
+   "id": "d240",
+   "kind": "heading",
+   "props": {
+    "level": 3,
+    "text": "A点"
+   }
+  },
+  {
+   "id": "d241",
+   "kind": "calc",
+   "props": {
+    "name": "Mc1max_A",
+    "expr": "0 + 1.1 * (0 + 0) + 0",
+    "unit": "kN*m",
+    "desc": "A点のM（耐荷性①の最大）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d242",
+   "kind": "calc",
+   "props": {
+    "name": "Mc1min_A",
+    "expr": "0 + 0",
+    "unit": "kN*m",
+    "desc": "A点のM（耐荷性①の最小）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d243",
+   "kind": "calc",
+   "props": {
+    "name": "Mc2max_A",
+    "expr": "0 + 1.1 * (0 + 0) + 0 + 0 + 0",
+    "unit": "kN*m",
+    "desc": "A点のM（耐荷性②の最大）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d244",
+   "kind": "calc",
+   "props": {
+    "name": "Mc2min_A",
+    "expr": "0 + 0",
+    "unit": "kN*m",
+    "desc": "A点のM（耐荷性②の最小）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d245",
+   "kind": "calc",
+   "props": {
+    "name": "Sc1max_A",
+    "expr": "SD_A + 1.1 * (SL_A + SI_A) + 0",
+    "unit": "kN",
+    "desc": "A点のS（耐荷性①の最大）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d246",
+   "kind": "calc",
+   "props": {
+    "name": "Sc1min_A",
+    "expr": "SD_A + 0",
+    "unit": "kN",
+    "desc": "A点のS（耐荷性①の最小）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d247",
+   "kind": "calc",
+   "props": {
+    "name": "Sc2max_A",
+    "expr": "SD_A + 1.1 * (SL_A + SI_A) + 0 + SLF_A + SW_A",
+    "unit": "kN",
+    "desc": "A点のS（耐荷性②の最大）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d248",
+   "kind": "calc",
+   "props": {
+    "name": "Sc2min_A",
+    "expr": "SD_A + 0",
+    "unit": "kN",
+    "desc": "A点のS（耐荷性②の最小）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d249",
+   "kind": "calc",
+   "props": {
+    "name": "Nc1max_A",
+    "expr": "0 + 1.1 * (0 + 0) + NR_A",
+    "unit": "kN",
+    "desc": "A点のN（耐荷性①の最大）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d250",
+   "kind": "calc",
+   "props": {
+    "name": "Nc1min_A",
+    "expr": "0 + NR_A",
+    "unit": "kN",
+    "desc": "A点のN（耐荷性①の最小）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d251",
+   "kind": "calc",
+   "props": {
+    "name": "Nc2max_A",
+    "expr": "0 + 1.1 * (0 + 0) + NR_A + NLF_A + 0",
+    "unit": "kN",
+    "desc": "A点のN（耐荷性②の最大）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d252",
+   "kind": "calc",
+   "props": {
+    "name": "Nc2min_A",
+    "expr": "0 + NR_A",
+    "unit": "kN",
+    "desc": "A点のN（耐荷性②の最小）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d253",
+   "kind": "table",
+   "props": {
+    "caption": "",
+    "data": {
+     "header_rows": 1,
+     "rows": [
+      [
+       {
+        "text": "",
+        "colspan": 2
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "曲げモーメント\nM（kN·m）"
+       },
+       {
+        "text": "せん断力\nS（kN）"
+       },
+       {
+        "text": "軸　力\nN（kN）"
+       }
+      ],
+      [
+       {
+        "text": "単ケース",
+        "rowspan": 6,
+        "vertical": true
+       },
+       {
+        "text": "死荷重　D",
+        "align": "left"
+       },
+       {
+        "text": "0.00",
+        "align": "right"
+       },
+       {
+        "text": "{{SD_A}}",
+        "align": "right"
+       },
+       {
+        "text": "0.00",
+        "align": "right"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "列車荷重　L",
+        "align": "left"
+       },
+       {
+        "text": "0.00",
+        "align": "right"
+       },
+       {
+        "text": "{{SL_A}}",
+        "align": "right"
+       },
+       {
+        "text": "0.00",
+        "align": "right"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "衝撃　I",
+        "align": "left"
+       },
+       {
+        "text": "0.00",
+        "align": "right"
+       },
+       {
+        "text": "{{SI_A}}",
+        "align": "right"
+       },
+       {
+        "text": "0.00",
+        "align": "right"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "車両横荷重　LF",
+        "align": "left"
+       },
+       {
+        "text": "0.00",
+        "align": "right"
+       },
+       {
+        "text": "{{SLF_A}}",
+        "align": "right"
+       },
+       {
+        "text": "{{NLF_A}}",
+        "align": "right"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "ロングレール荷重　LR",
+        "align": "left"
+       },
+       {
+        "text": "0.00",
+        "align": "right"
+       },
+       {
+        "text": "0.00",
+        "align": "right"
+       },
+       {
+        "text": "{{NR_A}}",
+        "align": "right"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "風荷重（列車がある場合）　W",
+        "align": "left"
+       },
+       {
+        "text": "0.00",
+        "align": "right"
+       },
+       {
+        "text": "{{SW_A}}",
+        "align": "right"
+       },
+       {
+        "text": "0.00",
+        "align": "right"
+       }
+      ],
+      [
+       {
+        "text": "耐荷性",
+        "rowspan": 4,
+        "vertical": true
+       },
+       {
+        "text": "1.0D＋1.1L＋1.1I＋1.1C＋{LR}＋{T}　max",
+        "align": "left"
+       },
+       {
+        "text": "{{Mc1max_A}}",
+        "align": "right"
+       },
+       {
+        "text": "{{Sc1max_A}}",
+        "align": "right"
+       },
+       {
+        "text": "{{Nc1max_A}}",
+        "align": "right"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "1.0D＋1.1L＋1.1I＋1.1C＋{LR}＋{T}　min",
+        "align": "left"
+       },
+       {
+        "text": "{{Mc1min_A}}",
+        "align": "right"
+       },
+       {
+        "text": "{{Sc1min_A}}",
+        "align": "right"
+       },
+       {
+        "text": "{{Nc1min_A}}",
+        "align": "right"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "1.0D＋1.1L＋1.1I＋1.1C＋{LR}＋{LF}＋{W}　max",
+        "align": "left"
+       },
+       {
+        "text": "{{Mc2max_A}}",
+        "align": "right"
+       },
+       {
+        "text": "{{Sc2max_A}}",
+        "align": "right"
+       },
+       {
+        "text": "{{Nc2max_A}}",
+        "align": "right"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "1.0D＋1.1L＋1.1I＋1.1C＋{LR}＋{LF}＋{W}　min",
+        "align": "left"
+       },
+       {
+        "text": "{{Mc2min_A}}",
+        "align": "right"
+       },
+       {
+        "text": "{{Sc2min_A}}",
+        "align": "right"
+       },
+       {
+        "text": "{{Nc2min_A}}",
+        "align": "right"
+       }
+      ]
+     ],
+     "widths": [
+      "1.8em",
+      "1fr",
+      "7em",
+      "7em",
+      "7em"
+     ]
+    }
+   }
+  },
+  {
+   "id": "d254",
+   "kind": "heading",
+   "props": {
+    "level": 3,
+    "text": "a点"
+   }
+  },
+  {
+   "id": "d255",
+   "kind": "calc",
+   "props": {
+    "name": "Mc1max_a",
+    "expr": "MD_a + 1.1 * (ML_a + MI_a) + 0",
+    "unit": "kN*m",
+    "desc": "a点のM（耐荷性①の最大）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d256",
+   "kind": "calc",
+   "props": {
+    "name": "Mc1min_a",
+    "expr": "MD_a + 0",
+    "unit": "kN*m",
+    "desc": "a点のM（耐荷性①の最小）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d257",
+   "kind": "calc",
+   "props": {
+    "name": "Mc2max_a",
+    "expr": "MD_a + 1.1 * (ML_a + MI_a) + 0 + MLF_a + MW_a",
+    "unit": "kN*m",
+    "desc": "a点のM（耐荷性②の最大）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d258",
+   "kind": "calc",
+   "props": {
+    "name": "Mc2min_a",
+    "expr": "MD_a + 0",
+    "unit": "kN*m",
+    "desc": "a点のM（耐荷性②の最小）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d259",
+   "kind": "calc",
+   "props": {
+    "name": "Sc1max_a",
+    "expr": "SD_a + 1.1 * (SL_a + SI_a) + 0",
+    "unit": "kN",
+    "desc": "a点のS（耐荷性①の最大）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d260",
+   "kind": "calc",
+   "props": {
+    "name": "Sc1min_a",
+    "expr": "SD_a + 0",
+    "unit": "kN",
+    "desc": "a点のS（耐荷性①の最小）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d261",
+   "kind": "calc",
+   "props": {
+    "name": "Sc2max_a",
+    "expr": "SD_a + 1.1 * (SL_a + SI_a) + 0 + SLF_a + SW_a",
+    "unit": "kN",
+    "desc": "a点のS（耐荷性②の最大）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d262",
+   "kind": "calc",
+   "props": {
+    "name": "Sc2min_a",
+    "expr": "SD_a + 0",
+    "unit": "kN",
+    "desc": "a点のS（耐荷性②の最小）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d263",
+   "kind": "calc",
+   "props": {
+    "name": "Nc1max_a",
+    "expr": "0 + 1.1 * (0 + 0) + NR_a",
+    "unit": "kN",
+    "desc": "a点のN（耐荷性①の最大）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d264",
+   "kind": "calc",
+   "props": {
+    "name": "Nc1min_a",
+    "expr": "0 + NR_a",
+    "unit": "kN",
+    "desc": "a点のN（耐荷性①の最小）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d265",
+   "kind": "calc",
+   "props": {
+    "name": "Nc2max_a",
+    "expr": "0 + 1.1 * (0 + 0) + NR_a + NLF_a + 0",
+    "unit": "kN",
+    "desc": "a点のN（耐荷性②の最大）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d266",
+   "kind": "calc",
+   "props": {
+    "name": "Nc2min_a",
+    "expr": "0 + NR_a",
+    "unit": "kN",
+    "desc": "a点のN（耐荷性②の最小）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d267",
+   "kind": "table",
+   "props": {
+    "caption": "",
+    "data": {
+     "header_rows": 1,
+     "rows": [
+      [
+       {
+        "text": "",
+        "colspan": 2
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "曲げモーメント\nM（kN·m）"
+       },
+       {
+        "text": "せん断力\nS（kN）"
+       },
+       {
+        "text": "軸　力\nN（kN）"
+       }
+      ],
+      [
+       {
+        "text": "単ケース",
+        "rowspan": 6,
+        "vertical": true
+       },
+       {
+        "text": "死荷重　D",
+        "align": "left"
+       },
+       {
+        "text": "{{MD_a}}",
+        "align": "right"
+       },
+       {
+        "text": "{{SD_a}}",
+        "align": "right"
+       },
+       {
+        "text": "0.00",
+        "align": "right"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "列車荷重　L",
+        "align": "left"
+       },
+       {
+        "text": "{{ML_a}}",
+        "align": "right"
+       },
+       {
+        "text": "{{SL_a}}",
+        "align": "right"
+       },
+       {
+        "text": "0.00",
+        "align": "right"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "衝撃　I",
+        "align": "left"
+       },
+       {
+        "text": "{{MI_a}}",
+        "align": "right"
+       },
+       {
+        "text": "{{SI_a}}",
+        "align": "right"
+       },
+       {
+        "text": "0.00",
+        "align": "right"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "車両横荷重　LF",
+        "align": "left"
+       },
+       {
+        "text": "{{MLF_a}}",
+        "align": "right"
+       },
+       {
+        "text": "{{SLF_a}}",
+        "align": "right"
+       },
+       {
+        "text": "{{NLF_a}}",
+        "align": "right"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "ロングレール荷重　LR",
+        "align": "left"
+       },
+       {
+        "text": "0.00",
+        "align": "right"
+       },
+       {
+        "text": "0.00",
+        "align": "right"
+       },
+       {
+        "text": "{{NR_a}}",
+        "align": "right"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "風荷重（列車がある場合）　W",
+        "align": "left"
+       },
+       {
+        "text": "{{MW_a}}",
+        "align": "right"
+       },
+       {
+        "text": "{{SW_a}}",
+        "align": "right"
+       },
+       {
+        "text": "0.00",
+        "align": "right"
+       }
+      ],
+      [
+       {
+        "text": "耐荷性",
+        "rowspan": 4,
+        "vertical": true
+       },
+       {
+        "text": "1.0D＋1.1L＋1.1I＋1.1C＋{LR}＋{T}　max",
+        "align": "left"
+       },
+       {
+        "text": "{{Mc1max_a}}",
+        "align": "right"
+       },
+       {
+        "text": "{{Sc1max_a}}",
+        "align": "right"
+       },
+       {
+        "text": "{{Nc1max_a}}",
+        "align": "right"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "1.0D＋1.1L＋1.1I＋1.1C＋{LR}＋{T}　min",
+        "align": "left"
+       },
+       {
+        "text": "{{Mc1min_a}}",
+        "align": "right"
+       },
+       {
+        "text": "{{Sc1min_a}}",
+        "align": "right"
+       },
+       {
+        "text": "{{Nc1min_a}}",
+        "align": "right"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "1.0D＋1.1L＋1.1I＋1.1C＋{LR}＋{LF}＋{W}　max",
+        "align": "left"
+       },
+       {
+        "text": "{{Mc2max_a}}",
+        "align": "right"
+       },
+       {
+        "text": "{{Sc2max_a}}",
+        "align": "right"
+       },
+       {
+        "text": "{{Nc2max_a}}",
+        "align": "right"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "1.0D＋1.1L＋1.1I＋1.1C＋{LR}＋{LF}＋{W}　min",
+        "align": "left"
+       },
+       {
+        "text": "{{Mc2min_a}}",
+        "align": "right"
+       },
+       {
+        "text": "{{Sc2min_a}}",
+        "align": "right"
+       },
+       {
+        "text": "{{Nc2min_a}}",
+        "align": "right"
+       }
+      ]
+     ],
+     "widths": [
+      "1.8em",
+      "1fr",
+      "7em",
+      "7em",
+      "7em"
+     ]
+    }
+   }
+  },
+  {
+   "id": "d268",
+   "kind": "heading",
+   "props": {
+    "level": 3,
+    "text": "b点"
+   }
+  },
+  {
+   "id": "d269",
+   "kind": "calc",
+   "props": {
+    "name": "Mc1max_b",
+    "expr": "MD_b + 1.1 * (ML_b + MI_b) + 0",
+    "unit": "kN*m",
+    "desc": "b点のM（耐荷性①の最大）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d270",
+   "kind": "calc",
+   "props": {
+    "name": "Mc1min_b",
+    "expr": "MD_b + 0",
+    "unit": "kN*m",
+    "desc": "b点のM（耐荷性①の最小）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d271",
+   "kind": "calc",
+   "props": {
+    "name": "Mc2max_b",
+    "expr": "MD_b + 1.1 * (ML_b + MI_b) + 0 + MLF_b + MW_b",
+    "unit": "kN*m",
+    "desc": "b点のM（耐荷性②の最大）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d272",
+   "kind": "calc",
+   "props": {
+    "name": "Mc2min_b",
+    "expr": "MD_b + 0",
+    "unit": "kN*m",
+    "desc": "b点のM（耐荷性②の最小）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d273",
+   "kind": "calc",
+   "props": {
+    "name": "Sc1max_b",
+    "expr": "SD_b + 1.1 * (SL_b + SI_b) + 0",
+    "unit": "kN",
+    "desc": "b点のS（耐荷性①の最大）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d274",
+   "kind": "calc",
+   "props": {
+    "name": "Sc1min_b",
+    "expr": "SD_b + 0",
+    "unit": "kN",
+    "desc": "b点のS（耐荷性①の最小）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d275",
+   "kind": "calc",
+   "props": {
+    "name": "Sc2max_b",
+    "expr": "SD_b + 1.1 * (SL_b + SI_b) + 0 + SLF_b + SW_b",
+    "unit": "kN",
+    "desc": "b点のS（耐荷性②の最大）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d276",
+   "kind": "calc",
+   "props": {
+    "name": "Sc2min_b",
+    "expr": "SD_b + 0",
+    "unit": "kN",
+    "desc": "b点のS（耐荷性②の最小）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d277",
+   "kind": "calc",
+   "props": {
+    "name": "Nc1max_b",
+    "expr": "0 + 1.1 * (0 + 0) + NR_b",
+    "unit": "kN",
+    "desc": "b点のN（耐荷性①の最大）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d278",
+   "kind": "calc",
+   "props": {
+    "name": "Nc1min_b",
+    "expr": "0 + NR_b",
+    "unit": "kN",
+    "desc": "b点のN（耐荷性①の最小）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d279",
+   "kind": "calc",
+   "props": {
+    "name": "Nc2max_b",
+    "expr": "0 + 1.1 * (0 + 0) + NR_b + NLF_b + 0",
+    "unit": "kN",
+    "desc": "b点のN（耐荷性②の最大）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d280",
+   "kind": "calc",
+   "props": {
+    "name": "Nc2min_b",
+    "expr": "0 + NR_b",
+    "unit": "kN",
+    "desc": "b点のN（耐荷性②の最小）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d281",
+   "kind": "table",
+   "props": {
+    "caption": "",
+    "data": {
+     "header_rows": 1,
+     "rows": [
+      [
+       {
+        "text": "",
+        "colspan": 2
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "曲げモーメント\nM（kN·m）"
+       },
+       {
+        "text": "せん断力\nS（kN）"
+       },
+       {
+        "text": "軸　力\nN（kN）"
+       }
+      ],
+      [
+       {
+        "text": "単ケース",
+        "rowspan": 6,
+        "vertical": true
+       },
+       {
+        "text": "死荷重　D",
+        "align": "left"
+       },
+       {
+        "text": "{{MD_b}}",
+        "align": "right"
+       },
+       {
+        "text": "{{SD_b}}",
+        "align": "right"
+       },
+       {
+        "text": "0.00",
+        "align": "right"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "列車荷重　L",
+        "align": "left"
+       },
+       {
+        "text": "{{ML_b}}",
+        "align": "right"
+       },
+       {
+        "text": "{{SL_b}}",
+        "align": "right"
+       },
+       {
+        "text": "0.00",
+        "align": "right"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "衝撃　I",
+        "align": "left"
+       },
+       {
+        "text": "{{MI_b}}",
+        "align": "right"
+       },
+       {
+        "text": "{{SI_b}}",
+        "align": "right"
+       },
+       {
+        "text": "0.00",
+        "align": "right"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "車両横荷重　LF",
+        "align": "left"
+       },
+       {
+        "text": "{{MLF_b}}",
+        "align": "right"
+       },
+       {
+        "text": "{{SLF_b}}",
+        "align": "right"
+       },
+       {
+        "text": "{{NLF_b}}",
+        "align": "right"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "ロングレール荷重　LR",
+        "align": "left"
+       },
+       {
+        "text": "0.00",
+        "align": "right"
+       },
+       {
+        "text": "0.00",
+        "align": "right"
+       },
+       {
+        "text": "{{NR_b}}",
+        "align": "right"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "風荷重（列車がある場合）　W",
+        "align": "left"
+       },
+       {
+        "text": "{{MW_b}}",
+        "align": "right"
+       },
+       {
+        "text": "{{SW_b}}",
+        "align": "right"
+       },
+       {
+        "text": "0.00",
+        "align": "right"
+       }
+      ],
+      [
+       {
+        "text": "耐荷性",
+        "rowspan": 4,
+        "vertical": true
+       },
+       {
+        "text": "1.0D＋1.1L＋1.1I＋1.1C＋{LR}＋{T}　max",
+        "align": "left"
+       },
+       {
+        "text": "{{Mc1max_b}}",
+        "align": "right"
+       },
+       {
+        "text": "{{Sc1max_b}}",
+        "align": "right"
+       },
+       {
+        "text": "{{Nc1max_b}}",
+        "align": "right"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "1.0D＋1.1L＋1.1I＋1.1C＋{LR}＋{T}　min",
+        "align": "left"
+       },
+       {
+        "text": "{{Mc1min_b}}",
+        "align": "right"
+       },
+       {
+        "text": "{{Sc1min_b}}",
+        "align": "right"
+       },
+       {
+        "text": "{{Nc1min_b}}",
+        "align": "right"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "1.0D＋1.1L＋1.1I＋1.1C＋{LR}＋{LF}＋{W}　max",
+        "align": "left"
+       },
+       {
+        "text": "{{Mc2max_b}}",
+        "align": "right"
+       },
+       {
+        "text": "{{Sc2max_b}}",
+        "align": "right"
+       },
+       {
+        "text": "{{Nc2max_b}}",
+        "align": "right"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "1.0D＋1.1L＋1.1I＋1.1C＋{LR}＋{LF}＋{W}　min",
+        "align": "left"
+       },
+       {
+        "text": "{{Mc2min_b}}",
+        "align": "right"
+       },
+       {
+        "text": "{{Sc2min_b}}",
+        "align": "right"
+       },
+       {
+        "text": "{{Nc2min_b}}",
+        "align": "right"
+       }
+      ]
+     ],
+     "widths": [
+      "1.8em",
+      "1fr",
+      "7em",
+      "7em",
+      "7em"
+     ]
+    }
+   }
+  },
+  {
+   "id": "d282",
+   "kind": "heading",
+   "props": {
+    "level": 3,
+    "text": "c点"
+   }
+  },
+  {
+   "id": "d283",
+   "kind": "calc",
+   "props": {
+    "name": "Mc1max_c",
+    "expr": "MD_c + 1.1 * (ML_c + MI_c) + 0",
+    "unit": "kN*m",
+    "desc": "c点のM（耐荷性①の最大）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d284",
+   "kind": "calc",
+   "props": {
+    "name": "Mc1min_c",
+    "expr": "MD_c + 0",
+    "unit": "kN*m",
+    "desc": "c点のM（耐荷性①の最小）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d285",
+   "kind": "calc",
+   "props": {
+    "name": "Mc2max_c",
+    "expr": "MD_c + 1.1 * (ML_c + MI_c) + 0 + MLF_c + MW_c",
+    "unit": "kN*m",
+    "desc": "c点のM（耐荷性②の最大）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d286",
+   "kind": "calc",
+   "props": {
+    "name": "Mc2min_c",
+    "expr": "MD_c + 0",
+    "unit": "kN*m",
+    "desc": "c点のM（耐荷性②の最小）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d287",
+   "kind": "calc",
+   "props": {
+    "name": "Sc1max_c",
+    "expr": "SD_c + 1.1 * (SL_c + SI_c) + 0",
+    "unit": "kN",
+    "desc": "c点のS（耐荷性①の最大）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d288",
+   "kind": "calc",
+   "props": {
+    "name": "Sc1min_c",
+    "expr": "SD_c + 0",
+    "unit": "kN",
+    "desc": "c点のS（耐荷性①の最小）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d289",
+   "kind": "calc",
+   "props": {
+    "name": "Sc2max_c",
+    "expr": "SD_c + 1.1 * (SL_c + SI_c) + 0 + SLF_c + SW_c",
+    "unit": "kN",
+    "desc": "c点のS（耐荷性②の最大）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d290",
+   "kind": "calc",
+   "props": {
+    "name": "Sc2min_c",
+    "expr": "SD_c + 0",
+    "unit": "kN",
+    "desc": "c点のS（耐荷性②の最小）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d291",
+   "kind": "calc",
+   "props": {
+    "name": "Nc1max_c",
+    "expr": "0 + 1.1 * (0 + 0) + NR_c",
+    "unit": "kN",
+    "desc": "c点のN（耐荷性①の最大）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d292",
+   "kind": "calc",
+   "props": {
+    "name": "Nc1min_c",
+    "expr": "0 + NR_c",
+    "unit": "kN",
+    "desc": "c点のN（耐荷性①の最小）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d293",
+   "kind": "calc",
+   "props": {
+    "name": "Nc2max_c",
+    "expr": "0 + 1.1 * (0 + 0) + NR_c + NLF_c + 0",
+    "unit": "kN",
+    "desc": "c点のN（耐荷性②の最大）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d294",
+   "kind": "calc",
+   "props": {
+    "name": "Nc2min_c",
+    "expr": "0 + NR_c",
+    "unit": "kN",
+    "desc": "c点のN（耐荷性②の最小）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d295",
+   "kind": "table",
+   "props": {
+    "caption": "",
+    "data": {
+     "header_rows": 1,
+     "rows": [
+      [
+       {
+        "text": "",
+        "colspan": 2
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "曲げモーメント\nM（kN·m）"
+       },
+       {
+        "text": "せん断力\nS（kN）"
+       },
+       {
+        "text": "軸　力\nN（kN）"
+       }
+      ],
+      [
+       {
+        "text": "単ケース",
+        "rowspan": 6,
+        "vertical": true
+       },
+       {
+        "text": "死荷重　D",
+        "align": "left"
+       },
+       {
+        "text": "{{MD_c}}",
+        "align": "right"
+       },
+       {
+        "text": "{{SD_c}}",
+        "align": "right"
+       },
+       {
+        "text": "0.00",
+        "align": "right"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "列車荷重　L",
+        "align": "left"
+       },
+       {
+        "text": "{{ML_c}}",
+        "align": "right"
+       },
+       {
+        "text": "{{SL_c}}",
+        "align": "right"
+       },
+       {
+        "text": "0.00",
+        "align": "right"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "衝撃　I",
+        "align": "left"
+       },
+       {
+        "text": "{{MI_c}}",
+        "align": "right"
+       },
+       {
+        "text": "{{SI_c}}",
+        "align": "right"
+       },
+       {
+        "text": "0.00",
+        "align": "right"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "車両横荷重　LF",
+        "align": "left"
+       },
+       {
+        "text": "{{MLF_c}}",
+        "align": "right"
+       },
+       {
+        "text": "{{SLF_c}}",
+        "align": "right"
+       },
+       {
+        "text": "{{NLF_c}}",
+        "align": "right"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "ロングレール荷重　LR",
+        "align": "left"
+       },
+       {
+        "text": "0.00",
+        "align": "right"
+       },
+       {
+        "text": "0.00",
+        "align": "right"
+       },
+       {
+        "text": "{{NR_c}}",
+        "align": "right"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "風荷重（列車がある場合）　W",
+        "align": "left"
+       },
+       {
+        "text": "{{MW_c}}",
+        "align": "right"
+       },
+       {
+        "text": "{{SW_c}}",
+        "align": "right"
+       },
+       {
+        "text": "0.00",
+        "align": "right"
+       }
+      ],
+      [
+       {
+        "text": "耐荷性",
+        "rowspan": 4,
+        "vertical": true
+       },
+       {
+        "text": "1.0D＋1.1L＋1.1I＋1.1C＋{LR}＋{T}　max",
+        "align": "left"
+       },
+       {
+        "text": "{{Mc1max_c}}",
+        "align": "right"
+       },
+       {
+        "text": "{{Sc1max_c}}",
+        "align": "right"
+       },
+       {
+        "text": "{{Nc1max_c}}",
+        "align": "right"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "1.0D＋1.1L＋1.1I＋1.1C＋{LR}＋{T}　min",
+        "align": "left"
+       },
+       {
+        "text": "{{Mc1min_c}}",
+        "align": "right"
+       },
+       {
+        "text": "{{Sc1min_c}}",
+        "align": "right"
+       },
+       {
+        "text": "{{Nc1min_c}}",
+        "align": "right"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "1.0D＋1.1L＋1.1I＋1.1C＋{LR}＋{LF}＋{W}　max",
+        "align": "left"
+       },
+       {
+        "text": "{{Mc2max_c}}",
+        "align": "right"
+       },
+       {
+        "text": "{{Sc2max_c}}",
+        "align": "right"
+       },
+       {
+        "text": "{{Nc2max_c}}",
+        "align": "right"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "1.0D＋1.1L＋1.1I＋1.1C＋{LR}＋{LF}＋{W}　min",
+        "align": "left"
+       },
+       {
+        "text": "{{Mc2min_c}}",
+        "align": "right"
+       },
+       {
+        "text": "{{Sc2min_c}}",
+        "align": "right"
+       },
+       {
+        "text": "{{Nc2min_c}}",
+        "align": "right"
+       }
+      ]
+     ],
+     "widths": [
+      "1.8em",
+      "1fr",
+      "7em",
+      "7em",
+      "7em"
+     ]
+    }
+   }
+  },
+  {
+   "id": "d296",
+   "kind": "heading",
+   "props": {
+    "level": 3,
+    "text": "d点"
+   }
+  },
+  {
+   "id": "d297",
+   "kind": "calc",
+   "props": {
+    "name": "Mc1max_d",
+    "expr": "MD_d + 1.1 * (ML_d + MI_d) + 0",
+    "unit": "kN*m",
+    "desc": "d点のM（耐荷性①の最大）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d298",
+   "kind": "calc",
+   "props": {
+    "name": "Mc1min_d",
+    "expr": "MD_d + 0",
+    "unit": "kN*m",
+    "desc": "d点のM（耐荷性①の最小）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d299",
+   "kind": "calc",
+   "props": {
+    "name": "Mc2max_d",
+    "expr": "MD_d + 1.1 * (ML_d + MI_d) + 0 + MLF_d + MW_d",
+    "unit": "kN*m",
+    "desc": "d点のM（耐荷性②の最大）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d300",
+   "kind": "calc",
+   "props": {
+    "name": "Mc2min_d",
+    "expr": "MD_d + 0",
+    "unit": "kN*m",
+    "desc": "d点のM（耐荷性②の最小）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d301",
+   "kind": "calc",
+   "props": {
+    "name": "Sc1max_d",
+    "expr": "SD_d + 1.1 * (SL_d + SI_d) + 0",
+    "unit": "kN",
+    "desc": "d点のS（耐荷性①の最大）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d302",
+   "kind": "calc",
+   "props": {
+    "name": "Sc1min_d",
+    "expr": "SD_d + 0",
+    "unit": "kN",
+    "desc": "d点のS（耐荷性①の最小）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d303",
+   "kind": "calc",
+   "props": {
+    "name": "Sc2max_d",
+    "expr": "SD_d + 1.1 * (SL_d + SI_d) + 0 + SLF_d + SW_d",
+    "unit": "kN",
+    "desc": "d点のS（耐荷性②の最大）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d304",
+   "kind": "calc",
+   "props": {
+    "name": "Sc2min_d",
+    "expr": "SD_d + 0",
+    "unit": "kN",
+    "desc": "d点のS（耐荷性②の最小）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d305",
+   "kind": "calc",
+   "props": {
+    "name": "Nc1max_d",
+    "expr": "0 + 1.1 * (0 + 0) + NR_d",
+    "unit": "kN",
+    "desc": "d点のN（耐荷性①の最大）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d306",
+   "kind": "calc",
+   "props": {
+    "name": "Nc1min_d",
+    "expr": "0 + NR_d",
+    "unit": "kN",
+    "desc": "d点のN（耐荷性①の最小）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d307",
+   "kind": "calc",
+   "props": {
+    "name": "Nc2max_d",
+    "expr": "0 + 1.1 * (0 + 0) + NR_d + NLF_d + 0",
+    "unit": "kN",
+    "desc": "d点のN（耐荷性②の最大）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d308",
+   "kind": "calc",
+   "props": {
+    "name": "Nc2min_d",
+    "expr": "0 + NR_d",
+    "unit": "kN",
+    "desc": "d点のN（耐荷性②の最小）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d309",
+   "kind": "table",
+   "props": {
+    "caption": "",
+    "data": {
+     "header_rows": 1,
+     "rows": [
+      [
+       {
+        "text": "",
+        "colspan": 2
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "曲げモーメント\nM（kN·m）"
+       },
+       {
+        "text": "せん断力\nS（kN）"
+       },
+       {
+        "text": "軸　力\nN（kN）"
+       }
+      ],
+      [
+       {
+        "text": "単ケース",
+        "rowspan": 6,
+        "vertical": true
+       },
+       {
+        "text": "死荷重　D",
+        "align": "left"
+       },
+       {
+        "text": "{{MD_d}}",
+        "align": "right"
+       },
+       {
+        "text": "{{SD_d}}",
+        "align": "right"
+       },
+       {
+        "text": "0.00",
+        "align": "right"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "列車荷重　L",
+        "align": "left"
+       },
+       {
+        "text": "{{ML_d}}",
+        "align": "right"
+       },
+       {
+        "text": "{{SL_d}}",
+        "align": "right"
+       },
+       {
+        "text": "0.00",
+        "align": "right"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "衝撃　I",
+        "align": "left"
+       },
+       {
+        "text": "{{MI_d}}",
+        "align": "right"
+       },
+       {
+        "text": "{{SI_d}}",
+        "align": "right"
+       },
+       {
+        "text": "0.00",
+        "align": "right"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "車両横荷重　LF",
+        "align": "left"
+       },
+       {
+        "text": "{{MLF_d}}",
+        "align": "right"
+       },
+       {
+        "text": "{{SLF_d}}",
+        "align": "right"
+       },
+       {
+        "text": "{{NLF_d}}",
+        "align": "right"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "ロングレール荷重　LR",
+        "align": "left"
+       },
+       {
+        "text": "0.00",
+        "align": "right"
+       },
+       {
+        "text": "0.00",
+        "align": "right"
+       },
+       {
+        "text": "{{NR_d}}",
+        "align": "right"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "風荷重（列車がある場合）　W",
+        "align": "left"
+       },
+       {
+        "text": "{{MW_d}}",
+        "align": "right"
+       },
+       {
+        "text": "{{SW_d}}",
+        "align": "right"
+       },
+       {
+        "text": "0.00",
+        "align": "right"
+       }
+      ],
+      [
+       {
+        "text": "耐荷性",
+        "rowspan": 4,
+        "vertical": true
+       },
+       {
+        "text": "1.0D＋1.1L＋1.1I＋1.1C＋{LR}＋{T}　max",
+        "align": "left"
+       },
+       {
+        "text": "{{Mc1max_d}}",
+        "align": "right"
+       },
+       {
+        "text": "{{Sc1max_d}}",
+        "align": "right"
+       },
+       {
+        "text": "{{Nc1max_d}}",
+        "align": "right"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "1.0D＋1.1L＋1.1I＋1.1C＋{LR}＋{T}　min",
+        "align": "left"
+       },
+       {
+        "text": "{{Mc1min_d}}",
+        "align": "right"
+       },
+       {
+        "text": "{{Sc1min_d}}",
+        "align": "right"
+       },
+       {
+        "text": "{{Nc1min_d}}",
+        "align": "right"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "1.0D＋1.1L＋1.1I＋1.1C＋{LR}＋{LF}＋{W}　max",
+        "align": "left"
+       },
+       {
+        "text": "{{Mc2max_d}}",
+        "align": "right"
+       },
+       {
+        "text": "{{Sc2max_d}}",
+        "align": "right"
+       },
+       {
+        "text": "{{Nc2max_d}}",
+        "align": "right"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "1.0D＋1.1L＋1.1I＋1.1C＋{LR}＋{LF}＋{W}　min",
+        "align": "left"
+       },
+       {
+        "text": "{{Mc2min_d}}",
+        "align": "right"
+       },
+       {
+        "text": "{{Sc2min_d}}",
+        "align": "right"
+       },
+       {
+        "text": "{{Nc2min_d}}",
+        "align": "right"
+       }
+      ]
+     ],
+     "widths": [
+      "1.8em",
+      "1fr",
+      "7em",
+      "7em",
+      "7em"
+     ]
+    }
+   }
+  },
+  {
+   "id": "d310",
+   "kind": "heading",
+   "props": {
+    "level": 3,
+    "text": "e点"
+   }
+  },
+  {
+   "id": "d311",
+   "kind": "calc",
+   "props": {
+    "name": "Mc1max_e",
+    "expr": "MD_e + 1.1 * (ML_e + MI_e) + 0",
+    "unit": "kN*m",
+    "desc": "e点のM（耐荷性①の最大）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d312",
+   "kind": "calc",
+   "props": {
+    "name": "Mc1min_e",
+    "expr": "MD_e + 0",
+    "unit": "kN*m",
+    "desc": "e点のM（耐荷性①の最小）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d313",
+   "kind": "calc",
+   "props": {
+    "name": "Mc2max_e",
+    "expr": "MD_e + 1.1 * (ML_e + MI_e) + 0 + MLF_e + MW_e",
+    "unit": "kN*m",
+    "desc": "e点のM（耐荷性②の最大）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d314",
+   "kind": "calc",
+   "props": {
+    "name": "Mc2min_e",
+    "expr": "MD_e + 0",
+    "unit": "kN*m",
+    "desc": "e点のM（耐荷性②の最小）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d315",
+   "kind": "calc",
+   "props": {
+    "name": "Sc1max_e",
+    "expr": "SD_d + 1.1 * (SL_d + SI_d) + 0",
+    "unit": "kN",
+    "desc": "e点のS（耐荷性①の最大）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d316",
+   "kind": "calc",
+   "props": {
+    "name": "Sc1min_e",
+    "expr": "SD_d + 0",
+    "unit": "kN",
+    "desc": "e点のS（耐荷性①の最小）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d317",
+   "kind": "calc",
+   "props": {
+    "name": "Sc2max_e",
+    "expr": "SD_d + 1.1 * (SL_d + SI_d) + 0 + SLF_d + SW_d",
+    "unit": "kN",
+    "desc": "e点のS（耐荷性②の最大）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d318",
+   "kind": "calc",
+   "props": {
+    "name": "Sc2min_e",
+    "expr": "SD_d + 0",
+    "unit": "kN",
+    "desc": "e点のS（耐荷性②の最小）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d319",
+   "kind": "calc",
+   "props": {
+    "name": "Nc1max_e",
+    "expr": "0 + 1.1 * (0 + 0) + NR_d",
+    "unit": "kN",
+    "desc": "e点のN（耐荷性①の最大）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d320",
+   "kind": "calc",
+   "props": {
+    "name": "Nc1min_e",
+    "expr": "0 + NR_d",
+    "unit": "kN",
+    "desc": "e点のN（耐荷性①の最小）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d321",
+   "kind": "calc",
+   "props": {
+    "name": "Nc2max_e",
+    "expr": "0 + 1.1 * (0 + 0) + NR_d + NLF_d + 0",
+    "unit": "kN",
+    "desc": "e点のN（耐荷性②の最大）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d322",
+   "kind": "calc",
+   "props": {
+    "name": "Nc2min_e",
+    "expr": "0 + NR_d",
+    "unit": "kN",
+    "desc": "e点のN（耐荷性②の最小）",
+    "digits": 2,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d323",
+   "kind": "table",
+   "props": {
+    "caption": "",
+    "data": {
+     "header_rows": 1,
+     "rows": [
+      [
+       {
+        "text": "",
+        "colspan": 2
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "曲げモーメント\nM（kN·m）"
+       },
+       {
+        "text": "せん断力\nS（kN）"
+       },
+       {
+        "text": "軸　力\nN（kN）"
+       }
+      ],
+      [
+       {
+        "text": "単ケース",
+        "rowspan": 6,
+        "vertical": true
+       },
+       {
+        "text": "死荷重　D",
+        "align": "left"
+       },
+       {
+        "text": "{{MD_e}}",
+        "align": "right"
+       },
+       {
+        "text": "{{SD_d}}",
+        "align": "right"
+       },
+       {
+        "text": "0.00",
+        "align": "right"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "列車荷重　L",
+        "align": "left"
+       },
+       {
+        "text": "{{ML_e}}",
+        "align": "right"
+       },
+       {
+        "text": "{{SL_d}}",
+        "align": "right"
+       },
+       {
+        "text": "0.00",
+        "align": "right"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "衝撃　I",
+        "align": "left"
+       },
+       {
+        "text": "{{MI_e}}",
+        "align": "right"
+       },
+       {
+        "text": "{{SI_d}}",
+        "align": "right"
+       },
+       {
+        "text": "0.00",
+        "align": "right"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "車両横荷重　LF",
+        "align": "left"
+       },
+       {
+        "text": "{{MLF_e}}",
+        "align": "right"
+       },
+       {
+        "text": "{{SLF_d}}",
+        "align": "right"
+       },
+       {
+        "text": "{{NLF_d}}",
+        "align": "right"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "ロングレール荷重　LR",
+        "align": "left"
+       },
+       {
+        "text": "0.00",
+        "align": "right"
+       },
+       {
+        "text": "0.00",
+        "align": "right"
+       },
+       {
+        "text": "{{NR_d}}",
+        "align": "right"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "風荷重（列車がある場合）　W",
+        "align": "left"
+       },
+       {
+        "text": "{{MW_e}}",
+        "align": "right"
+       },
+       {
+        "text": "{{SW_d}}",
+        "align": "right"
+       },
+       {
+        "text": "0.00",
+        "align": "right"
+       }
+      ],
+      [
+       {
+        "text": "耐荷性",
+        "rowspan": 4,
+        "vertical": true
+       },
+       {
+        "text": "1.0D＋1.1L＋1.1I＋1.1C＋{LR}＋{T}　max",
+        "align": "left"
+       },
+       {
+        "text": "{{Mc1max_e}}",
+        "align": "right"
+       },
+       {
+        "text": "{{Sc1max_e}}",
+        "align": "right"
+       },
+       {
+        "text": "{{Nc1max_e}}",
+        "align": "right"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "1.0D＋1.1L＋1.1I＋1.1C＋{LR}＋{T}　min",
+        "align": "left"
+       },
+       {
+        "text": "{{Mc1min_e}}",
+        "align": "right"
+       },
+       {
+        "text": "{{Sc1min_e}}",
+        "align": "right"
+       },
+       {
+        "text": "{{Nc1min_e}}",
+        "align": "right"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "1.0D＋1.1L＋1.1I＋1.1C＋{LR}＋{LF}＋{W}　max",
+        "align": "left"
+       },
+       {
+        "text": "{{Mc2max_e}}",
+        "align": "right"
+       },
+       {
+        "text": "{{Sc2max_e}}",
+        "align": "right"
+       },
+       {
+        "text": "{{Nc2max_e}}",
+        "align": "right"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "1.0D＋1.1L＋1.1I＋1.1C＋{LR}＋{LF}＋{W}　min",
+        "align": "left"
+       },
+       {
+        "text": "{{Mc2min_e}}",
+        "align": "right"
+       },
+       {
+        "text": "{{Sc2min_e}}",
+        "align": "right"
+       },
+       {
+        "text": "{{Nc2min_e}}",
+        "align": "right"
+       }
+      ]
+     ],
+     "widths": [
+      "1.8em",
+      "1fr",
+      "7em",
+      "7em",
+      "7em"
+     ]
+    }
+   }
+  },
+  {
+   "id": "d324",
+   "kind": "heading",
+   "props": {
+    "level": 2,
+    "text": "反力"
+   }
+  },
+  {
+   "id": "d325",
+   "kind": "heading",
+   "props": {
+    "level": 3,
+    "text": "死荷重"
+   }
+  },
+  {
+   "id": "d326",
+   "kind": "paragraph",
+   "props": {
+    "text": "鉛直反力"
+   }
+  },
+  {
+   "id": "d327",
+   "kind": "calc",
+   "props": {
+    "name": "R_D",
+    "expr": "W_D * L / 2",
+    "unit": "kN",
+    "desc": "死荷重による鉛直反力",
+    "digits": 2,
+    "show": true,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d328",
+   "kind": "heading",
+   "props": {
+    "level": 3,
+    "text": "列車荷重"
+   }
+  },
+  {
+   "id": "d329",
+   "kind": "paragraph",
+   "props": {
+    "text": "鉛直反力（4.2 (2) 2) A点せん断力より）"
+   }
+  },
+  {
+   "id": "d330",
+   "kind": "calc",
+   "props": {
+    "name": "R_L",
+    "expr": "SL_A",
+    "unit": "kN",
+    "desc": "列車荷重による鉛直反力",
+    "digits": 2,
+    "show": true,
+    "frac": true,
+    "show_symbolic": false,
+    "global": true
+   }
+  },
+  {
+   "id": "d331",
+   "kind": "calc",
+   "props": {
+    "name": "R_EQL2",
+    "expr": "w_EQ / 2 * L / 2",
+    "unit": "kN",
+    "desc": "地震時列車荷重による鉛直反力",
+    "digits": 2,
+    "show": true,
+    "display": "R_(E Q L)",
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d332",
+   "kind": "heading",
+   "props": {
+    "level": 3,
+    "text": "衝撃"
+   }
+  },
+  {
+   "id": "d333",
+   "kind": "paragraph",
+   "props": {
+    "text": "鉛直反力"
+   }
+  },
+  {
+   "id": "d334",
+   "kind": "calc",
+   "props": {
+    "name": "R_I",
+    "expr": "R_L * i_S",
+    "unit": "kN",
+    "desc": "衝撃による鉛直反力",
+    "digits": 2,
+    "show": true,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d335",
+   "kind": "heading",
+   "props": {
+    "level": 3,
+    "text": "ロングレール縦荷重"
+   }
+  },
+  {
+   "id": "d336",
+   "kind": "paragraph",
+   "props": {
+    "text": "橋軸水平反力（固定側のみ）"
+   }
+  },
+  {
+   "id": "d337",
+   "kind": "calc",
+   "props": {
+    "name": "H_LR",
+    "expr": "L_R / 2 * L",
+    "unit": "kN",
+    "desc": "ロングレール縦荷重による橋軸水平反力",
+    "digits": 2,
+    "show": true,
+    "display": "H_(L R)",
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d338",
+   "kind": "heading",
+   "props": {
+    "level": 3,
+    "text": "車両横荷重"
+   }
+  },
+  {
+   "id": "d339",
+   "kind": "paragraph",
+   "props": {
+    "text": "鉛直反力"
+   }
+  },
+  {
+   "id": "d340",
+   "kind": "calc",
+   "props": {
+    "name": "R_LF",
+    "expr": "P / 2 * etaS_A * beta_LF",
+    "unit": "kN",
+    "desc": "車両横荷重による鉛直反力",
+    "digits": 2,
+    "show": true,
+    "display": "R_(L F)",
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d341",
+   "kind": "paragraph",
+   "props": {
+    "text": "橋軸水平反力（固定側のみ）"
+   }
+  },
+  {
+   "id": "d342",
+   "kind": "calc",
+   "props": {
+    "name": "H_LF",
+    "expr": "P / 2 * 3 * gamma_LF",
+    "unit": "kN",
+    "desc": "車両横荷重による橋軸水平反力",
+    "digits": 2,
+    "show": true,
+    "display": "H_(L F)",
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d343",
+   "kind": "paragraph",
+   "props": {
+    "text": "橋直水平反力"
+   }
+  },
+  {
+   "id": "d344",
+   "kind": "calc",
+   "props": {
+    "name": "H_LF2",
+    "expr": "L_F / 2 * etaS_A",
+    "unit": "kN",
+    "desc": "車両横荷重による橋直水平反力",
+    "digits": 2,
+    "show": true,
+    "display": "H_(L F)",
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d345",
+   "kind": "heading",
+   "props": {
+    "level": 3,
+    "text": "制動荷重および始動荷重"
+   }
+  },
+  {
+   "id": "d346",
+   "kind": "paragraph",
+   "props": {
+    "text": "鉛直反力（4.1 (5) より．4 は支間内の軸数）"
+   }
+  },
+  {
+   "id": "d347",
+   "kind": "calc",
+   "props": {
+    "name": "R_B",
+    "expr": "B * 4 * beta_B",
+    "unit": "kN",
+    "desc": "制動・始動荷重による鉛直反力",
+    "digits": 2,
+    "show": true,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d348",
+   "kind": "paragraph",
+   "props": {
+    "text": "橋軸水平反力（固定側のみ）"
+   }
+  },
+  {
+   "id": "d349",
+   "kind": "calc",
+   "props": {
+    "name": "H_B",
+    "expr": "B * 4",
+    "unit": "kN",
+    "desc": "制動・始動荷重による橋軸水平反力",
+    "digits": 2,
+    "show": true,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d350",
+   "kind": "heading",
+   "props": {
+    "level": 3,
+    "text": "風荷重"
+   }
+  },
+  {
+   "id": "d351",
+   "kind": "paragraph",
+   "props": {
+    "text": "鉛直反力（列車有）"
+   }
+  },
+  {
+   "id": "d352",
+   "kind": "calc",
+   "props": {
+    "name": "R_W",
+    "expr": "w_2 * L / 2",
+    "unit": "kN",
+    "desc": "風荷重（列車有）による鉛直反力",
+    "digits": 2,
+    "show": true,
+    "display": "R_w",
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d353",
+   "kind": "paragraph",
+   "props": {
+    "text": "橋直水平反力（列車有）"
+   }
+  },
+  {
+   "id": "d354",
+   "kind": "calc",
+   "props": {
+    "name": "H_W",
+    "expr": "w_h * L / 2 / 2",
+    "unit": "kN",
+    "desc": "風荷重（列車有）による橋直水平反力",
+    "digits": 2,
+    "show": true,
+    "display": "H_w",
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d355",
+   "kind": "paragraph",
+   "props": {
+    "text": "鉛直反力（列車無）"
+   }
+  },
+  {
+   "id": "d356",
+   "kind": "calc",
+   "props": {
+    "name": "R_Wn",
+    "expr": "w_2n * L / 2",
+    "unit": "kN",
+    "desc": "風荷重（列車無）による鉛直反力",
+    "digits": 2,
+    "show": true,
+    "display": "R_w",
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d357",
+   "kind": "paragraph",
+   "props": {
+    "text": "橋直水平反力（列車無）"
+   }
+  },
+  {
+   "id": "d358",
+   "kind": "calc",
+   "props": {
+    "name": "H_Wn",
+    "expr": "w_hn * L / 2 / 2",
+    "unit": "kN",
+    "desc": "風荷重（列車無）による橋直水平反力",
+    "digits": 2,
+    "show": true,
+    "display": "H_w",
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d359",
+   "kind": "heading",
+   "props": {
+    "level": 3,
+    "text": "地震荷重"
+   }
+  },
+  {
+   "id": "d360",
+   "kind": "paragraph",
+   "props": {
+    "text": "鉛直反力"
+   }
+  },
+  {
+   "id": "d361",
+   "kind": "sum",
+   "props": {
+    "name": "R_EQ",
+    "unit": "kN",
+    "desc": "地震時の鉛直反力",
+    "digits": 2,
+    "items": [
+     {
+      "label": "死荷重",
+      "name": "EQ_dv",
+      "expr": "W_D * L / 2 * 0.125"
+     },
+     {
+      "label": "列車荷重",
+      "name": "EQ_Lv",
+      "expr": "w_EQ / 2 * L / 2 * 0.125"
+     }
+    ],
+    "global": true
+   }
+  },
+  {
+   "id": "d362",
+   "kind": "paragraph",
+   "props": {
+    "text": "橋軸水平反力（固定側のみ）"
+   }
+  },
+  {
+   "id": "d363",
+   "kind": "sum",
+   "props": {
+    "name": "H_EQ1",
+    "unit": "kN",
+    "desc": "地震時の橋軸水平反力",
+    "digits": 2,
+    "items": [
+     {
+      "label": "死荷重",
+      "name": "EQ_dh1",
+      "expr": "W_D * L * 0.250"
+     },
+     {
+      "label": "列車荷重",
+      "name": "EQ_Lh1",
+      "expr": "w_EQ / 2 * L * 0.200"
+     }
+    ],
+    "global": true
+   }
+  },
+  {
+   "id": "d364",
+   "kind": "paragraph",
+   "props": {
+    "text": "橋直水平反力"
+   }
+  },
+  {
+   "id": "d365",
+   "kind": "sum",
+   "props": {
+    "name": "H_EQ2",
+    "unit": "kN",
+    "desc": "地震時の橋直水平反力",
+    "digits": 2,
+    "items": [
+     {
+      "label": "死荷重",
+      "name": "EQ_dh2",
+      "expr": "W_D * L / 2 * 0.280"
+     },
+     {
+      "label": "列車荷重",
+      "name": "EQ_Lh2",
+      "expr": "w_EQ / 2 * L / 2 * 0.280"
+     }
+    ],
+    "global": true
+   }
+  },
+  {
+   "id": "d366",
+   "kind": "heading",
+   "props": {
+    "level": 3,
+    "text": "反力のまとめ"
+   }
+  },
+  {
+   "id": "d367",
+   "kind": "paragraph",
+   "props": {
+    "text": "（1支承あたり）"
+   }
+  },
+  {
+   "id": "d368",
+   "kind": "table",
+   "props": {
+    "caption": "",
+    "data": {
+     "header_rows": 2,
+     "rows": [
+      [
+       {
+        "text": "設計作用",
+        "rowspan": 2
+       },
+       {
+        "text": "記号",
+        "rowspan": 2
+       },
+       {
+        "text": "鉛直反力",
+        "colspan": 2
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "水平反力",
+        "colspan": 2
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "備　考",
+        "rowspan": 2
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "G1\nVd1（kN）"
+       },
+       {
+        "text": "G2\nVd2（kN）"
+       },
+       {
+        "text": "線路方向\nH1d（kN）"
+       },
+       {
+        "text": "直角方向\nH2d（kN）"
+       },
+       {
+        "text": ""
+       }
+      ],
+      [
+       {
+        "text": "死荷重"
+       },
+       {
+        "text": "D"
+       },
+       {
+        "text": "{{R_D}}",
+        "align": "right"
+       },
+       {
+        "text": "{{R_D}}",
+        "align": "right"
+       },
+       {
+        "text": "—"
+       },
+       {
+        "text": "—"
+       },
+       {
+        "text": ""
+       }
+      ],
+      [
+       {
+        "text": "列車荷重"
+       },
+       {
+        "text": "L"
+       },
+       {
+        "text": "{{R_L}}",
+        "align": "right"
+       },
+       {
+        "text": "{{R_L}}",
+        "align": "right"
+       },
+       {
+        "text": "—"
+       },
+       {
+        "text": "—"
+       },
+       {
+        "text": ""
+       }
+      ],
+      [
+       {
+        "text": "地震時列車荷重"
+       },
+       {
+        "text": "LE"
+       },
+       {
+        "text": "{{R_EQL2}}",
+        "align": "right"
+       },
+       {
+        "text": "{{R_EQL2}}",
+        "align": "right"
+       },
+       {
+        "text": "—"
+       },
+       {
+        "text": "—"
+       },
+       {
+        "text": ""
+       }
+      ],
+      [
+       {
+        "text": "衝撃"
+       },
+       {
+        "text": "I"
+       },
+       {
+        "text": "{{R_I}}",
+        "align": "right"
+       },
+       {
+        "text": "{{R_I}}",
+        "align": "right"
+       },
+       {
+        "text": "—"
+       },
+       {
+        "text": "—"
+       },
+       {
+        "text": ""
+       }
+      ],
+      [
+       {
+        "text": "ロングレール縦荷重"
+       },
+       {
+        "text": "LR"
+       },
+       {
+        "text": "—"
+       },
+       {
+        "text": "—"
+       },
+       {
+        "text": "{{H_LR}}",
+        "align": "right"
+       },
+       {
+        "text": "—"
+       },
+       {
+        "text": ""
+       }
+      ],
+      [
+       {
+        "text": "車両横荷重"
+       },
+       {
+        "text": "LF"
+       },
+       {
+        "text": "{{R_LF}}",
+        "align": "right"
+       },
+       {
+        "text": "−{{R_LF}}",
+        "align": "right"
+       },
+       {
+        "text": "{{H_LF}}",
+        "align": "right"
+       },
+       {
+        "text": "{{H_LF2}}",
+        "align": "right"
+       },
+       {
+        "text": ""
+       }
+      ],
+      [
+       {
+        "text": "始動荷重"
+       },
+       {
+        "text": "B"
+       },
+       {
+        "text": "{{R_B}}",
+        "align": "right"
+       },
+       {
+        "text": "−{{R_B}}",
+        "align": "right"
+       },
+       {
+        "text": "{{H_B}}",
+        "align": "right"
+       },
+       {
+        "text": "—"
+       },
+       {
+        "text": ""
+       }
+      ],
+      [
+       {
+        "text": "風荷重",
+        "rowspan": 2
+       },
+       {
+        "text": "W1"
+       },
+       {
+        "text": "{{R_W}}",
+        "align": "right"
+       },
+       {
+        "text": "−{{R_W}}",
+        "align": "right"
+       },
+       {
+        "text": "—"
+       },
+       {
+        "text": "{{H_W}}",
+        "align": "right"
+       },
+       {
+        "text": "列車有"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "W2"
+       },
+       {
+        "text": "{{R_Wn}}",
+        "align": "right"
+       },
+       {
+        "text": "−{{R_Wn}}",
+        "align": "right"
+       },
+       {
+        "text": "—"
+       },
+       {
+        "text": "{{H_Wn}}",
+        "align": "right"
+       },
+       {
+        "text": "列車無"
+       }
+      ],
+      [
+       {
+        "text": "地震の影響",
+        "rowspan": 2
+       },
+       {
+        "text": "E"
+       },
+       {
+        "text": "—"
+       },
+       {
+        "text": "—"
+       },
+       {
+        "text": "{{H_EQ1}}",
+        "align": "right"
+       },
+       {
+        "text": "{{H_EQ2}}",
+        "align": "right"
+       },
+       {
+        "text": ""
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "EV"
+       },
+       {
+        "text": "{{R_EQ}}",
+        "align": "right"
+       },
+       {
+        "text": "−{{R_EQ}}",
+        "align": "right"
+       },
+       {
+        "text": "—"
+       },
+       {
+        "text": "—"
+       },
+       {
+        "text": ""
+       }
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "id": "d369",
+   "kind": "heading",
+   "props": {
+    "level": 2,
+    "text": "耐荷性の照査"
+   }
+  },
+  {
+   "id": "d370",
+   "kind": "heading",
+   "props": {
+    "level": 3,
+    "text": "設計作用力"
+   }
+  },
+  {
+   "id": "d371",
+   "kind": "paragraph",
+   "props": {
+    "text": "設計作用力は e点の位置を使用する．"
+   }
+  },
+  {
+   "id": "d372",
+   "kind": "table",
+   "props": {
+    "caption": "",
+    "data": {
+     "header_rows": 1,
+     "rows": [
+      [
+       {
+        "text": "",
+        "colspan": 2
+       },
+       {
+        "text": ""
+       },
+       {
+        "text": "軸　力\nN（kN）"
+       },
+       {
+        "text": "曲げモーメント\nM（kN·m）"
+       },
+       {
+        "text": "せん断力\nS（kN）"
+       }
+      ],
+      [
+       {
+        "text": "1.0D＋1.1L＋1.1I＋1.1C＋{LR}＋{LF}＋{W}",
+        "rowspan": 2
+       },
+       {
+        "text": "max"
+       },
+       {
+        "text": "{{Nc2max_e}}",
+        "align": "right"
+       },
+       {
+        "text": "{{Mc2max_e}}",
+        "align": "right"
+       },
+       {
+        "text": "{{Sc2max_e}}",
+        "align": "right"
+       }
+      ],
+      [
+       {
+        "text": ""
+       },
+       {
+        "text": "min"
+       },
+       {
+        "text": "{{Nc2min_e}}",
+        "align": "right"
+       },
+       {
+        "text": "{{Mc2min_e}}",
+        "align": "right"
+       },
+       {
+        "text": "{{Sc2min_e}}",
+        "align": "right"
+       }
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "id": "d373",
+   "kind": "calc",
+   "props": {
+    "name": "N_d",
+    "expr": "Nc2max_e",
+    "unit": "kN",
+    "desc": "設計軸方向力",
+    "digits": 3,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d374",
+   "kind": "calc",
+   "props": {
+    "name": "M_d",
+    "expr": "Mc2max_e",
+    "unit": "kN*m",
+    "desc": "設計曲げモーメント",
+    "digits": 3,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d375",
+   "kind": "calc",
+   "props": {
+    "name": "V_d",
+    "expr": "Sc2max_e",
+    "unit": "kN",
+    "desc": "設計せん断力",
+    "digits": 3,
+    "show": false,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d376",
+   "kind": "heading",
+   "props": {
+    "level": 3,
+    "text": "断面諸量"
+   }
+  },
+  {
+   "id": "d377",
+   "kind": "section-props",
+   "props": {
+    "kind": "圧延H形",
+    "label": "H− 700 × 350 × 12 × 22（SM400）",
+    "H": 700,
+    "B": 350,
+    "tw": 12,
+    "tf": 22,
+    "r": 18,
+    "global": true
+   }
+  },
+  {
+   "id": "d378",
+   "kind": "heading",
+   "props": {
+    "level": 3,
+    "text": "板要素の耐荷性の照査"
+   }
+  },
+  {
+   "id": "d379",
+   "kind": "paragraph",
+   "props": {
+    "text": "・上フランジの照査"
+   }
+  },
+  {
+   "id": "d380",
+   "kind": "kijun",
+   "props": {
+    "prefix": "軸圧縮力を受ける板要素の照査（片縁支持板）",
+    "kijun": {
+     "abbr": "鋼標準",
+     "loc": "第Ⅱ編 2.2.3.2"
+    }
+   }
+  },
+  {
+   "id": "d381",
+   "kind": "vdef",
+   "props": {
+    "name": "R_cr",
+    "value": 0.7,
+    "unit": "",
+    "desc": "限界座屈パラメーターで，一般に片縁支持板および両縁支持板の場合 0.7，補剛板の場合 0.5 としてよい",
+    "show": false,
+    "global": true
+   }
+  },
+  {
+   "id": "d382",
+   "kind": "vdef",
+   "props": {
+    "name": "k_0",
+    "value": 0.425,
+    "unit": "",
+    "desc": "座屈係数で，一般に片縁支持板の場合 0.425，両縁支持板の場合 4.0，および補剛板の場合 4.0n²（n ≧ 2）としてよい",
+    "show": false,
+    "global": true
+   }
+  },
+  {
+   "id": "d383",
+   "kind": "vdef",
+   "props": {
+    "name": "E",
+    "value": 200000,
+    "unit": "N/mm2",
+    "desc": "鋼材のヤング係数",
+    "digits": 0,
+    "show": false,
+    "global": true
+   }
+  },
+  {
+   "id": "d384",
+   "kind": "vdef",
+   "props": {
+    "name": "nu",
+    "value": 0.3,
+    "unit": "",
+    "desc": "鋼材のポアソン比",
+    "show": false,
+    "global": true
+   }
+  },
+  {
+   "id": "d385",
+   "kind": "vdef",
+   "props": {
+    "name": "f_syk",
+    "value": 235,
+    "unit": "N/mm2",
+    "desc": "鋼材の降伏強度の特性値",
+    "digits": 0,
+    "show": false,
+    "global": true
+   }
+  },
+  {
+   "id": "d386",
+   "kind": "calc",
+   "props": {
+    "name": "bt_0",
+    "expr": "R_cr * sqrt(pi^2 * k_0 / (12 * (1 - nu^2)) * E / f_syk)",
+    "unit": "",
+    "desc": "幅厚比の制限値",
+    "digits": 1,
+    "show": true,
+    "display": "(b/t)_0",
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d387",
+   "kind": "where",
+   "props": {
+    "vars": [
+     "R_cr",
+     "k_0",
+     "E",
+     "nu",
+     "f_syk"
+    ]
+   }
+  },
+  {
+   "id": "d388",
+   "kind": "vdef",
+   "props": {
+    "name": "b_f",
+    "value": 169,
+    "unit": "mm",
+    "desc": "フランジの突出幅",
+    "show": false,
+    "display": "b",
+    "global": true
+   }
+  },
+  {
+   "id": "d389",
+   "kind": "vdef",
+   "props": {
+    "name": "t_f",
+    "value": 22,
+    "unit": "mm",
+    "desc": "フランジ厚",
+    "show": false,
+    "display": "t",
+    "global": true
+   }
+  },
+  {
+   "id": "d390",
+   "kind": "check",
+   "props": {
+    "expr": "b_f / t_f <= bt_0",
+    "unit": "",
+    "digits": 1,
+    "lhs": "(b/t)"
+   }
+  },
+  {
+   "id": "d391",
+   "kind": "paragraph",
+   "props": {
+    "text": "・下フランジの照査"
+   }
+  },
+  {
+   "id": "d392",
+   "kind": "kijun",
+   "props": {
+    "prefix": "軸方向引張り力を受ける板要素の照査（片縁支持板）",
+    "kijun": {
+     "abbr": "鋼標準",
+     "loc": "第Ⅱ編 2.2.3.2"
+    }
+   }
+  },
+  {
+   "id": "d393",
+   "kind": "vdef",
+   "props": {
+    "name": "bt_0t",
+    "value": 16,
+    "unit": "",
+    "desc": "幅厚比の制限値（引張）",
+    "digits": 0,
+    "show": true,
+    "display": "(b/t)_0",
+    "global": true
+   }
+  },
+  {
+   "id": "d394",
+   "kind": "check",
+   "props": {
+    "expr": "b_f / t_f <= bt_0t",
+    "unit": "",
+    "digits": 1,
+    "lhs": "(b/t)"
+   }
+  },
+  {
+   "id": "d395",
+   "kind": "paragraph",
+   "props": {
+    "text": "・腹板の照査"
+   }
+  },
+  {
+   "id": "d396",
+   "kind": "kijun",
+   "props": {
+    "prefix": "せん断と曲げモーメントを受ける板要素の照査",
+    "kijun": {
+     "abbr": "鋼標準",
+     "loc": "第Ⅱ編 2.2.3.4"
+    }
+   }
+  },
+  {
+   "id": "d397",
+   "kind": "vdef",
+   "props": {
+    "name": "R_crw",
+    "value": 1.0,
+    "unit": "",
+    "desc": "限界座屈パラメーターで，縁応力が降伏強度に達したときに座屈を防ぐのに必要な幅厚比と弾性座屈理論から求まる幅厚比との比，一般に 1.0 としてよい",
+    "show": false,
+    "display": "R_(c r)",
+    "global": true
+   }
+  },
+  {
+   "id": "d398",
+   "kind": "vdef",
+   "props": {
+    "name": "k_b",
+    "value": 23.9,
+    "unit": "",
+    "desc": "座屈係数で，水平補剛材がない場合には kb = 23.9 としてよい",
+    "show": false,
+    "global": true
+   }
+  },
+  {
+   "id": "d399",
+   "kind": "vdef",
+   "props": {
+    "name": "f_sykw",
+    "value": 245,
+    "unit": "N/mm2",
+    "desc": "鋼材の降伏強度の特性値（腹板）",
+    "digits": 0,
+    "show": false,
+    "display": "f_(s y k)",
+    "global": true
+   }
+  },
+  {
+   "id": "d400",
+   "kind": "calc",
+   "props": {
+    "name": "Dt_0",
+    "expr": "R_crw * sqrt(pi^2 * k_b / (12 * (1 - nu^2)) * E / f_sykw)",
+    "unit": "",
+    "desc": "幅厚比の制限値（腹板）",
+    "digits": 1,
+    "show": true,
+    "display": "(D_w/t_w)_0",
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d401",
+   "kind": "where",
+   "props": {
+    "vars": [
+     "R_crw",
+     "k_b",
+     "E",
+     "nu",
+     "f_sykw"
+    ]
+   }
+  },
+  {
+   "id": "d402",
+   "kind": "vdef",
+   "props": {
+    "name": "D_w",
+    "value": 656,
+    "unit": "mm",
+    "desc": "腹板高",
+    "show": false,
+    "global": true
+   }
+  },
+  {
+   "id": "d403",
+   "kind": "vdef",
+   "props": {
+    "name": "t_w",
+    "value": 12,
+    "unit": "mm",
+    "desc": "腹板厚",
+    "show": false,
+    "global": true
+   }
+  },
+  {
+   "id": "d404",
+   "kind": "check",
+   "props": {
+    "expr": "D_w / t_w <= Dt_0",
+    "unit": "",
+    "digits": 1,
+    "lhs": "(D_w/t_w)"
+   }
+  },
+  {
+   "id": "d405",
+   "kind": "heading",
+   "props": {
+    "level": 3,
+    "text": "断面耐力の計算"
+   }
+  },
+  {
+   "id": "d406",
+   "kind": "paragraph",
+   "props": {
+    "text": "・設計軸方向圧縮耐力"
+   }
+  },
+  {
+   "id": "d407",
+   "kind": "kijun",
+   "props": {
+    "prefix": "",
+    "kijun": {
+     "abbr": "鋼標準",
+     "loc": "第Ⅱ編 2.2.2.2"
+    }
+   }
+  },
+  {
+   "id": "d408",
+   "kind": "vdef",
+   "props": {
+    "name": "l_c",
+    "value": 8000,
+    "unit": "mm",
+    "desc": "支間長",
+    "digits": 0,
+    "show": false,
+    "display": "ell",
+    "global": true
+   }
+  },
+  {
+   "id": "d409",
+   "kind": "calc",
+   "props": {
+    "name": "lr",
+    "expr": "l_c / r_z",
+    "unit": "",
+    "desc": "細長比",
+    "digits": 1,
+    "show": true,
+    "display": "ell/r",
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d410",
+   "kind": "calc",
+   "props": {
+    "name": "lambda",
+    "expr": "1 / pi * sqrt(f_syk / E) * lr",
+    "unit": "",
+    "desc": "細長比パラメータ",
+    "digits": 3,
+    "show": true,
+    "display": "overline(lambda)",
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d411",
+   "kind": "calc",
+   "props": {
+    "name": "rho_bg",
+    "expr": "1.0 - 0.53 * (lambda - 0.1)",
+    "unit": "",
+    "desc": "全体座屈の影響を考慮した低減係数（0.1 < λ ≦ √2）",
+    "digits": 3,
+    "show": true,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d412",
+   "kind": "vdef",
+   "props": {
+    "name": "rho_bl",
+    "value": 1.0,
+    "unit": "",
+    "desc": "板要素の局部座屈の影響を考慮した低減係数（幅厚比の制限値を満足するため）",
+    "digits": 3,
+    "show": false,
+    "global": true
+   }
+  },
+  {
+   "id": "d413",
+   "kind": "calc",
+   "props": {
+    "name": "A_fn",
+    "expr": "350 * 22",
+    "unit": "mm2",
+    "desc": "上フランジの有効断面積",
+    "digits": 0,
+    "show": true,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d414",
+   "kind": "calc",
+   "props": {
+    "name": "A_n",
+    "expr": "A_fn + 12 * 12^2",
+    "unit": "mm2",
+    "desc": "軸力に対する有効断面積（上フランジと腹板の板厚の12倍の範囲）",
+    "digits": 0,
+    "show": true,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d415",
+   "kind": "vdef",
+   "props": {
+    "name": "gamma_s",
+    "value": 1.05,
+    "unit": "",
+    "desc": "材料係数（鋼材）",
+    "show": false,
+    "global": true
+   }
+  },
+  {
+   "id": "d416",
+   "kind": "vdef",
+   "props": {
+    "name": "gamma_b",
+    "value": 1.1,
+    "unit": "",
+    "desc": "部材係数",
+    "show": false,
+    "global": true
+   }
+  },
+  {
+   "id": "d417",
+   "kind": "calc",
+   "props": {
+    "name": "f_syd",
+    "expr": "f_syk / gamma_s",
+    "unit": "N/mm2",
+    "desc": "鋼材の設計降伏強度",
+    "digits": 1,
+    "show": true,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d418",
+   "kind": "calc",
+   "props": {
+    "name": "N_ud",
+    "expr": "rho_bg * rho_bl * A_n * f_syd / gamma_b / 1000",
+    "unit": "kN",
+    "desc": "設計軸方向圧縮耐力",
+    "digits": 1,
+    "show": true,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d419",
+   "kind": "where",
+   "props": {
+    "vars": [
+     "rho_bg",
+     "rho_bl",
+     "A_n",
+     "f_syd",
+     "gamma_b"
+    ]
+   }
+  },
+  {
+   "id": "d420",
+   "kind": "paragraph",
+   "props": {
+    "text": "・設計軸方向引張耐力"
+   }
+  },
+  {
+   "id": "d421",
+   "kind": "kijun",
+   "props": {
+    "prefix": "",
+    "kijun": {
+     "abbr": "鋼標準",
+     "loc": "第Ⅱ編 2.2.2.2"
+    }
+   }
+  },
+  {
+   "id": "d422",
+   "kind": "paragraph",
+   "props": {
+    "text": "下フランジには横構のガセットを設置するためボルト孔による断面欠損を考慮する．"
+   }
+  },
+  {
+   "id": "d423",
+   "kind": "calc",
+   "props": {
+    "name": "A_fnl",
+    "expr": "(350 - 1 * 25) * 22",
+    "unit": "mm2",
+    "desc": "下フランジの有効断面積",
+    "digits": 0,
+    "show": true,
+    "display": "A_(f n)",
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d424",
+   "kind": "calc",
+   "props": {
+    "name": "A_fln",
+    "expr": "A_fnl + 12 * 12^2",
+    "unit": "mm2",
+    "desc": "軸力に対する有効断面積（下フランジ）",
+    "digits": 0,
+    "show": true,
+    "display": "A_(f l n)",
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d425",
+   "kind": "vdef",
+   "props": {
+    "name": "gamma_bt",
+    "value": 1.05,
+    "unit": "",
+    "desc": "部材係数（引張）",
+    "show": false,
+    "display": "gamma_b",
+    "global": true
+   }
+  },
+  {
+   "id": "d426",
+   "kind": "calc",
+   "props": {
+    "name": "N_td",
+    "expr": "1.0 * 1.0 * A_fln * f_syd / gamma_bt / 1000",
+    "unit": "kN",
+    "desc": "設計軸方向引張耐力",
+    "digits": 1,
+    "show": true,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d427",
+   "kind": "paragraph",
+   "props": {
+    "text": "・設計曲げ圧縮耐力（上フランジ上端）"
+   }
+  },
+  {
+   "id": "d428",
+   "kind": "kijun",
+   "props": {
+    "prefix": "",
+    "kijun": {
+     "abbr": "鋼標準",
+     "loc": "第Ⅱ編 2.2.2.3"
+    }
+   }
+  },
+  {
+   "id": "d429",
+   "kind": "vdef",
+   "props": {
+    "name": "t_fm",
+    "value": 22,
+    "unit": "mm",
+    "desc": "上下フランジ厚の平均値",
+    "digits": 0,
+    "show": false,
+    "display": "t_f",
+    "global": true
+   }
+  },
+  {
+   "id": "d430",
+   "kind": "vdef",
+   "props": {
+    "name": "t_wm",
+    "value": 12,
+    "unit": "mm",
+    "desc": "腹板厚",
+    "digits": 0,
+    "show": false,
+    "display": "t_w",
+    "global": true
+   }
+  },
+  {
+   "id": "d431",
+   "kind": "vdef",
+   "props": {
+    "name": "b_m",
+    "value": 350,
+    "unit": "mm",
+    "desc": "上下フランジ幅の平均値",
+    "digits": 0,
+    "show": false,
+    "display": "b",
+    "global": true
+   }
+  },
+  {
+   "id": "d432",
+   "kind": "vdef",
+   "props": {
+    "name": "h_m",
+    "value": 700,
+    "unit": "mm",
+    "desc": "桁高",
+    "digits": 0,
+    "show": false,
+    "display": "h",
+    "global": true
+   }
+  },
+  {
+   "id": "d433",
+   "kind": "vdef",
+   "props": {
+    "name": "l_b",
+    "value": 4000,
+    "unit": "mm",
+    "desc": "横桁間隔",
+    "digits": 0,
+    "show": false,
+    "display": "ell",
+    "global": true
+   }
+  },
+  {
+   "id": "d434",
+   "kind": "calc",
+   "props": {
+    "name": "alpha_F",
+    "expr": "t_fm / t_wm",
+    "unit": "",
+    "desc": "",
+    "digits": 2,
+    "show": true,
+    "display": "alpha",
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d435",
+   "kind": "calc",
+   "props": {
+    "name": "beta_F",
+    "expr": "h_m / b_m",
+    "unit": "",
+    "desc": "",
+    "digits": 2,
+    "show": true,
+    "display": "beta",
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d436",
+   "kind": "calc",
+   "props": {
+    "name": "F",
+    "expr": "sqrt(12 + 2 * beta_F / alpha_F)",
+    "unit": "",
+    "desc": "",
+    "digits": 2,
+    "show": true,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d437",
+   "kind": "calc",
+   "props": {
+    "name": "lr_e",
+    "expr": "F * l_b / b_m",
+    "unit": "",
+    "desc": "等価細長比",
+    "digits": 1,
+    "show": true,
+    "display": "(ell/r)_e",
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d438",
+   "kind": "calc",
+   "props": {
+    "name": "lambda_e",
+    "expr": "1 / pi * sqrt(f_syk / E) * lr_e",
+    "unit": "",
+    "desc": "等価細長比パラメータ",
+    "digits": 3,
+    "show": true,
+    "display": "overline(lambda)_e",
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d439",
+   "kind": "calc",
+   "props": {
+    "name": "rho_bge",
+    "expr": "1.0 - 0.53 * (lambda_e - 0.1)",
+    "unit": "",
+    "desc": "横ねじれ座屈の影響を考慮した低減係数",
+    "digits": 3,
+    "show": true,
+    "display": "rho_(b g)",
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d440",
+   "kind": "calc",
+   "props": {
+    "name": "A_fg",
+    "expr": "350 * 22",
+    "unit": "mm2",
+    "desc": "上フランジの総断面積",
+    "digits": 0,
+    "show": true,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d441",
+   "kind": "calc",
+   "props": {
+    "name": "M_ucd",
+    "expr": "rho_bge * I_y / y_u * f_syd * A_fn / A_fg / gamma_b / 1000000",
+    "unit": "kN*m",
+    "desc": "設計曲げ圧縮耐力",
+    "digits": 1,
+    "show": true,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d442",
+   "kind": "paragraph",
+   "props": {
+    "text": "・設計曲げ引張耐力（下フランジ下端）"
+   }
+  },
+  {
+   "id": "d443",
+   "kind": "kijun",
+   "props": {
+    "prefix": "",
+    "kijun": {
+     "abbr": "鋼標準",
+     "loc": "第Ⅱ編 2.2.2.3"
+    }
+   }
+  },
+  {
+   "id": "d444",
+   "kind": "calc",
+   "props": {
+    "name": "M_utd",
+    "expr": "I_y / y_l * f_syd * A_fnl / A_fg / gamma_bt / 1000000",
+    "unit": "kN*m",
+    "desc": "設計曲げ引張耐力",
+    "digits": 1,
+    "show": true,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d445",
+   "kind": "paragraph",
+   "props": {
+    "text": "・設計曲げ圧縮耐力（腹板上端）"
+   }
+  },
+  {
+   "id": "d446",
+   "kind": "kijun",
+   "props": {
+    "prefix": "",
+    "kijun": {
+     "abbr": "鋼標準",
+     "loc": "第Ⅱ編 2.2.2.3"
+    }
+   }
+  },
+  {
+   "id": "d447",
+   "kind": "calc",
+   "props": {
+    "name": "f_sydw",
+    "expr": "f_sykw / gamma_s",
+    "unit": "N/mm2",
+    "desc": "鋼材の設計降伏強度（腹板 t ＝ 12 mm）",
+    "digits": 1,
+    "show": true,
+    "display": "f'_(s y d)",
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d448",
+   "kind": "calc",
+   "props": {
+    "name": "M_ucld",
+    "expr": "I_y / (y_u - t_fm) * f_sydw / gamma_b / 1000000",
+    "unit": "kN*m",
+    "desc": "設計曲げ圧縮耐力（腹板上端）",
+    "digits": 1,
+    "show": true,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d449",
+   "kind": "paragraph",
+   "props": {
+    "text": "・設計曲げ引張耐力（腹板下端）"
+   }
+  },
+  {
+   "id": "d450",
+   "kind": "kijun",
+   "props": {
+    "prefix": "",
+    "kijun": {
+     "abbr": "鋼標準",
+     "loc": "第Ⅱ編 2.2.2.3"
+    }
+   }
+  },
+  {
+   "id": "d451",
+   "kind": "calc",
+   "props": {
+    "name": "M_utld",
+    "expr": "I_y / (y_l - t_fm) * f_sydw / gamma_bt / 1000000",
+    "unit": "kN*m",
+    "desc": "設計曲げ引張耐力（腹板下端）",
+    "digits": 1,
+    "show": true,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d452",
+   "kind": "paragraph",
+   "props": {
+    "text": "・設計せん断耐力"
+   }
+  },
+  {
+   "id": "d453",
+   "kind": "kijun",
+   "props": {
+    "prefix": "",
+    "kijun": {
+     "abbr": "鋼標準",
+     "loc": "第Ⅱ編 2.2.2.5"
+    }
+   }
+  },
+  {
+   "id": "d454",
+   "kind": "vdef",
+   "props": {
+    "name": "f_svyk",
+    "value": 140,
+    "unit": "N/mm2",
+    "desc": "鋼材のせん断降伏強度の特性値",
+    "digits": 0,
+    "show": false,
+    "global": true
+   }
+  },
+  {
+   "id": "d455",
+   "kind": "calc",
+   "props": {
+    "name": "f_svyd",
+    "expr": "f_svyk / gamma_s",
+    "unit": "N/mm2",
+    "desc": "鋼材の設計せん断降伏強度",
+    "digits": 1,
+    "show": true,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d456",
+   "kind": "calc",
+   "props": {
+    "name": "V_yd",
+    "expr": "A_w * f_svyd / gamma_bt / 1000",
+    "unit": "kN",
+    "desc": "設計せん断耐力",
+    "digits": 1,
+    "show": true,
+    "frac": true,
+    "show_symbolic": true,
+    "global": true
+   }
+  },
+  {
+   "id": "d457",
+   "kind": "where",
+   "props": {
+    "vars": [
+     "A_w",
+     "f_svyd",
+     "gamma_bt"
+    ]
+   }
+  },
+  {
+   "id": "d458",
+   "kind": "heading",
+   "props": {
+    "level": 3,
+    "text": "耐荷性の照査"
+   }
+  },
+  {
+   "id": "d459",
+   "kind": "paragraph",
+   "props": {
+    "text": "軸力が圧縮・引張両方出るため，軸方向力と曲げモーメントを受ける部材の照査にてフランジの照査を行う．軸方向耐力は圧縮，引張の小なる方を使用する．"
+   }
+  },
+  {
+   "id": "d460",
+   "kind": "paragraph",
+   "props": {
+    "text": "・軸方向力と曲げモーメントを受ける部材の照査"
+   }
+  },
+  {
+   "id": "d461",
+   "kind": "kijun",
+   "props": {
+    "prefix": "",
+    "kijun": {
+     "abbr": "鋼標準",
+     "loc": "第Ⅱ編 2.2.2.4"
+    }
+   }
+  },
+  {
+   "id": "d462",
+   "kind": "vdef",
+   "props": {
+    "name": "gamma_i",
+    "value": 1.2,
+    "unit": "",
+    "desc": "構造物係数",
+    "show": false,
+    "global": true
+   }
+  },
+  {
+   "id": "d463",
+   "kind": "check",
+   "props": {
+    "expr": "gamma_i * (N_d / N_ud + M_d / M_ucd) <= 1.0",
+    "unit": "",
+    "digits": 3,
+    "label": "上フランジ"
+   }
+  },
+  {
+   "id": "d464",
+   "kind": "check",
+   "props": {
+    "expr": "gamma_i * (N_d / N_ud + M_d / M_ucld) <= 1.0",
+    "unit": "",
+    "digits": 3,
+    "label": "腹板上縁"
+   }
+  },
+  {
+   "id": "d465",
+   "kind": "check",
+   "props": {
+    "expr": "gamma_i * (N_d / N_ud + M_d / M_utld) <= 1.0",
+    "unit": "",
+    "digits": 3,
+    "label": "腹板下縁"
+   }
+  },
+  {
+   "id": "d466",
+   "kind": "check",
+   "props": {
+    "expr": "gamma_i * (N_d / N_ud + M_d / M_utd) <= 1.0",
+    "unit": "",
+    "digits": 3,
+    "label": "下フランジ"
+   }
+  },
+  {
+   "id": "d467",
+   "kind": "where",
+   "props": {
+    "vars": [
+     "gamma_i",
+     "N_d",
+     "N_ud",
+     "M_d",
+     "M_ucd"
+    ]
+   }
+  },
+  {
+   "id": "d468",
+   "kind": "paragraph",
+   "props": {
+    "text": "・せん断力を受ける部材の照査"
+   }
+  },
+  {
+   "id": "d469",
+   "kind": "kijun",
+   "props": {
+    "prefix": "",
+    "kijun": {
+     "abbr": "鋼標準",
+     "loc": "第Ⅱ編 2.2.2.5"
+    }
+   }
+  },
+  {
+   "id": "d470",
+   "kind": "check",
+   "props": {
+    "expr": "gamma_i * V_d / V_yd <= 1.0",
+    "unit": "",
+    "digits": 3
+   }
+  },
+  {
+   "id": "d471",
+   "kind": "where",
+   "props": {
+    "vars": [
+     "gamma_i",
+     "V_d",
+     "V_yd"
+    ]
+   }
+  },
+  {
+   "id": "d472",
+   "kind": "paragraph",
+   "props": {
+    "text": "・曲げモーメントとせん断力を同時に受ける部材の照査（照査は腹板上縁，腹板下縁にて行う）"
+   }
+  },
+  {
+   "id": "d473",
+   "kind": "kijun",
+   "props": {
+    "prefix": "",
+    "kijun": {
+     "abbr": "鋼標準",
+     "loc": "第Ⅱ編 2.2.2.6"
+    }
+   }
+  },
+  {
+   "id": "d474",
+   "kind": "check",
+   "props": {
+    "expr": "(gamma_i / 1.1)^2 * ((N_d / N_ud + M_d / M_ucld)^2 + (V_d / V_yd)^2) <= 1.0",
+    "unit": "",
+    "digits": 3,
+    "label": "腹板上縁"
+   }
+  },
+  {
+   "id": "d475",
+   "kind": "check",
+   "props": {
+    "expr": "(gamma_i / 1.1)^2 * ((N_d / N_ud + M_d / M_utld)^2 + (V_d / V_yd)^2) <= 1.0",
+    "unit": "",
+    "digits": 3,
+    "label": "腹板下縁"
+   }
+  },
+  {
+   "id": "d476",
+   "kind": "where",
+   "props": {
+    "vars": [
+     "gamma_i",
+     "N_d",
+     "N_ud",
+     "M_d",
+     "M_ucld",
+     "V_d",
+     "V_yd"
+    ]
+   }
+  }
+ ],
+ "assets": []
+}
